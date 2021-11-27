@@ -96,7 +96,7 @@ function main_panel_header() {
 function main_panel() {
     clear
     main_panel_header
-    action_list=('新建世界' '启动服务端' '关闭服务端' '重启服务端' '升级服务端' '添加Mod' '退出')
+    action_list=('新建世界' '启动服务端' '关闭服务端' '重启服务端' '升级服务端' '添加Mod' '更新脚本' '退出')
     PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n'"请输入选项数字> "
 
     running_cluster=''
@@ -120,7 +120,7 @@ function main_panel() {
 
         case $selected in
         '新建世界')
-            create_cluster $KLEI_ROOT_DIR/$WORLDS_DIR
+            #create_cluster $KLEI_ROOT_DIR/$WORLDS_DIR
             ;;
         '启动服务端')
             running_cluster=$(select_cluster $KLEI_ROOT_DIR/$WORLDS_DIR)
@@ -161,6 +161,11 @@ function main_panel() {
             ;;
         '添加Mod')
             add_mods $DST_ROOT_DIR $KLEI_ROOT_DIR/$WORLDS_DIR $SHARD_MAIN $SHARD_CAVE
+            ;;
+        '更新脚本')
+            color_print info '开始更新脚本仓库...'
+            cd ~/DSTServerManager && git pull
+            color_print info '更新完毕！'
             ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'
