@@ -16,16 +16,18 @@
 #################### ###################  TO-DO List  ################### ####################
 # - [x] 开启64bit服务端
 # - [ ] 完善 worldgenoverride.lua
-# - [ ] Cluster目录提醒
-# - [ ] 选择Cluster功能
+# - [x] Cluster目录提醒
+# - [x] 选择Cluster功能
 # - [ ] 检测Cluster里面是否存在地表/地底文件夹
 # - [ ] Mod添加/删除功能
 # - [ ] 存档备份/还原/删除功能
 # - [ ] 白名单/黑名单/管理员名单管理功能
 # - [ ] 支持仅开启地表，仅开启地底，地表地底都开
 ##############################################################################################
-
 set -eu
+
+# one line command setup:
+# cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh
 
 cd ~
 if [[ ! -e ~/DSTServerManager ]]; then
@@ -35,7 +37,10 @@ if [[ ! -e ~/DSTServerManager ]]; then
         echo '脚本仓库下载失败, 请检查git命令是否可用'
         exit 1
     fi
+    rm $0
+    ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh
     echo '脚本仓库下载完成！'
+    echo '请重新运行脚本。使用命令为：  ~/DSTManager.sh'
     sleep 1
 fi
 
