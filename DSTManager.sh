@@ -46,7 +46,7 @@ fi
 
 source ~/DSTServerManager/utils/output.sh
 
-SCRIPT_VERSION='v0.1'
+SCRIPT_VERSION='v1.0'
 OS='MacOS'
 ARCHITECTURE=$(getconf LONG_BIT)
 

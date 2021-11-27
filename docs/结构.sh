@@ -5,9 +5,10 @@ exit 1
 
 $HOME
 │
-├──main-panel.sh            # <-- 需要上传的脚本
+├──DSTManager.sh            # <-- 需要上传的脚本(也可以用命令直接从仓库下载)
 │
-├──server-manage-scripts    # <-- 脚本仓库，包含各种配置文件模板
+├──DSTServerManager         # <-- 脚本仓库，包含各种配置文件模板
+│   ├── docs                # <-- 描述了各个文件都放在哪里
 │   ├── scripts             # <-- 脚本
 │   ├── templates           # <-- 配置文件模板
 │   └── utils               # <-- 脚本
@@ -40,18 +41,28 @@ $HOME
 
 # 以下为本脚本的默认设定
 
-`/home/dst`
+`/home/username`
 │
-├── `server`
+├──DSTManager.sh            # <-- 需要上传的脚本(也可以用命令直接从仓库下载)
+│
+├──DSTServerManager         # <-- 脚本仓库，包含各种配置文件模板
+│   ├── docs                # <-- 描述了各个文件都放在哪里
+│   ├── scripts             # <-- 脚本
+│   ├── templates           # <-- 配置文件模板
+│   └── utils               # <-- 脚本
+│
+├── `Server`
 │   ├── bin
-│   │   └── dontstarve_dedicated_server_nullrenderer
+│   │   └── dontstarve_dedicated_server_nullrenderer        # <-- 32位服务端
+│   ├── bin64
+│   │   └── dontstarve_dedicated_server_nullrenderer_x64    # <-- 64位服务端
 │   └── mods
-│       └── dedicated_server_mods_setup.lua
+│       └── dedicated_server_mods_setup.lua             # <-- 在这边添加服务端mod
 │
 ├── Steam
 │   └── steamcmd.sh
 │
-└── `keli`
+└── `Keli`
     ├── Agreements
     └── `worlds`
         └── $CLUSTER_NAME   # <-- 由用户输入
