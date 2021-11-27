@@ -83,20 +83,20 @@ function check_script_update() {
 
 function main_panel_header() {
     print_divider '=' | color_print 215
-    echo "DST Dedicated Server Manager $SCRIPT_VERSION" | color_print 215
+    echo " DST Dedicated Server Manager $SCRIPT_VERSION" | color_print 215
     #check_script_update | echo | color_print 215
-    echo '本脚本由yechentide制作, 完全免费! 有问题可以在百度贴吧@夜尘tide' | color_print 70
-    echo '本脚本一切权利归作者所有, 未经许可禁止使用本脚本进行任何的商业活动!' | color_print 70
-    echo 'Github仓库: https://github.com/yechentide/DSTServerManager' | color_print 22
-    echo 'Gitee仓库: https://gitee.com/yechentide/DSTServerManager' | color_print 22
-    echo '欢迎会shellscript的伙伴来一起写开服脚本！' | color_print 22
+    echo ' 本脚本由yechentide制作, 完全免费! 有问题可以在百度贴吧@夜尘tide' | color_print 70
+    echo ' 本脚本一切权利归作者所有, 未经许可禁止使用本脚本进行任何的商业活动!' | color_print 70
+    echo ' Github仓库: https://github.com/yechentide/DSTServerManager' | color_print 22
+    echo ' Gitee仓库: https://gitee.com/yechentide/DSTServerManager' | color_print 22
+    echo ' 欢迎会shellscript的伙伴来一起写开服脚本！' | color_print 22
     print_divider '-' | color_print 215
 }
 
 function main_panel() {
     clear
     main_panel_header
-    action_list=('新建世界' '启动服务端' '关闭服务端' '重启服务端' '升级服务端' '退出')
+    action_list=('新建世界' '启动服务端' '关闭服务端' '重启服务端' '升级服务端' '添加Mod' '退出')
     PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n'"请输入选项数字> "
 
     running_cluster=''
@@ -158,6 +158,9 @@ function main_panel() {
                 sleep 5
             fi
             update_server $DST_ROOT_DIR
+            ;;
+        '添加Mod')
+            add_mods $DST_ROOT_DIR $KLEI_ROOT_DIR/$WORLDS_DIR $SHARD_MAIN $SHARD_CAVE
             ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'
