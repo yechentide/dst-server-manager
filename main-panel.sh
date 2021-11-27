@@ -120,7 +120,7 @@ function main_panel() {
 
         case $selected in
         '新建世界')
-            #create_cluster $KLEI_ROOT_DIR/$WORLDS_DIR
+            create_cluster $DST_ROOT_DIR $KLEI_ROOT_DIR $WORLDS_DIR $SHARD_MAIN $SHARD_CAVE
             ;;
         '启动服务端')
             running_cluster=$(select_cluster $KLEI_ROOT_DIR/$WORLDS_DIR)

@@ -6,9 +6,14 @@ source ~/DSTServerManager/scripts/control.sh
 #   $2: worlds derictory   ~/Klei/worlds
 #   $3: $SHARD_MAIN        Main
 #   $4: $SHARD_CAVE        Cave
+#   $5: cluster name       (option parameter)
 function add_mods() {
     color_print info '开始添加mod'
-    target_cluster=$(select_cluster $2)
+    if [[ $# == 5 ]]; then
+        target_cluster=$5
+    else
+        target_cluster=$(select_cluster $2)
+    fi
     if [[ ${#target_cluster} == 0 ]]; then
         color_print error '选择世界时发生错误，请检查输入以及是否有存档'
         return 1
