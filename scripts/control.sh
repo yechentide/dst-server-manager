@@ -1,7 +1,7 @@
 source ~/DSTServerManager/utils/output.sh
 
 # Parameters:
-#   $1: worlds derictory   ~/Server/worlds
+#   $1: worlds derictory   ~/Klei/worlds
 # Return:
 #   name of a cluster
 #   or error code 1
@@ -12,7 +12,7 @@ function select_cluster() {
         return 1
     fi
 
-    PS3='请输入选项数字> '
+    PS3='请输入数字来选择一个存档> '
     select selected_cluster in $(ls -l $1 | awk '$1 ~ /d/ {print $9 }'); do break; done
 
     if ls -l $1 | awk '$1 ~ /d/ {print $9 }' | grep "$selected_cluster" > /dev/null 2>&1; then
