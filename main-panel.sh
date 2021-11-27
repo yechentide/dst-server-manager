@@ -28,15 +28,18 @@
 set -eu
 
 cd ~
-if [[ ! -e ~/server-manage-scripts ]]; then
+if [[ ! -e ~/DSTServerManager ]]; then
+    echo '未找到脚本仓库，开始下载...'
     git clone https://gitee.com/yechentide/DSTServerManager.git
     if [[ $? == 1 ]]; then
-        echo '仓库下载失败, 请检查git命令是否可用'
+        echo '脚本仓库下载失败, 请检查git命令是否可用'
         exit 1
     fi
+    echo '脚本仓库下载完成！'
+    sleep 1
 fi
 
-source ./utils/output.sh
+source ~/DSTServerManager/utils/output.sh
 
 SCRIPT_VERSION='v0.1'
 OS='MacOS'
@@ -61,14 +64,14 @@ check_os
 
 ##############################################################################################
 
-source ./scripts/prepare.sh
+for file in $(ls ~/DSTServerManager/scripts/*.sh); do source $file; done
 
-DST_ROOT_DIR="$HOME/server"
-KLEI_ROOT_DIR="$HOME/klei"
+DST_ROOT_DIR="$HOME/Server"
 
+KLEI_ROOT_DIR="$HOME/Klei"
 WORLDS_DIR='worlds'
-DEFAULT_SHARD_MAIN='Main'
-DEFAULT_SHARD_CAVE='Cave'
+SHARD_MAIN='Main'
+SHARD_CAVE='Cave'
 
 function check_script_update() {
     if git remote show gitee | grep 'up to date' > /dev/null 2>&1; then
@@ -80,42 +83,88 @@ function check_script_update() {
 
 function main_panel_header() {
     print_divider '=' | color_print 215
-    center_print "DST Dedicated Server Manager $SCRIPT_VERSION" | color_print 215
-    #check_script_update | center_print | color_print 215
-    center_print '本脚本由yechentide制作, 完全免费! 有问题可以在百度贴吧@夜尘tide' | color_print 70
-    center_print '本脚本一切权利归作者所有, 未经许可禁止使用本脚本进行任何的商业活动!' | color_print 70
-    center_print 'Github仓库: https://github.com/yechentide/DSTServerManager' | color_print 22
-    center_print 'Gitee仓库: https://gitee.com/yechentide/DSTServerManager' | color_print 22
-    center_print '欢迎会shellscript的伙伴来一起写开服脚本！' | color_print 22
+    echo "DST Dedicated Server Manager $SCRIPT_VERSION" | color_print 215
+    #check_script_update | echo | color_print 215
+    echo '本脚本由yechentide制作, 完全免费! 有问题可以在百度贴吧@夜尘tide' | color_print 70
+    echo '本脚本一切权利归作者所有, 未经许可禁止使用本脚本进行任何的商业活动!' | color_print 70
+    echo 'Github仓库: https://github.com/yechentide/DSTServerManager' | color_print 22
+    echo 'Gitee仓库: https://gitee.com/yechentide/DSTServerManager' | color_print 22
+    echo '欢迎会shellscript的伙伴来一起写开服脚本！' | color_print 22
     print_divider '-' | color_print 215
 }
 
 function main_panel() {
+    clear
+    main_panel_header
+    action_list=('新建世界' '启动服务端' '关闭服务端' '重启服务端' '升级服务端' '退出')
+    PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n'"请输入选项数字> "
+
+    running_cluster=''
+    if tmux ls > /dev/null 2>&1; then
+        running_cluster=$(tmux ls | grep - | awk -F- '{print $1}' | uniq)
+    fi
+
     while true; do
-        clear
-        main_panel_header
+        echo ''
+        if [[ ${#running_cluster} -gt 0 ]]; then
+            color_print 39 "运行中的世界 ==> $running_cluster"
+        else
+            color_print 39 '运行中的世界 ==> 无'
+        fi
 
-        action_list=('新建世界' '启动服务端' '关闭服务端' '重启服务端' '退出')
-        PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n'"请输入选项数字> "
         select selected in ${action_list[*]}; do break; done
-
         if [[ ${#selected} == 0 ]]; then
-            color_print error '请输入数字！数字！数字！ ' -n; count_down 3
+            color_print error '请输入数字！数字！数字！'
             continue
         fi
 
-        color_print 39 $selected
         case $selected in
+        '新建世界')
+            create_cluster $KLEI_ROOT_DIR/$WORLDS_DIR
+            ;;
+        '启动服务端')
+            running_cluster=$(select_cluster $KLEI_ROOT_DIR/$WORLDS_DIR)
+            if [[ $? == 1 ]]; then
+                color_print error '选择世界时发生错误，请检查输入以及是否有存档'
+                continue
+            fi
+            if tmux ls | grep $running_cluster > /dev/null 2>&1; then
+                color_print error "世界$running_cluster已经开启！"
+                continue
+            fi
+            start_server $ARCHITECTURE $DST_ROOT_DIR $KLEI_ROOT_DIR $WORLDS_DIR $running_cluster $SHARD_MAIN $SHARD_CAVE
+            ;;
+        '关闭服务端')
+            stop_server $running_cluster $SHARD_MAIN $SHARD_CAVE
+            running_cluster=''
+            ;;
+        '重启服务端')
+            if [[ ${#running_cluster} == 0 ]]; then
+                color_print error '没有开启中的世界！'
+                continue
+            fi
+            color_print info "正在关闭世界$running_cluster..."
+            stop_server $running_cluster $SHARD_MAIN $SHARD_CAVE
+            sleep 5
+            color_print info "重新开启世界$running_cluster..."
+            start_server $ARCHITECTURE $DST_ROOT_DIR $KLEI_ROOT_DIR $WORLDS_DIR $running_cluster $SHARD_MAIN $SHARD_CAVE
+            sleep 5
+            color_print info "世界$running_cluster已经开启！"
+            ;;
+        '升级服务端')
+            if [[ ${#running_cluster} != 0 ]]; then
+                stop_server $running_cluster $SHARD_MAIN $SHARD_CAVE
+                running_cluster=''
+                sleep 5
+            fi
+            update_server $DST_ROOT_DIR
+            ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'
             exit 0
             ;;
-        '新建世界')
-            echo -n 'create a new cluster '
-            count_down 3
-            ;;
         *)
-            color_print error "${selected}功能暂未写好 " -n; count_down 3
+            color_print error "${selected}功能暂未写好"
             continue
             ;;
         esac
