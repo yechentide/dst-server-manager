@@ -32,11 +32,11 @@ function select_cluster() {
 #   $7: $SHARD_CAVE      Cave
 function start_server() {
     if [[ $1 == 64 ]]; then
-        tmux new -d -s "$5-$6" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6 -console"
-        tmux new -d -s "$5-$7" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7 -console"
+        tmux new -d -s "$5-$6" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
+        tmux new -d -s "$5-$7" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
     else
-        tmux new -d -s "$5-$6" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6 -console"
-        tmux new -d -s "$5-$7" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7 -console"
+        tmux new -d -s "$5-$6" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
+        tmux new -d -s "$5-$7" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
     fi
     color_print info "正在开启世界$running_cluster... " -n; count_down 5
     color_print info "世界$running_cluster已经开启！"
