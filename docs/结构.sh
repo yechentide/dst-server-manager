@@ -5,9 +5,9 @@ exit 1
 
 $HOME
 │
-├──DSTManager.sh            # <-- 需要上传的脚本(也可以用命令直接从仓库下载)
+├── DSTManager.sh           # <-- 需要上传的脚本(也可以用命令直接从仓库下载)
 │
-├──DSTServerManager         # <-- 脚本仓库，包含各种配置文件模板
+├── DSTServerManager        # <-- 脚本仓库，包含各种配置文件模板
 │   ├── docs                # <-- 描述了各个文件都放在哪里
 │   ├── scripts             # <-- 脚本
 │   ├── templates           # <-- 配置文件模板
@@ -43,9 +43,9 @@ $HOME
 
 `/home/username`
 │
-├──DSTManager.sh            # <-- 需要上传的脚本(也可以用命令直接从仓库下载)
+├── DSTManager.sh           # <-- 需要上传的脚本(也可以用命令直接从仓库下载)
 │
-├──DSTServerManager         # <-- 脚本仓库，包含各种配置文件模板
+├── DSTServerManager        # <-- 脚本仓库，包含各种配置文件模板
 │   ├── docs                # <-- 描述了各个文件都放在哪里
 │   ├── scripts             # <-- 脚本
 │   ├── templates           # <-- 配置文件模板
