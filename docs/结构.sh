@@ -62,7 +62,7 @@ $HOME
 ├── Steam
 │   └── steamcmd.sh
 │
-└── `Keli`
+└── `Klei`
     ├── Agreements
     └── `worlds`
         └── $CLUSTER_NAME   # <-- 由用户输入
