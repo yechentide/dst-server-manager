@@ -13,30 +13,12 @@
 # 欢迎会shellscript的伙伴来一起写开服脚本！
 ##############################################################################################
 
-#################### ###################  TO-DO List  ################### ####################
-# - [x] 开启64bit服务端
-# - [x] Cluster目录提醒
-# - [x] 选择Cluster功能
-# - [ ] 完善 worldgenoverride.lua
-# - [ ] 检测Cluster里面是否存在地表/地底文件夹
-# - [x] Mod添加功能
-# - [ ] Mod删除功能
-# - [ ] 存档备份/还原/删除功能
-# - [ ] 白名单/黑名单/管理员名单管理功能
-# - [ ] 支持仅开启地表，仅开启地底，地表地底都开
-# - [ ] 生成世界后修改世界选项
-# - [ ] 自动更新服务端功能
-# - [ ] 更多的检测机制
-# - [ ] 开启测试服功能
-# - [ ] 后台检测脚本更新
-##############################################################################################
-
 # one line command setup:
 # cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh
 
 set -eu
 
-declare -r script_version='v1.1'
+declare -r script_version='v1.2'
 declare -r repo_position=$HOME
 declare -r repo_root_dir="$repo_position/DSTServerManager"
 declare os='MacOS'
@@ -169,15 +151,3 @@ function main_panel() {
 
 check_requirements $os $architecture $dst_root_dir
 main_panel
-
-
-
-
-#dstserver的界面管理+go.sh的功能组合到一起比较合适
-#增加对Centos的支持
-#force_install_dir 命令要在login anonymous之前
-
-#在某一个版本以后，要想跑通是要把libcurl.so.4重链接的，但是go.sh有这行代码但是不知道为什么给注释掉了（这也是现在go.sh跑不通的绝大多数人遇到的问题）
-
-#dstserver.sh启动服务器的逻辑不是很好，个人感觉go.sh的逻辑比较好。
-#go.sh是从存档槽中启动, dst的逻辑是在上次启动的服务器和新服务器之间选择
