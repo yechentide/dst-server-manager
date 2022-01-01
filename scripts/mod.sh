@@ -15,8 +15,10 @@ function add_mods() {
     fi
     if [[ ${#_target_cluster} == 0 ]]; then
         color_print error '选择世界时发生错误，请检查输入以及是否有存档'
-        return 1
+        return 0
     fi
+
+    if [[ ! -e $3/$_target_cluster/$4/modoverrides.lua ]]; then cp $1/templates/modoverrides.lua $3/$_target_cluster/$4; fi
 
     declare _mod_id
     while true; do
@@ -36,7 +38,6 @@ function add_mods() {
 
         if ! cat $3/$_target_cluster/$4/modoverrides.lua | grep $_mod_id > /dev/null 2>&1; then
             sed -i "2i \    [\"workshop-${_mod_id}\"]={ configuration_options={  }, enabled=true }," $3/$_target_cluster/$4/modoverrides.lua
-            rm $3/$_target_cluster/$5/modoverrides.lua
             cp $3/$_target_cluster/$4/modoverrides.lua $3/$_target_cluster/$5/modoverrides.lua
         fi
         
@@ -65,11 +66,15 @@ function update_mods() {
 #   $5: $SHARD_MAIN        Main
 #   $6: $SHARD_CAVE        Cave
 function mod_panel() {
+    echo ''
+    color_print 70 '>>>>>> Mod管理 <<<<<<'
+    display_running_clusters
+
     declare -r -a _action_list=('添加Mod' '配置Mod' '更新Mod' '删除Mod' '返回')
     PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n''请输入选项数字> '
     declare _selected
     select _selected in ${_action_list[@]}; do break; done
-    if [[ ${#_selected} == 0 ]]; then color_print error '输入错误'; return 1; fi
+    if [[ ${#_selected} == 0 ]]; then color_print error '输入错误'; return 0; fi
     
     case $_selected in
     '添加Mod')
@@ -86,8 +91,8 @@ function mod_panel() {
         return 0
         ;;
     *)
-        color_print error "${_selected}功能暂未写好"
-        return 1
+        color_print error "${_selected}功能暂未写好" -n; count_down 3 dot
+        return 0
         ;;
     esac
     color_print info '即将返回主面板 ' -n; count_down 3

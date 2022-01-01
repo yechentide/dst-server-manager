@@ -18,7 +18,7 @@
 
 set -eu
 
-declare -r script_version='v1.2.1'
+declare -r script_version='v1.2.3'
 declare -r repo_position=$HOME
 declare -r repo_root_dir="$repo_position/DSTServerManager"
 declare os='MacOS'
@@ -95,25 +95,27 @@ function main_panel_header() {
     print_divider '-' | color_print 215
 }
 
+function display_running_clusters() {
+    declare _running_cluster_list=''
+    
+    if ! (tmux ls 2>&1 | grep 'no server' > /dev/null 2>&1); then
+        _running_cluster_list=$(tmux ls | awk -F- '{print $1}' | sort | uniq | tr '\n' ' ')
+    fi
+    
+    color_print 39 "运行中的世界 ==> $_running_cluster_list"
+}
+
 function main_panel() {
-    if [[ $? == 0 ]]; then clear; fi
+    clear
     main_panel_header
     declare -r -a _action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
     PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n''请输入选项数字> '
     declare _selected
 
-    #declare -r _running_cluster=''
-    #if tmux ls > /dev/null 2>&1; then
-    #    _running_cluster=$(tmux ls | grep - | awk -F- '{print $1}' | uniq)
-    #fi
-
     while true; do
         echo ''
-        #if [[ ${#_running_cluster} -gt 0 ]]; then
-        #    color_print 39 "运行中的世界 ==> $_running_cluster"
-        #else
-        #    color_print 39 '运行中的世界 ==> 无'
-        #fi
+        color_print 215 '>>>>>> >>>>>> 主面板 <<<<<< <<<<<<'
+        display_running_clusters
 
         select _selected in ${_action_list[@]}; do break; done
         if [[ ${#_selected} == 0 ]]; then

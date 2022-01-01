@@ -5,20 +5,16 @@
 #   or error code 1
 function select_cluster() {
     if [[ ! -e $1 ]]; then mkdir -p $1; fi
-    if [[ $(ls $1 | wc -l) == 0 ]]; then
-        color_print error '未找到任何存档, 请先新建一个存档！'
-        return 1
+    if [[ $(ls -l $1 | awk '$1 ~ /d/ {print $9}' | wc -l) == 0 ]]; then
+        echo ''
+        return 0
     fi
 
     PS3='请输入数字来选择一个存档> '
     declare _selected_cluster
     select _selected_cluster in $(ls -l $1 | awk '$1 ~ /d/ {print $9}'); do break; done
 
-    if ls -l $1 | awk '$1 ~ /d/ {print $9}' | grep "$_selected_cluster" > /dev/null 2>&1; then
-        echo $_selected_cluster
-    else
-        return 1
-    fi
+    echo $_selected_cluster
 }
 
 # Parameters:
@@ -34,7 +30,7 @@ function create_cluster() {
     read -p '请输入新世界的文件夹名字(这个名字不是显示在服务器列表的名字)> ' _new_cluster
     if ls -l $3/$4 | awk '$1 ~ /d/ {print $9}' | grep "$_new_cluster" > /dev/null 2>&1; then
         color_print error '该名字已经存在！'
-        return 1
+        return 0
     fi
 
     if [[ ! -e $3/$4/$_new_cluster/$5 ]]; then mkdir -p $3/$4/$_new_cluster/$5; fi
@@ -42,12 +38,12 @@ function create_cluster() {
 
     # token
     while true; do
-        read -p "请输入token: " token
-        if [[ ${#token} == 0 ]]; then
+        read -p "请输入token: " _token
+        if [[ ${#_token} == 0 ]]; then
             color_print error '你输入token了吗？？？'
             continue
         fi
-        echo $token >> $3/$4/$_new_cluster/cluster_token.txt
+        echo $_token >> $3/$4/$_new_cluster/cluster_token.txt
         break
     done
 
@@ -108,7 +104,7 @@ function configure_cluster_setting() {
     read -p "开启无人暂停(默认true, 其他选项false): " _answer
     sed -i "s/pause_when_empty = \(true\)/pause_when_empty = $_answer/g" $2/cluster.ini
 
-    read -p "开启投票(true, 其他选项false): " _answer
+    read -p "开启投票(默认true, 其他选项false): " _answer
     sed -i "s/vote_enabled = \(true\)/vote_enabled = $_answer/g" $2/cluster.ini
 
     read -p "最大存档快照数(默认6, 可以用来回档): " _answer
@@ -159,10 +155,10 @@ function configure_level_setting() {
         fi
 
         if [[ ${_line:0:8} == '        ' ]]; then
-            declare -r _name_ch=$(echo $_line | awk '{print $3}' | awk -F ':' '{print $1}')
-            declare -r _name_en=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $1}')
-            declare -r _default_value=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $2}' | awk -F '"' '{print $2}')
-            declare -r _options=$(echo $_line | awk '{print $4}' | sed -e "s/,/  /g")
+            declare _name_ch=$(echo $_line | awk '{print $3}' | awk -F ':' '{print $1}')
+            declare _name_en=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $1}')
+            declare _default_value=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $2}' | awk -F '"' '{print $2}')
+            declare _options=$(echo $_line | awk '{print $4}' | sed -e "s/,/  /g")
 
             echo ''
             color_print 215 '---------- ---------- ----------'
@@ -196,18 +192,22 @@ function configure_level_setting() {
 }
 
 # Parameters:
-#   $1: setting file          ~/Klei/worlds/???/Main/worldgenoverride
+#   $1: setting file          ~/Klei/worlds/???/Main
 function change_level_setting() {
     declare _line=''
     declare _skip='true'
     declare _old_ifs=$IFS;
     declare IFS=''
 
-    if [[ ! -e $1 ]]; then color_print error '未找到配置文件'; return 1; fi
+    if [[ ! -e $1/worldgenoverride.lua ]]; then color_print error '未找到配置文件'; return 0; fi
     color_print info '空栏状态下回车，即可跳过'
 
+    cp $1/worldgenoverride.lua $1/worldgenoverride.lua.old
+    declare -r _old_file="$1/worldgenoverride.lua.old"
+    declare -r _new_file="$1/worldgenoverride.lua"
+
     while read -u 6 _line; do
-        if echo $_line | grep '世界生成' > /dev/null 2>&1; then
+        if echo $_line | grep '世界选项' > /dev/null 2>&1; then
             _skip='false'
             echo ''; echo '========== ========== ========== ========== ========== =========='
             echo ${_line:7}
@@ -220,10 +220,10 @@ function change_level_setting() {
         if [[ $_skip == 'true' ]]; then continue; fi
 
         if [[ ${_line:0:8} == '        ' ]]; then
-            declare -r _name_ch=$(echo $_line | awk '{print $3}' | awk -F ':' '{print $1}')
-            declare -r _name_en=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $1}')
-            declare -r _current_value=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $2}' | awk -F '"' '{print $2}')
-            declare -r _options=$(echo $_line | awk '{print $4}' | sed -e "s/,/  /g")
+            declare _name_ch=$(echo $_line | awk '{print $3}' | awk -F ':' '{print $1}')
+            declare _name_en=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $1}')
+            declare _current_value=$(echo $_line | awk '{print $1}' | awk -F '=' '{print $2}' | awk -F '"' '{print $2}')
+            declare _options=$(echo $_line | awk '{print $4}' | sed -e "s/,/  /g")
 
             echo ''
             color_print 215 '---------- ---------- ----------'
@@ -234,14 +234,14 @@ function change_level_setting() {
             declare _answer
             while true; do
                 read -p '> ' _answer
-                if [[ ${#_answer} == 0 ]]; then
+                if [[ ${#_answer} == 0 || $_answer == $_current_value ]]; then
                     color_print 39 "使用当前值: $_current_value"
                     break
                 fi
 
                 if echo $_options | grep $_answer > /dev/null 2>&1; then
                     color_print 39 "更改设定为: $_answer"
-                    sed -i "s/$_name_en=\"\($_current_value\)\"/$_name_en=\"$_answer\"/"
+                    sed -i "s/$_name_en=\"\($_current_value\)\"/$_name_en=\"$_answer\"/" $_new_file
                     break
                 fi
 
@@ -249,9 +249,10 @@ function change_level_setting() {
             done
         fi
 
-    done 6< $1
+    done 6< $_old_file
     IFS=$_old_ifs
-    color_print info "配置完成，可以修改 ${1} 来手动更改配置"
+    rm $_old_file > /dev/null 2>&1
+    color_print info "配置完成，可以修改 ${_new_file} 来手动更改配置"
 }
 
 # Parameters:
@@ -262,34 +263,42 @@ function change_level_setting() {
 #   $5: $SHARD_MAIN        Main
 #   $6: $SHARD_CAVE        Cave
 function cluster_panel() {
-    declare -r -a _action_list=('新建存档' '世界设置' '备份存档' '还原存档' '删除存档' '返回')
+    echo ''
+    color_print 70 '>>>>>> 存档管理 <<<<<<'
+    display_running_clusters
+
+    declare -r -a _action_list=('新建存档' '更改世界选项' '备份存档' '还原存档' '删除存档' '返回')
     PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n''请输入选项数字> '
     declare _selected
     select _selected in ${_action_list[@]}; do break; done
-    if [[ ${#_selected} == 0 ]]; then color_print error '输入错误'; return 1; fi
+    if [[ ${#_selected} == 0 ]]; then color_print error '输入错误'; return 0; fi
     
     case $_selected in
     '新建存档')
         create_cluster $1 $2 $3 $4 $5 $6
         ;;
-    '世界选项')
+    '更改世界选项')
         declare -r _cluster=$(select_cluster $3/$4)
-        if [[ $? == 1 ]]; then color_print error '选择世界时发生错误，请检查输入以及是否有存档'; return 1; fi
+        if [[ $? == 1 ]]; then color_print error '选择世界时发生错误，请检查输入以及是否有存档'; return 0; fi
+
+        PS3="$(color_print 10 '请输入选项数字> ')"
+
+        echo ''
         color_print info "更改存档配置前，将会关闭世界$_cluster！"
-        PS3="$(color_print info '请输入选项数字> ')"
         select _selected in 继续 算了; do break; done
         if [[ $_selected == '算了' ]]; then return 0; fi
         stop_server $_cluster $5 $6
 
-        PS3="$(color_print info '即将开始修改地上的世界选项，请输入选项数字> ')"
+        echo ''
+        color_print info '即将开始修改地上的世界选项'
         select _selected in 继续 跳过; do break; done
         if [[ $_selected == '继续' ]]; then
-            change_level_setting $3/$4/$_cluster/$5/worldgenoverride.lua
+            change_level_setting $3/$4/$_cluster/$5
         fi
-        PS3="$(color_print info '即将开始修改地下的世界选项，请输入选项数字> ')"
+        color_print info '即将开始修改地下的世界选项'
         select _selected in 继续 跳过; do break; done
         if [[ $_selected == '继续' ]]; then
-            change_level_setting $3/$4/$_cluster/$6/worldgenoverride.lua
+            change_level_setting $3/$4/$_cluster/$6
         fi
         color_print info '世界选项修改结束'
         ;;
@@ -299,23 +308,35 @@ function cluster_panel() {
     #    ;;
     '删除存档')
         color_print info '当前存档:'
-        ls -l . | awk '$1 ~ /d/ {print $9}' | sed "s/\n/\s/g"
+        ls -l $3/$4 | awk '$1 ~ /d/ {print $9}' | sed "s/\n/\s/g"
 
         declare _answer
         read -p "请输入要删除的存档名字(可多选，用1个空格隔开): " _answer
+        if [[ ${#_answer} == 0 ]]; then
+            color_print error '无输入，返回上一级'
+            return 0
+        fi
+        declare _result=1
         for _cluster in $_answer; do
-            mv $3/$4/$_cluster /tmp
+            if $(mv $3/$4/$_cluster /tmp > /dev/null 2>&1); then
+                _result=0
+            else
+                color_print error "未找到存档$_cluster"
+            fi  
         done
-        color_print info '目标存档已经移动到/tmp，主机关机时会自动删除'
-        color_print info '要是后悔了，主机关机之前还来得及哦～'
+        if [[ $_result == 0 ]]; then
+            color_print info '目标存档已经移动到/tmp，主机关机时会自动删除'
+            color_print info '要是后悔了，主机关机之前还来得及哦～'
+        fi
         ;;
     '返回')
         return 0
         ;;
     *)
-        color_print error "${_selected}功能暂未写好"
-        return 1
+        color_print error "${_selected}功能暂未写好" -n; count_down 3 dot
+        return 0
         ;;
     esac
     color_print info '即将返回主面板 ' -n; count_down 3
 }
+
