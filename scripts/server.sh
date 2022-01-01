@@ -28,21 +28,24 @@ function start_server() {
         return 0
     fi
 
-    if [[ $1 == 64 ]]; then
-        if [[ $_main_stats == 'sleeping' ]]; then
-            tmux new -d -s "$5-$6" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
-        fi
-        if [[ $_cave_stats == 'sleeping' ]]; then
-            tmux new -d -s "$5-$7" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
-        fi
+    declare _bin_dir
+    if [[ $1 == 64 ]]; then _bin_dir='bin64'; else _bin_dir='bin'; fi
+    declare _bin_file
+    if [[ $1 == 64 ]]; then _bin_file='dontstarve_dedicated_server_nullrenderer_x64'; else _bin_dir='dontstarve_dedicated_server_nullrenderer'; fi
+
+
+    if [[ -e $3/$4/$5/$6 && $_main_stats == 'sleeping' ]]; then
+        tmux new -d -s "$5-$6" "cd $2/$_bin_dir; ./$_bin_file -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
     else
-        if [[ $_main_stats == 'sleeping' ]]; then
-            tmux new -d -s "$5-$6" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
-        fi
-        if [[ $_cave_stats == 'sleeping' ]]; then
-            tmux new -d -s "$5-$7" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
-        fi
+        color_print info "世界$5里不存在$6部分"
     fi
+    if [[ -e $3/$4/$5/$7 && $_cave_stats == 'sleeping' ]]; then
+        tmux new -d -s "$5-$7" "cd $2/$_bin_dir; ./$_bin_file -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
+    else
+        color_print info "世界$5里不存在$7部分"
+    fi
+
+
     sleep 6
     color_print info "世界$5已经开启！"; sleep 1
 }
@@ -53,15 +56,18 @@ function start_server() {
 #   $3: $shard_cave_name      Cave
 function stop_server() {
     color_print info "正在关闭世界$1..."
-    if [[ $(check_process $1 $2) == 'running' ]]; then
+    declare -r _main_stats=$(check_process $1 $2)
+    declare -r _cave_stats=$(check_process $1 $3)
+
+    if [[ $(tmux ls 2>&1 | grep "$1-$2" > /dev/null 2>&1) == 0 && $_main_stats == 'running' ]]; then
         tmux send-keys -t "$1-$2" C-c
-    #else
-    #    color_print info "世界$1的$2部分并未开启"
+    else
+        color_print info "世界$1的$2部分并未开启"
     fi
-    if [[ $(check_process $1 $3) == 'running' ]]; then
+    if [[ $(tmux ls 2>&1 | grep "$1-$3" > /dev/null 2>&1) == 0 && $_cave_stats == 'running' ]]; then
         tmux send-keys -t "$1-$3" C-c
-    #else
-    #    color_print info "世界$1的$2部分并未开启"
+    else
+        color_print info "世界$1的$2部分并未开启"
     fi
     color_print info "世界$1已经关闭！"; sleep 1
 }

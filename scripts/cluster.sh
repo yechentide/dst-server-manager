@@ -1,5 +1,5 @@
 # Parameters:
-#   $1: 存档文件夹      ~/Klei/worlds
+#   $1: 存档文件夹          ~/Klei/worlds
 # Return:
 #   name of a cluster
 #   or error code 1
@@ -18,23 +18,38 @@ function select_cluster() {
 }
 
 # Parameters:
-#   $1: $repo_root_dir     ~/DSTServerManager
-#   $2: $dst_root_dir      ~/Server
-#   $3: $klei_root_dir     ~/Klei
-#   $4: worlds derictory   worlds
-#   $5: $SHARD_MAIN        Main
-#   $6: $SHARD_CAVE        Cave
+#   $1: $repo_root_dir      ~/DSTServerManager
+#   $2: $dst_root_dir       ~/Server
+#   $3: $klei_root_dir      ~/Klei
+#   $4: worlds derictory    worlds
+#   $5: $shard_main_name    Main
+#   $6: $shard_cave_name    Cave
 function create_cluster() {
     color_print info '开始创建新的世界...'
     declare _new_cluster
+    declare _use_multi_server=1     # 0=true, 1=false
+    declare _is_main=0              # 0=true, 1=false
+
+    color_print info '是否使用多个主机开服？'
+    PS3="$(color_print info '请输入选项数字> ')"
+    declare _selected
+    select _selected in yes no; do break; done
+    if [[ $_selected == 'yes' ]]; then
+        _use_multi_server=0
+        color_print info '本服务器上的世界，是否为主世界？'
+        select _selected in yes no; do break; done
+        if [[ $_selected == 'no' ]]; then
+            _is_main=1
+        fi
+    fi
+
+
     read -p '请输入新世界的文件夹名字(这个名字不是显示在服务器列表的名字)> ' _new_cluster
     if ls -l $3/$4 | awk '$1 ~ /d/ {print $9}' | grep "$_new_cluster" > /dev/null 2>&1; then
         color_print error '该名字已经存在！'
         return 0
     fi
-
-    if [[ ! -e $3/$4/$_new_cluster/$5 ]]; then mkdir -p $3/$4/$_new_cluster/$5; fi
-    if [[ ! -e $3/$4/$_new_cluster/$6 ]]; then mkdir -p $3/$4/$_new_cluster/$6; fi
+    mkdir -p $3/$4/$_new_cluster
 
     # token
     while true; do
@@ -47,30 +62,68 @@ function create_cluster() {
         break
     done
 
-    # cluster.ini, server.ini
-    configure_cluster_setting $1 $3/$4/$_new_cluster $5 $6
+    if [[ $_use_multi_server == 0 ]]; then
+        create_single_level
+    else
+        create_multi_level $1 $2 $3 $4 $_new_cluster $5 $6
+    fi
+
+    color_print info "新的世界$_new_cluster创建完成～"
+}
+
+# Parameters:
+#   $1: $repo_root_dir      ~/DSTServerManager
+#   $2: $dst_root_dir       ~/Server
+#   $3: $klei_root_dir      ~/Klei
+#   $4: worlds derictory    worlds
+#   $5: _new_cluster        cluster name
+#   $6: $shard_???_name     Main/Cave
+#   $7: _is_main            0 / 1
+function create_single_level() {
+    # cluster.ini
+    configure_cluster_ini $1 $3/$4/$5
+
+    # server.ini
+    configure_server_ini $1 $3/$4/$5 $6 $7
+
+    # leveldataoverride.lua
+    echo ''; color_print info "开始配置$5/$6世界的设置..."
+    if [[ $7 == 0 ]]; then
+        configure_level_setting $1/templates/main_worldgenoverride.lua $3/$4/$5/$6/worldgenoverride.lua
+    else
+        configure_level_setting $1/templates/cave_worldgenoverride.lua $3/$4/$5/$6/worldgenoverride.lua
+    fi
+}
+
+# Parameters:
+#   $1: $repo_root_dir      ~/DSTServerManager
+#   $2: $dst_root_dir       ~/Server
+#   $3: $klei_root_dir      ~/Klei
+#   $4: worlds derictory    worlds
+#   $5: _new_cluster        cluster name
+#   $6: $shard_???_name     Main/Cave
+#   $7: _is_main            0 / 1
+function create_multi_level() {
+    # cluster.ini
+    configure_cluster_ini $1 $3/$4/$5
+    
+    # server.ini
+    configure_server_ini $1 $3/$4/$5 $6 0
+    configure_server_ini $1 $3/$4/$5 $7 1
+
     # leveldataoverride.lua
     echo ''; color_print info '开始配置主世界的设置...'
-    configure_level_setting $1/templates/main_worldgenoverride.lua $3/$4/$_new_cluster/$5/worldgenoverride.lua
+    configure_level_setting $1/templates/main_worldgenoverride.lua $3/$4/$5/$6/worldgenoverride.lua
     echo ''; color_print info '开始配置洞穴的设置...'
-    configure_level_setting $1/templates/cave_worldgenoverride.lua $3/$4/$_new_cluster/$6/worldgenoverride.lua
-    
-    # mods
-    #PS3='马上添加mod嘛？请输入数字> '
-    #select answer in 添加mod 不了; do break; done
-    #if [[ $answer == '添加mod' ]]; then
-    #    add_mods $2 $3/$4 $5 $6 $_new_cluster
-    #fi
-
-    color_print info '新的世界创建完成～'
+    configure_level_setting $1/templates/cave_worldgenoverride.lua $3/$4/$5/$7/worldgenoverride.lua
 }
 
 # Parameters:
 #   $1: $repo_root_dir      ~/DSTServerManager
 #   $2: cluster derictory   ~/Klei/worlds/???
-#   $3: $SHARD_MAIN         Main
-#   $4: $SHARD_CAVE         Cave
-function configure_cluster_setting() {
+#   $3: _use_multi_server   0 / 1
+#   $4: _is_main            0 / 1
+function configure_cluster_ini() {
     # generate cluster.ini
     echo ''; color_print info '开始创建cluster.ini'
     color_print info '空栏状态下回车，即可使用默认值'
@@ -110,19 +163,44 @@ function configure_cluster_setting() {
     read -p "最大存档快照数(默认6, 可以用来回档): " _answer
     sed -i "s/max_snapshots = \(6\)/max_snapshots = $_answer/g" $2/cluster.ini
 
+    if [[ $3 == 0 ]]; then
+        if [[ $4 == 0 ]]; then
+            echo '修改bind_ip --> 0.0.0.0'
+            bind_ip = 127.0.0.1
+            sed -i "s/bind_ip = \(127.0.0.1\)/bind_ip = 0.0.0.0/g" $2/cluster.ini
+        else
+            read -p "请输入主服务器的ip地址: " _answer
+            sed -i "s/master_ip = \(127.0.0.1\)/master_ip = $_answer/g" $2/cluster.ini  
+        fi
+
+        read -p "请输入要监听的端口(副服务器将使用此端口来连接主服务器): " _answer
+        sed -i "s/master_port = \(10888\)/master_port = $_answer/g" $2/cluster.ini
+        color_print info "主服务器和副服务器将使用端口$_answer, 请确保防火墙和安全组设置里打开了端口$_answer"
+    fi
+
     color_print info 'cluster.ini创建完成！'
+}
 
-    # generate Main/server.ini
+# Parameters:
+#   $1: $repo_root_dir      ~/DSTServerManager
+#   $2: cluster derictory   ~/Klei/worlds/???
+#   $3: $shard_???_name     Main/Cave
+#   $4: _is_main            0 / 1
+function configure_server_ini() {
+    if [[ ! -e $2/$3 ]]; then mkdir -p $2/$3; fi
+    if [[ $4 == 0 ]]; then 
+        declare -r _default_port=11000
+        declare -r _template_file=$1/templates/main_server.ini
+    else
+        declare -r _default_port=11001
+        declare -r _template_file=$1/templates/cave_server.ini
+    fi
+    declare _answer
     echo ''; color_print info "开始创建$3/server.ini"
-    read -p "请输入主世界端口(默认值11000, 范围2000~65535): " _answer
-    sed "s/server_port = \(11000\)/server_port = $_answer/g" $1/templates/main_server.ini > $2/$3/server.ini
+    read -p "请输入$3世界端口(默认值$_default_port, 范围2000~65535): " _answer
+    sed "s/server_port = \($_default_port\)/server_port = $_answer/g" $_template_file > $2/$4/server.ini
+    color_print info "$3世界将使用端口$_answer, 请确保防火墙和安全组设置里打开了端口$_answer " -n, count_down 3 dot
     color_print info "$3/server.ini创建完成！"
-
-    # generate Cave/server.ini
-    echo ''; color_print info "开始创建$4/server.ini"
-    read -p "请输入洞穴的端口(默认值11000, 范围2000~65535): " _answer
-    sed "s/server_port = \(11001\)/server_port = $_answer/g" $1/templates/cave_server.ini > $2/$4/server.ini
-    color_print info "$4/server.ini创建完成！"
 }
 
 # Parameters:
