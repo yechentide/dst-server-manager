@@ -11,20 +11,22 @@ function print_divider() {
 
 # Parameters:
 #   $1: output string
+# FixMe:
+#   can not work well
 function center_print() {
     if [[ -p /dev/stdin ]]; then                # <-- make pipe work
-        STR=$(cat -)                            # <-- make pipe work
+        declare -r _str=$(cat -)                 # <-- make pipe work
     else
-        STR=$1
+        declare -r _str=$1
     fi
 
     if [[ $OS == 'MacOS' ]]; then
         # for BSD
-        echo $STR | fmt -c -w $(tput cols)
+        echo $_str | fmt -c -w $(tput cols)
     else
         # for Linux
-        SPACE_COUNT=$((   $(tput cols) / 2   ))
-        echo $STR | sed -e :a -e "s/^.\{1,$SPACE_COUNT\}$/ &/;ta" -e 's/\(*\)\1/\1/'
+        declare -r _space_count=$((   $(tput cols) / 2   ))
+        echo $_str | sed -e :a -e "s/^.\{1,$_space_count\}$/ &/;ta" -e 's/\(*\)\1/\1/'
     fi
 }
 
@@ -61,54 +63,58 @@ function center_print() {
 #   https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 #   https://qiita.com/dojineko/items/49aa30018bb721b0b4a9
 function color_print() {
-    ESC=$(printf "\033")    # 更改输出颜色用的前缀
-    RESET="${ESC}[0m"       # 重置所有颜色，字体设定
+    declare -r _esc=$(printf "\033")    # 更改输出颜色用的前缀
+    declare -r _reset="${_esc}[0m"       # 重置所有颜色，字体设定
 
     if [[ $# == 0 ]] || [[ $# == 1 && ! -p /dev/stdin ]]; then
-        echo "${ESC}[1;38;5;9m[Error] 参数数量错误. 用法: color_print 颜色 字符串${ESC}[m"
+        echo "${_esc}[1;38;5;9m[Error] 参数数量错误. 用法: color_print 颜色 字符串${_esc}[m"
         exit 1;
     fi
 
-    if [[ -p /dev/stdin ]]; then     # <-- make pipe work
-        STR=$(cat -)                            # <-- make pipe work
+    if [[ -p /dev/stdin ]]; then       # <-- make pipe work
+        declare -r _str=$(cat -)        # <-- make pipe work
     else
-        STR=$2
+        declare -r _str=$2
     fi
 
+    declare _prefix=''
     case $1 in
     'info')
-        if echo $@ | grep ' \-n' > /dev/null 2>&1; then
-            echo -n "${ESC}[38;5;10m[Info] ${STR}${RESET}"
-        else
-            echo "${ESC}[38;5;10m[Info] ${STR}${RESET}"
-        fi
-    ;;
+        declare -r _color=10
+        _prefix='[Info] '
+        ;;
     'error')
-        if echo $@ | grep ' \-n' > /dev/null 2>&1; then
-            echo -n "${ESC}[1;38;5;9m[Error] ${STR}${RESET}"
-        else
-            echo "${ESC}[1;38;5;9m[Error] ${STR}${RESET}"
-        fi
-    ;;
+        declare -r _color=9
+        _prefix='[Error] '
+        ;;
     *)
-        if echo $@ | grep ' \-n' > /dev/null 2>&1; then
-            echo -n "${ESC}[38;5;$1m${STR}${RESET}"
-        else
-            echo "${ESC}[38;5;$1m${STR}${RESET}"
-        fi
-    ;;
+        declare -r _color=$1
+        ;;
     esac
+
+    if echo $@ | grep ' \-n' > /dev/null 2>&1; then
+        echo -n "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
+    else
+        echo "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
+    fi
 }
 
 
 # Parameters:
 #   $1: seconds
+#   dot: make sure it is the last parameter. output dot instead number.
 function count_down() {
-    seconds=$1
-    while [[ $seconds -gt 0 ]]; do
-        echo -n "$seconds " | color_print 0 -n
-        sleep 1
-        seconds=$(($seconds-1))
-    done
-    color_print 0 '0'
+    if echo $@ | grep 'dot' > /dev/null 2>&1; then
+        for i in $(seq $1 -1 1); do
+            echo -n '.' | color_print 102 -n
+            sleep 1
+        done
+        echo ''
+    else
+        for i in $(seq $1 -1 1); do
+            echo -n "$i " | color_print 102 -n
+            sleep 1
+        done
+        color_print 102 '0'
+    fi
 }
