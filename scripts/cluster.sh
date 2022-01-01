@@ -303,7 +303,7 @@ function cluster_panel() {
 
         declare _answer
         read -p "请输入要删除的存档名字(可多选，用1个空格隔开): " _answer
-        declare _cluster in $_answer; do
+        for _cluster in $_answer; do
             mv $3/$4/$_cluster /tmp
         done
         color_print info '目标存档已经移动到/tmp，主机关机时会自动删除'
