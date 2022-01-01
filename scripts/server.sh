@@ -4,8 +4,10 @@
 # Return:
 #   0(运行中) or 1
 function check_process() {
-    if [[ ! ps a | grep dontstarve | grep $1 | grep $2 > /dev/null 2>&1 ]]; then return 1; fi
-    if [[ ! tmux ls | grep $1 | grep $2 > /dev/null 2>&1 ]]; then return 1; fi
+    ps a | grep dontstarve | grep $1 | grep $2 > /dev/null 2>&1
+    if [[ $? == 1 ]]; then return 1; fi
+    tmux ls | grep $1 | grep $2 > /dev/null 2>&1
+    if [[ $? == 1 ]]; then return 1; fi
     return 0
 }
 
