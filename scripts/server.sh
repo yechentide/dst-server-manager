@@ -22,17 +22,17 @@ function check_process() {
 function start_server() {
     color_print info "正在开启世界$5..."
     if [[ $1 == 64 ]]; then
-        if [[ ! check_process $5 $6 ]]; then
+        if [[ $(check_process $5 $6) == 1 ]]; then
             tmux new -d -s "$5-$6" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
         fi
-        if [[ ! check_process $5 $7 ]]; then
+        if [[ $(check_process $5 $7) == 1 ]]; then
             tmux new -d -s "$5-$7" "cd $2/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
         fi
     else
-        if [[ ! check_process $5 $6 ]]; then
+        if [[ $(check_process $5 $6) == 1 ]]; then
             tmux new -d -s "$5-$6" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $6"
         fi
-        if [[ ! check_process $5 $7 ]]; then
+        if [[ $(check_process $5 $7) == 1 ]]; then
             tmux new -d -s "$5-$7" "cd $2/bin; ./dontstarve_dedicated_server_nullrenderer -persistent_storage_root $3 -conf_dir $4 -cluster $5 -shard $7"
         fi
     fi
