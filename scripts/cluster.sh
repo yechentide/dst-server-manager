@@ -273,7 +273,7 @@ function cluster_panel() {
         create_cluster $1 $2 $3 $4 $5 $6
         ;;
     '世界选项')
-        declare -r _cluster=$(select_cluster $3 $4)
+        declare -r _cluster=$(select_cluster $3/$4)
         if [[ $? == 1 ]]; then color_print error '选择世界时发生错误，请检查输入以及是否有存档'; return 1; fi
         color_print info "更改存档配置前，将会关闭世界$_cluster！"
         PS3="$(color_print info '请输入选项数字> ')"

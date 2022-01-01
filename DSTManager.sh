@@ -18,7 +18,7 @@
 
 set -eu
 
-declare -r script_version='v1.2'
+declare -r script_version='v1.2.1'
 declare -r repo_position=$HOME
 declare -r repo_root_dir="$repo_position/DSTServerManager"
 declare os='MacOS'
