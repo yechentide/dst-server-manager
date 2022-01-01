@@ -46,12 +46,12 @@ function start_server() {
 #   $3: $shard_cave_name      Cave
 function stop_server() {
     color_print info "正在关闭世界$1..."
-    if [[ ! check_process $1 $2 ]]; then
+    if [[ $(check_process $1 $2) == 1 ]]; then
         tmux send-keys -t "$1-$2" C-c
     #else
     #    color_print info "世界$1的$2部分并未开启"
     fi
-    if [[ ! check_process $1 $3 ]]; then
+    if [[ $(check_process $1 $3) == 1 ]]; then
         tmux send-keys -t "$1-$3" C-c
     #else
     #    color_print info "世界$1的$2部分并未开启"
@@ -133,7 +133,7 @@ function server_panel() {
     '启动服务端')
         declare -r _cluster=$(select_cluster $3 $4)
         if [[ $? == 1 ]]; then color_print error '选择世界时发生错误，请检查输入以及是否有存档'; return 1; fi
-        if [[ check_process _cluster $5 == 0 && check_process _cluster $6 == 0 ]]; then
+        if [[ $(check_process _cluster $5) == 0 && $(check_process _cluster $6) == 0 ]]; then
             color_print info "世界$_cluster已经开启！"
         fi
         start_server $1 $2 $3 $4 $_cluster $5 $6
