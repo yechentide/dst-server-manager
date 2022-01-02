@@ -85,7 +85,7 @@ function install_steam_and_dst() {
     if [[ ! -e ~/Steam/steamcmd.sh ]]; then
         color_print info '未发现steamcmd.sh脚本，开始下载... ' -n; count_down 3
         wget --output-document ~/Steam/steamcmd_linux.tar.gz 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz'
-        tar -xvzf steamcmd_linux.tar.gz --directory ~/Steam
+        tar -xvzf ~/Steam/steamcmd_linux.tar.gz --directory ~/Steam
         rm -f ~/Steam/steamcmd_linux.tar.gz > /dev/null 2>&1
         color_print info 'steamcmd.sh脚本下载完成！'
     fi
