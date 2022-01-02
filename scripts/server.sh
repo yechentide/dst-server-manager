@@ -144,9 +144,9 @@ function server_panel() {
     '启动服务端')
         declare -r _cluster=$(select_cluster $3/$4)
         if [[ ${#_cluster} == 0 ]]; then color_print error '选择世界时发生错误，请检查输入以及是否有存档'; return 0; fi
-        if [[ $(check_process _cluster $5) == 0 && $(check_process _cluster $6) == 0 ]]; then
-            color_print info "世界$_cluster已经开启！"
-        fi
+        #if [[ $(check_process _cluster $5) == 0 && $(check_process _cluster $6) == 0 ]]; then
+        #    color_print info "世界$_cluster已经开启！"
+        #fi
         start_server $1 $2 $3 $4 $_cluster $5 $6
         ;;
     '关闭服务端')
