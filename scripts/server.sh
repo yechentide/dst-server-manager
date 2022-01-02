@@ -4,7 +4,7 @@
 # Return:
 #   running / sleeping
 function check_process() {
-    if tmux ls 2>&1 | grep $1 | grep $2 > /dev/null 2>&1; then
+    if tmux ls 2>&1 | grep "$1-$2" > /dev/null 2>&1; then
         echo 'running'
     else
         echo 'sleeping'
@@ -59,12 +59,12 @@ function stop_server() {
     declare -r _main_stats=$(check_process $1 $2)
     declare -r _cave_stats=$(check_process $1 $3)
 
-    if [[ $(tmux ls 2>&1 | grep "$1-$2" > /dev/null 2>&1) == 0 && $_main_stats == 'running' ]]; then
+    if [[ $_main_stats == 'running' ]]; then
         tmux send-keys -t "$1-$2" C-c
     else
         color_print info "世界$1的$2部分并未开启"
     fi
-    if [[ $(tmux ls 2>&1 | grep "$1-$3" > /dev/null 2>&1) == 0 && $_cave_stats == 'running' ]]; then
+    if [[ $_cave_stats == 'running' ]]; then
         tmux send-keys -t "$1-$3" C-c
     else
         color_print info "世界$1的$2部分并未开启"
@@ -160,7 +160,7 @@ function server_panel() {
             color_print error '未发现开启中的世界！' -n; count_down 3 dot
             return 0
         fi
-        declare -r -a _running_cluster_list=$(tmux ls | awk -F- '{print $1}' | sort | uniq)
+        declare -r -a _running_cluster_list=$(tmux ls | grep -e $5 -e $6 | awk -F- '{print $1}' | sort | uniq)
         PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n''请输入要中止的世界的编号> '
         select _selected in ${_running_cluster_list[@]}; do break; done
         if [[ ${#_selected} == 0 ]]; then color_print error '输入错误'; return 0; fi
@@ -171,7 +171,7 @@ function server_panel() {
             color_print error '未发现开启中的世界！' -n; count_down 3 dot
             return 0
         fi
-        declare -r -a _running_cluster_list=$(tmux ls | awk -F- '{print $1}')
+        declare -r -a _running_cluster_list=$(tmux ls | grep -e $5 -e $6 | awk -F- '{print $1}' | sort | uniq)
         PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n''请输入要重启的世界的编号> '
         select _selected in ${_running_cluster_list[@]}; do break; done
         if [[ ${#_selected} == 0 ]]; then color_print error '输入错误'; return 0; fi

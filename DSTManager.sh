@@ -93,19 +93,29 @@ function main_panel_header() {
     color_print 22  ' 欢迎会shellscript的伙伴来一起写开服脚本！'
 
     print_divider '-' | color_print 215
+
+    if [[ -e $repo_root_dir/.need_update ]]; then
+        color_print info '检测到脚本有新版本'
+        print_divider '-' | color_print 215
+    fi
 }
 
 function display_running_clusters() {
     declare _running_cluster_list=''
     
     if ! (tmux ls 2>&1 | grep 'no server' > /dev/null 2>&1); then
-        _running_cluster_list=$(tmux ls | awk -F- '{print $1}' | sort | uniq | tr '\n' ' ')
+        _running_cluster_list=$(tmux ls | grep -e $shard_main_name -e $shard_cave_name | awk -F- '{print $1}' | sort | uniq | tr '\n' ' ')
     fi
     
     color_print 39 "运行中的世界 ==> $_running_cluster_list"
 }
 
+function check_script_update() {
+    tmux new -d -s check_script_update "if [[ $(git -C $repo_root_dir remote show origin | grep 'up to date' > /dev/null 2>&1) == 1 ]]; then touch $repo_root_dir/.need_update; fi"
+}
+
 function main_panel() {
+    check_script_update
     clear
     main_panel_header
     declare -r -a _action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
@@ -135,6 +145,7 @@ function main_panel() {
             ;;
         '更新脚本')
             color_print info '开始更新脚本仓库...'
+            rm $repo_root_dir/.need_update > /dev/null 2>&1
             git -C $repo_root_dir pull
             color_print info '更新完毕！'
             ;;
