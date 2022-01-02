@@ -18,6 +18,25 @@
 
 set -eu
 
+###### ###### ###### ###### ###### ######
+# 删除这部分
+echo '感谢使用本脚本～'
+echo '但！是！'; sleep 1
+echo '貌似脚本里有好多bug，我深感心痛！'
+echo '为了大家能有个更好的开服体验，请暂时停止使用本脚本！'
+echo '我慢慢修，多加点检测。。。'
+echo ''
+echo '另外，如果想继续用的话，手动删除DSTManager.sh文件的21～38行'
+echo '上传脚本的骚操作好多，我之前考虑的是用不要切换用户，直接用一行命令下载。'
+echo '但你们直接把不完整的仓库扔root里了。。'
+echo ''
+echo '推荐下载方法：运行下面命令'
+echo 'cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh'
+echo '然后就是日常运行脚本： ~/DSTManager.sh'
+exit 1
+# 删除部分到这位置
+###### ###### ###### ###### ###### ######
+
 declare -r script_version='v1.2.3'
 declare -r repo_position=$HOME
 declare -r repo_root_dir="$repo_position/DSTServerManager"
