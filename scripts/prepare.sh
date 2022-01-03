@@ -93,7 +93,7 @@ function install_steam_and_dst() {
         color_print info "路径$1 未找到饥荒服务端，即将开始下载..."
         color_print info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 ' -n; count_down 3
         mkdir -p $1
-        tmux new -s 'install-dst' '~/Steam/steamcmd.sh +login anonymous +force_install_dir $1 +app_update 343050 validate +quit'
+        tmux new -s 'install-dst' "~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 validate +quit"
         color_print info '饥荒服务端下载安装完成! ' -n; count_down 3
     fi
 }

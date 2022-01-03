@@ -116,7 +116,7 @@ function update_server() {
 
     stop_all_server $2 $3 $4 $5
     color_print info "开始升级服务端..."
-    tmux new -s 'update-dst' '~/Steam/steamcmd.sh +login anonymous +force_install_dir $1 +app_update 343050 validate +quit'
+    tmux new -s 'update-dst' "~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 validate +quit"
     color_print info "服务端升级完毕！"
     #crontab -e
     #0 6 * * * sh update.sh   # schedule a task for update the server every day at 6:00 am
