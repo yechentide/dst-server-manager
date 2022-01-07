@@ -49,6 +49,25 @@ function check_process() {
     fi
 }
 
+# Parameters:
+#   $1: tmux session name    例: c01-Main
+#   $1: dst console command
+function send_command_to_session() {
+    tmux send-keys -t $1 "$2" ENTER
+}
+
+# Parameters:
+#   $1: tmux session name    例: c01-Main
+function shutdown_session() {
+    send_command_to_session $1 'c_shutdown(true)'
+}
+
+# Parameters:
+#   $1: tmux session name    例: c01-Main
+function force_shutdown_session() {
+    tmux send-keys -t $1 C-c
+}
+
 ##############################################################################################
 
 # Parameters:
@@ -60,7 +79,8 @@ function stop_shard() {
     fi
     
     color_print info '正在关闭shard ' -n; color_print 36 $1 -n; color_print 33 ' ...'
-    tmux send-keys -t $1 C-c
+    # tmux send-keys -t $1 C-c
+    shutdown_session $1
 
     declare _i
     for _i in $(seq 1 20); do
