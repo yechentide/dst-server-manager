@@ -26,6 +26,10 @@ declare worlds_dir='worlds'
 declare shard_main_name='Main'
 declare shard_cave_name='Cave'
 
+
+#Bash版本检查
+
+
 # 名词说明: 单个地上世界 or 单个地下世界, 称为shard。一整个存档, 称为cluster。
 # 名词说明: 拿两个主机开一个cluster, 称为multi-server
 
@@ -280,8 +284,10 @@ function install_dependencies() {
     # 检测所需依赖是否已经下载
     # 确认是否下载依赖
     declare _is_sudoer=0
+    declare _sudoer_group=''
+    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; else _sudoer_group='wheel'; fi
 
-    if groups | grep -sqv sudo; then
+    if groups | grep -sqv $_sudoer_group; then
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
         color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
         color_print warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ " -n; count_down 3 dot
@@ -304,6 +310,8 @@ function install_dependencies() {
         else
             # 32bit Ubuntu/Debian
             #sudo apt install -y libgcc1 libstdc++6 libcurl4-gnutls-dev   #? lua5.2 openssl libssl-dev curl
+            color_print error '还未测试过32位Ubuntu需要哪些依赖库'
+            exit(1)
             _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
         fi
     elif [[ $os == 'CentOS' ]]; then
@@ -312,10 +320,12 @@ function install_dependencies() {
             # 64bit CentOS/Redhat
             #sudo yum install -y glibc.i686 libstdc++.i686   #? libstdc++ libcurl.i686 lua5.2 openssl openssl-devel curl
             # dnf install SDL2.i686 SDL2.x86_64             # To fix a sdl warning during dst installation
-            _requires=(glibc.i686 libstdc++.i686 tmux wget git)
+            _requires=(glibc.i686 libstdc++.i686 tmux.x86_64 wget.x86_64 git.x86_64)
         else
             # 32bit CentOS/Redhat
             #sudo yum install -y glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6   #? libcurl lua5.2 openssl openssl-devel curl
+            color_print error '还未测试过32位CentOS需要哪些依赖库'
+            exit(1)
             _requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
         fi
     else
@@ -349,7 +359,7 @@ function install_dependencies() {
     #if [[ $os == 'Ubuntu' && $architecture == 64 ]]; then sudo dpkg --add-architecture i386; fi
     eval "sudo $_manager update && sudo $_manager upgrade -y"
     declare _package
-    for _package in $_requires; do
+    for _package in ${_requires[@]}; do
         eval "sudo $_manager install -y $_package"
     done
     color_print success '依赖包检测完成! '
@@ -360,9 +370,6 @@ function install_dependencies() {
         color_print info 'cd /usr/lib && ln -s libcurl.so.4 libcurl-gnutls.so.4'
         print_divider '-'
     fi
-    color_print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
-    color_print info '不用担心, 这个不影响下载/更新DST'
-    color_print info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ ' -n; count_down 6 dot
 }
 
 function remove_old_dot_files() {
@@ -409,7 +416,10 @@ function install_dst() {
     # Error: /Steam/linux32/steamcmd: No such file or directory
     # Fix: install lib32gcc1
     if [[ $? ]]; then
-        color_print success '饥荒服务端下载安装完成! ' -n; count_down 3 dot
+        color_print success '饥荒服务端下载安装完成!'
+        color_print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
+        color_print info '不用担心, 这个不影响下载/更新DST'
+        color_print info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ ' -n; count_down 6 dot
     else
         color_print error '似乎出现了什么错误...'
         declare _try_again
@@ -504,7 +514,6 @@ function main_panel() {
             color_print error "${_action}功能暂未写好" -n; count_down 3 dot
             ;;
         '更新脚本')
-            exit 1
             update_repo
             ;;
         '退出')
