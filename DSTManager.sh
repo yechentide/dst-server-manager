@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.1'
+declare -r script_version='v1.3.0.2'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -32,10 +32,9 @@ declare shard_cave_name='Cave'
 ##############################################################################################
 # 一些常用的函数
 
-# Parameters:
-#   $1: color code. 0~255
-#   $2: output string
-#   -n: make sure it is the last parameter. use -n option of echo.
+# References:
+#   https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
+#   https://qiita.com/dojineko/items/49aa30018bb721b0b4a9
 #
 # 16色
 #   格式: \033[属性;前景色;背景色m
@@ -60,9 +59,10 @@ declare shard_cave_name='Cave'
 # 取消全部格式
 #   格式: \033[m  或者  \033[0m
 #
-# References:
-#   https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
-#   https://qiita.com/dojineko/items/49aa30018bb721b0b4a9
+# Parameters:
+#   $1: color code. 0~255
+#   $2: output string
+#   -n: make sure it is the last parameter. use -n option of echo.
 function color_print() {
     declare -r _esc=$(printf "\033")    # 更改输出颜色用的前缀
     declare -r _reset="${_esc}[0m"      # 重置所有颜色，字体设定
@@ -300,11 +300,11 @@ function install_dependencies() {
             #sudo apt install libsdl2-2.0-0:i386            # To fix a sdl warning during dst installation
             # https://github.com/ValveSoftware/steam-for-linux/issues/7036
             #_requires=(lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386 tmux wget git)
-            _requires=(lib32gcc1 tmux wget git)
+            _requires=(lib32gcc1 lua5.3 tmux wget git)
         else
             # 32bit Ubuntu/Debian
             #sudo apt install -y libgcc1 libstdc++6 libcurl4-gnutls-dev   #? lua5.2 openssl libssl-dev curl
-            _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev tmux wget git)
+            _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
         fi
     elif [[ $os == 'CentOS' ]]; then
         _manager='yum'
@@ -427,7 +427,9 @@ function check_environment() {
     check_script_position
 
     clone_repo
-    if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
+    if [[ ! -e $repo_root_dir/.skip_requirements_check ]] ||
+        ! which tmux > /dev/null 2>&1 || 
+        ! which lua > /dev/null 2>&1; then
         install_dependencies
         remove_old_dot_files
         touch $repo_root_dir/.skip_requirements_check
