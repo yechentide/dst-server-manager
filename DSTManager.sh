@@ -16,9 +16,9 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0'
-declare -r repo_root_dir="$HOME/DSTServerManager"
+declare -r script_version='v1.3.0.1'
 declare -r architecture=$(getconf LONG_BIT)
+declare -r repo_root_dir="$HOME/DSTServerManager"
 
 declare dst_root_dir="$HOME/Server"
 declare klei_root_dir="$HOME/Klei"
