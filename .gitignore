@@ -1,1 +1,2 @@
 test/*
+.skip_requirements_check

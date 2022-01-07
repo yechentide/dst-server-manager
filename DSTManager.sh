@@ -13,162 +13,507 @@
 # 欢迎会shellscript的伙伴来一起写开服脚本！
 ##############################################################################################
 
-# one line command setup:
-# cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh
-
 set -eu
 
-###### ###### ###### ###### ###### ######
-# 删除这部分
-echo '感谢使用本脚本～'
-echo '但！是！'; sleep 1
-echo '貌似脚本里有好多bug，我深感心痛！'
-echo '为了大家能有个更好的开服体验，请暂时停止使用本脚本！'
-echo '我慢慢修，多加点检测。。。'
-echo ''
-echo '另外，如果想继续用的话，手动删除DSTManager.sh文件的21～38行'
-echo '上传脚本的骚操作好多，我之前考虑的是用不要切换用户，直接用一行命令下载。'
-echo '但你们直接把不完整的仓库扔root里了。。'
-echo ''
-echo '推荐下载方法：运行下面命令'
-echo 'cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh'
-echo '然后就是日常运行脚本： ~/DSTManager.sh'
-exit 1
-# 删除部分到这位置
-###### ###### ###### ###### ###### ######
-
-declare -r script_version='v1.2.3'
-declare -r repo_position=$HOME
-declare -r repo_root_dir="$repo_position/DSTServerManager"
 declare os='MacOS'
+declare -r script_version='v1.3.0'
+declare -r repo_root_dir="$HOME/DSTServerManager"
 declare -r architecture=$(getconf LONG_BIT)
 
-function check_repo() {
-    if [[ ! -e $repo_root_dir ]]; then
-        echo '未找到脚本仓库，开始下载...'
-        sleep 1
-        git clone https://gitee.com/yechentide/DSTServerManager.git $repo_position
-        if [[ $? == 1 ]]; then
-            echo '脚本仓库下载失败, 请检查git命令是否可用'
-            exit 1
-        fi
-        rm $0
-        ln -s $repo_root_dir/DSTManager.sh ~/DSTManager.sh
-        echo ''
-        echo '脚本仓库下载完成！请重新运行脚本。'
-        echo '以后运行脚本请使用该命令：  ~/DSTManager.sh'
-        sleep 1
-        exit 0
+declare dst_root_dir="$HOME/Server"
+declare klei_root_dir="$HOME/Klei"
+declare worlds_dir='worlds'
+declare shard_main_name='Main'
+declare shard_cave_name='Cave'
+
+# 名词说明: 单个地上世界 or 单个地下世界, 称为shard。一整个存档, 称为cluster。
+# 名词说明: 拿两个主机开一个cluster, 称为multi-server
+
+##############################################################################################
+# 一些常用的函数
+
+# Parameters:
+#   $1: color code. 0~255
+#   $2: output string
+#   -n: make sure it is the last parameter. use -n option of echo.
+#
+# 16色
+#   格式: \033[属性;前景色;背景色m
+#   属性
+#       0:reset, 1:粗体, 2:低輝度, 3:斜体, 4:下划线, 5:闪烁, 6:高速闪烁, 7:反転, 8:非表示, 9:取消线
+#       21:二重下划线, 22:粗体・低輝度解除, 23:斜体解除, 24:下划线解除, 25:闪烁解除, 27:反転解除, 28:非表示解除, 29:取消线解除
+#   前景色 - ()里是亮点的颜色
+#       30(90)黒, 31(91)赤, 32(92)緑, 33(93)黄, 34(94)青, 35(95)紫, 36(96)水, 37(97)白, 38拡張色, 39標準色
+#   背景色 - ()里是亮点的颜色
+#       40(100)黒, 41(101)赤, 42(102)緑, 43(103)黄, 44(104)青, 45(105)紫, 46(106)水, 47(107)白, 48拡張色, 49標準色
+#
+# 256色
+#   格式: \033[属性;前景色;背景色m
+#       前景色 38;5;颜色代码
+#       背景色 48;5;颜色代码
+#   颜色范围
+#       0-7： 标准色8色             （和 \033[30m - \033[37m 一样）
+#       8-15： 亮色8色              （和 \033[90m - \033[97m 一样）
+#       16-231： 各色（赤・緑・青） 6段階、6×6×6=216色
+#       232-255： gray scale、24色
+#
+# 取消全部格式
+#   格式: \033[m  或者  \033[0m
+#
+# References:
+#   https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
+#   https://qiita.com/dojineko/items/49aa30018bb721b0b4a9
+function color_print() {
+    declare -r _esc=$(printf "\033")    # 更改输出颜色用的前缀
+    declare -r _reset="${_esc}[0m"      # 重置所有颜色，字体设定
+
+    if [[ $# == 0 ]] || [[ $# == 1 && ! -p /dev/stdin ]]; then
+        echo "${_esc}[1;38;5;9m[Error] 参数数量错误. 用法: color_print 颜色 字符串${_esc}[m"
+        exit 1;
+    fi
+
+    if [[ -p /dev/stdin ]]; then        # <-- make pipe work
+        declare -r _str=$(cat -)        # <-- make pipe work
+    else
+        declare -r _str=$2
+    fi
+
+    declare _prefix=''
+    declare _color=''
+    case $1 in
+    'info')     # 蓝
+        _color=33; _prefix='[INFO] '; ;;
+    'warn')     # 黄
+        _color=190; _prefix='[WARN] '; ;;
+    'success')   # 绿
+        _color=46; _prefix='[OK] '; ;;
+    'error')    # 红
+        _color=196; _prefix='[ERROR] '; ;;
+    'log')      # 橙
+        _color=215; _prefix='[LOG] '; ;;
+    'debug')
+        _color=141; _prefix='[debug] '; ;;
+    *)
+        _color=$1; ;;
+    esac
+
+    if echo $@ | grep -sq ' \-n'; then
+        echo -n "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
+    else
+        echo "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
     fi
 }
-check_repo
+# Parameters:
+#   $1: seconds
+#   dot: make sure it is the last parameter. output dot instead number.
+function count_down() {
+    if echo $@ | grep -sq 'dot'; then
+        for i in $(seq $1 -1 1); do
+            echo -n '.' | color_print 102 -n
+            sleep 1
+        done
+        echo ''
+    else
+        for i in $(seq $1 -1 1); do
+            echo -n "$i " | color_print 102 -n
+            sleep 1
+        done
+        color_print 102 '0'
+    fi
+}
+# Parameters:
+#   $1: divider charactor
+function print_divider() {
+    if [[ $# == 0 ]]; then
+        eval "printf '%.0s'= {1..$(tput cols)}"     # 输出: 和窗口一样长的======
+    else
+        eval "printf '%.0s'$1 {1..$((  $(tput cols) / ${#1}  ))}"
+    fi
+}
+# Parameters:
+#   $1: answer(在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
+#   $2: color code. 0~255
+#   $3: 提示用户的信息
+function yes_or_no() {
+    declare -n _tmp="$1"
+    declare _selected
+    PS3='请输入选项数字> '
 
-source $repo_root_dir/utils/output.sh
+    while true; do
+        if [[ $# -lt 3 ]]; then
+            color_print $2 '请确认...'
+        else
+            color_print $2 $3
+        fi
+        select _selected in yes no; do break; done
+        if [[ ${#_selected} == 0 ]]; then
+            color_print error '请输入正确的数字！'
+            continue
+        fi
+        _tmp=$_selected
+        return 0
+    done
+}
+# Parameters:
+#   $1: array           注意传进来的是变量名(也就是不加$)
+#   $2: selected one    (在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
+function select_one() {
+    declare -n _array="$1"
+    declare -n _selected="$2"
+    PS3='请输入选项数字> '
+
+    while true; do
+        color_print info '请从下面选择一个选项'
+        select _selected in ${_array[@]}; do break; done
+        if [[ ${#_selected} == 0 ]]; then
+            color_print error '请输入正确的数字！'
+            continue
+        fi
+        return 0
+    done
+}
+# Retuen: 被执行脚本所在文件夹的绝对路径
+function get_current_script_dir() {
+    declare -r current_path=$(pwd)
+    declare -r current_script_dir=$(cd $(dirname $0); pwd)
+    cd $current_path
+    echo $current_script_dir
+}
+
+##############################################################################################
 
 function check_os() {
     if [[ ! $(uname) == 'Linux' ]]; then color_print error '本脚本目前仅支持Linux'; exit 1; fi
 
-    if grep '^NAME="Ubuntu' /etc/os-release > /dev/null 2>&1; then
+    if grep -sq '^NAME="Ubuntu' /etc/os-release; then
         os='Ubuntu'
-    elif grep '^NAME="CentOS' /etc/os-release > /dev/null 2>&1; then
+    elif grep -sq '^NAME="CentOS' /etc/os-release; then
         os='CentOS'
-    #elif grep '^NAME="Amazon' /etc/os-release > /dev/null 2>&1; then
-    #    OS='Amazon Linux'
     else
         color_print error '本脚本暂不支持此Linux系统：'
-        uname -a | color_print error
+        cat /etc/os-release | grep ^NAME | color_print error
+        cat /etc/os-release | grep ^VERSION= | color_print error
         exit 1
     fi
 }
-check_os
 
-##############################################################################################
-
-for file in $(ls $repo_root_dir/scripts/*.sh); do source $file; done
-
-dst_root_dir="$HOME/Server"
-klei_root_dir="$HOME/Klei"
-worlds_dir='worlds'
-shard_main_name='Main'
-shard_cave_name='Cave'
-
-function check_script_update() {
-    if git remote show gitee | grep 'up to date' > /dev/null 2>&1; then
-        color_print info '当前脚本为最新版本'
-    else
-        color_print info '当前脚本不是最新版本! 请及时更新脚本!'
+function check_user_is_root() {
+    if echo $HOME | grep -sq ^/root; then
+        color_print error '请勿使用root用户执行本脚本！'
+        exit 1
     fi
 }
 
-function main_panel_header() {
-    print_divider '=' | color_print 215
+function check_script_position() {
+    # 检测脚本位置
+    declare -r current_script_dir=$(get_current_script_dir)
+    if echo $current_script_dir | grep -sq ^/root; then
+        echo "当前用户: $(whoami)"
+        echo "检测到该脚本位于root用户的家目录之下: $current_script_dir"
+        echo '该脚本将会被删除'
+        echo "脚本仓库将会安装到当前用户$(whoami)的家目录$HOME"
+        echo "新的脚本将会位于$HOME/DSTManager.sh"
+        rm $0
+    fi
+}
 
-    color_print 215 " DST Dedicated Server Manager $script_version"
-    #check_script_update | echo | color_print 215
+function clone_repo() {
+    color_print info "检测脚本仓库, 目标路径: $repo_root_dir"
+
+    if [[ -e $repo_root_dir ]]; then
+        if [[ ! -e $repo_root_dir/.git ]]; then
+            color_print warn '脚本仓库可能已经损坏, 即将重新下载...'
+            rm -rf $repo_root_dir > /dev/null 2>&1
+        else
+            color_print success '脚本仓库已存在！无需下载～'
+            return 0
+        fi
+    else
+        color_print warn '未发现脚本仓库！'
+    fi
+
+    color_print info "准备下载脚本仓库至$repo_root_dir " -n; count_down 3 dot
+
+    declare _is_server_in_china
+    yes_or_no _is_server_in_china info '请问这个主机是否位于国内？'
+    if [[ $_is_server_in_china == 'yes' ]]; then
+        declare -r _repo_url='https://gitee.com/yechentide/DSTServerManager'
+        color_print info '远程仓库将使用gitee上的仓库'
+        color_print warn 'gitee网站有时候会无法访问, 如果无法下载, 请隔一段时间重试'
+    else
+        declare -r _repo_url='https://github.com/yechentide/DSTServerManager'
+        color_print info '远程仓库将使用github上的仓库'
+    fi
+
+    git clone $_repo_url $repo_root_dir
+
+    if [[ $? == 1 ]]; then
+        color_print error '脚本仓库下载失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
+        color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
+        rm -rf $repo_root_dir > /dev/null 2>&1
+        exit 1
+    fi
+
+    rm $0
+    ln -s $repo_root_dir/DSTManager.sh $HOME/DSTManager.sh
+
+    echo ''
+    color_print success '脚本仓库下载完成！请重新运行脚本。'
+    color_print info '以后运行脚本请使用该命令：  ~/DSTManager.sh'
+    sleep 3
+    exit 0
+}
+
+function update_repo() {
+    color_print info '开始更新脚本仓库...'
+    rm $repo_root_dir/.need_update > /dev/null 2>&1
+    git -C $repo_root_dir pull
+    if [[ $? == 1 ]]; then
+        color_print error '脚本仓库更新失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
+        color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
+        return
+    fi
+    color_print success '脚本仓库更新完毕！'
+}
+
+function install_dependencies() {
+    # 检测所需依赖是否已经下载
+    # 确认是否下载依赖
+    declare _is_sudoer=0
+
+    if groups | grep -sqv sudo; then
+        color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
+        color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
+        color_print warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ " -n; count_down 3 dot
+        _is_sudoer=1
+    fi
+
+    declare -a _requires=()
+    declare _manager=''
+
+    if [[ $os == 'Ubuntu' ]]; then
+        _manager='apt'
+        if [[ $architecture == 64 ]]; then
+            # 64bit Ubuntu/Debian
+            #sudo dpkg --add-architecture i386
+            #sudo apt install -y lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386   #? lua5.2 openssl libssl-dev curl
+            #sudo apt install libsdl2-2.0-0:i386            # To fix a sdl warning during dst installation
+            # https://github.com/ValveSoftware/steam-for-linux/issues/7036
+            #_requires=(lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386 tmux wget git)
+            _requires=(lib32gcc1 tmux wget git)
+        else
+            # 32bit Ubuntu/Debian
+            #sudo apt install -y libgcc1 libstdc++6 libcurl4-gnutls-dev   #? lua5.2 openssl libssl-dev curl
+            _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev tmux wget git)
+        fi
+    elif [[ $os == 'CentOS' ]]; then
+        _manager='yum'
+        if [[ $architecture == 64 ]]; then
+            # 64bit CentOS/Redhat
+            #sudo yum install -y glibc.i686 libstdc++.i686   #? libstdc++ libcurl.i686 lua5.2 openssl openssl-devel curl
+            # dnf install SDL2.i686 SDL2.x86_64             # To fix a sdl warning during dst installation
+            _requires=(glibc.i686 libstdc++.i686 tmux wget git)
+        else
+            # 32bit CentOS/Redhat
+            #sudo yum install -y glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6   #? libcurl lua5.2 openssl openssl-devel curl
+            _requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
+        fi
+    else
+        color_print error "本脚本暂不支持当前系统版本"
+        exit 1
+    fi
+
+    echo ''
+    color_print info '需要下载或更新的软件: '
+    echo ${_requires[@]}
+
+    if [[ $_is_sudoer == 1 ]]; then
+        color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
+        declare _is_installed
+        yes_or_no _is_installed warn '是否已安装？'
+        if [[ $_is_installed == 'yes' ]]; then return 0; fi
+
+        color_print error '无权限下载安装必须软件，终止运行脚本。请联系服务器管理员解决。'
+        exit 1
+    fi
+
+    declare _start_install
+    yes_or_no _start_install warn '是否要开始安装依赖？'
+    if [[ $_start_install == 'no' ]]; then
+        color_print error '终止安装依赖包, 结束脚本'
+        exit 1
+    fi
+
+    color_print info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 ' -n; count_down 3
+
+    #if [[ $os == 'Ubuntu' && $architecture == 64 ]]; then sudo dpkg --add-architecture i386; fi
+    eval "sudo $_manager update && sudo $_manager upgrade -y"
+    declare _package
+    for _package in $_requires; do
+        eval "sudo $_manager install -y $_package"
+    done
+    color_print success '依赖包检测完成! '
+    
+    if [[ $os == 'CentOS' ]]; then
+        print_divider '-'
+        color_print info '报错 libcurl.so.4 (RedHat/CentOS) 的话输入以下命令:'
+        color_print info 'cd /usr/lib && ln -s libcurl.so.4 libcurl-gnutls.so.4'
+        print_divider '-'
+    fi
+    color_print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
+    color_print info '不用担心, 这个不影响下载/更新DST'
+    color_print info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ ' -n; count_down 6 dot
+}
+
+function remove_old_dot_files() {
+    # 旧版本使用的文件
+    if [[ -e $repo_root_dir/.first_run ]]; then rm $repo_root_dir/.first_run; fi
+    if [[ -e $repo_root_dir/.skip_check ]]; then rm $repo_root_dir/.skip_check; fi
+}
+
+function install_steamcmd() {
+    # https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+    if [[ ! -e ~/Steam ]]; then mkdir ~/Steam; fi
+    if [[ -e ~/Steam/steamcmd.sh ]]; then
+        color_print success 'steamcmd.sh已存在～'
+        return 0
+    fi
+
+    echo ''
+    color_print warn '未在~/Steam 发现steamcmd.sh，开始下载' -n; count_down 3 dot
+    # 该用哪个网站？
+    # wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+    # wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz
+    wget --output-document ~/Steam/steamcmd_linux.tar.gz 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' && tar -xvzf ~/Steam/steamcmd_linux.tar.gz --directory ~/Steam
+    
+    if [[ $? ]]; then
+        color_print success 'steamcmd.sh脚本下载完成！'
+        rm -f ~/Steam/steamcmd_linux.tar.gz > /dev/null 2>&1
+    else
+        color_print error '似乎出现了什么错误...请联系作者修复'
+        exit 1
+    fi
+}
+
+function install_dst() {
+    if [[ -e $dst_root_dir/bin/dontstarve_dedicated_server_nullrenderer && -e $dst_root_dir/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
+        color_print success '饥荒服务端已经下载好啦～'
+        return 0
+    fi
+    
+    echo ''
+    color_print warn "路径$dst_root_dir 未找到饥荒服务端，即将开始下载..."
+    color_print info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 ' -n; count_down 3
+    mkdir -p $dst_root_dir
+    ~/Steam/steamcmd.sh +force_install_dir $dst_root_dir +login anonymous +app_update 343050 validate +quit
+    # Error: /Steam/linux32/steamcmd: No such file or directory
+    # Fix: install lib32gcc1
+    if [[ $? ]]; then
+        color_print success '饥荒服务端下载安装完成! ' -n; count_down 3 dot
+    else
+        color_print error '似乎出现了什么错误...'
+        declare _try_again
+        yes_or_no _tyr_again info '重新下载？'
+        if [[ $_tyr_again == 'yes' ]]; then
+            rm -rf $1 > /dev/null 2>&1
+            install_dst
+        fi
+    fi
+}
+
+function check_environment() {
+    check_os
+    check_user_is_root
+    check_script_position
+
+    clone_repo
+    if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
+        install_dependencies
+        remove_old_dot_files
+        touch $repo_root_dir/.skip_requirements_check
+    fi
+
+    install_steamcmd
+    install_dst $dst_root_dir
+    mkdir -p $klei_root_dir/$worlds_dir
+
+    color_print info '即将跳转到主面板'
+    sleep 1
+}
+clear
+check_environment
+
+##############################################################################################
+for file in $(ls $repo_root_dir/scripts/*.sh); do source $file; done
+
+#function check_script_update() {
+    # FIXME
+#    exit 1
+#    tmux new -d -s 'check_script_update'
+#    tmux send-keys -t 'check_script_update' "if git -C $repo_root_dir remote show origin | grep -s 'main pushes' | grep -sq 'out of date'; then touch $repo_root_dir/.need_update; fi; tmux kill-session" ENTER
+#}
+
+function display_running_clusters() {
+    declare -r -a _running_cluster_list=$(generate_shard_list_from_tmux | tr '\n' ' ')
+    color_print 30 "运行中的世界 ==> $_running_cluster_list"
+}
+
+function main_panel_header() {
+    print_divider '=' | color_print 208
+
+    color_print 208 " DST Dedicated Server Manager $script_version"
     color_print 70  ' 本脚本由yechentide制作, 完全免费! 有问题可以在百度贴吧@夜尘tide'
     color_print 70  ' 本脚本一切权利归作者所有, 未经许可禁止使用本脚本进行任何的商业活动!'
     color_print 22  ' Github仓库: https://github.com/yechentide/DSTServerManager'
     color_print 22  ' Gitee仓库: https://gitee.com/yechentide/DSTServerManager'
     color_print 22  ' 欢迎会shellscript的伙伴来一起写开服脚本！'
 
-    print_divider '-' | color_print 215
-}
+    print_divider '-' | color_print 208
 
-function display_running_clusters() {
-    declare _running_cluster_list=''
-    
-    if ! (tmux ls 2>&1 | grep 'no server' > /dev/null 2>&1); then
-        _running_cluster_list=$(tmux ls | awk -F- '{print $1}' | sort | uniq | tr '\n' ' ')
+    if [[ -e $repo_root_dir/.need_update ]]; then
+        color_print info '～～～检测到脚本有新版本～～～'
+        print_divider '-' | color_print 208
     fi
-    
-    color_print 39 "运行中的世界 ==> $_running_cluster_list"
 }
 
 function main_panel() {
-    clear
-    main_panel_header
+    # check_script_update
+    declare _action
     declare -r -a _action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
-    PS3="$(color_print info '[退出或中断操作请直接按 Ctrl加C ]')"$'\n''请输入选项数字> '
-    declare _selected
 
     while true; do
+        clear
+        main_panel_header
         echo ''
-        color_print 215 '>>>>>> >>>>>> 主面板 <<<<<< <<<<<<'
+        color_print 208 '>>>>>> >>>>>> 主面板 <<<<<< <<<<<<'
         display_running_clusters
 
-        select _selected in ${_action_list[@]}; do break; done
-        if [[ ${#_selected} == 0 ]]; then
-            color_print error '请输入数字！数字！数字！'
-            continue
-        fi
+        color_print info '[退出或中断操作请直接按 Ctrl加C ]'
+        select_one _action_list _action
 
-        case $_selected in
+        case $_action in
         '服务端管理')
-            server_panel $architecture $dst_root_dir $klei_root_dir $worlds_dir $shard_main_name $shard_cave_name
+            server_panel $architecture $dst_root_dir $klei_root_dir $worlds_dir
             ;;
         '存档管理')
             cluster_panel $repo_root_dir $dst_root_dir $klei_root_dir $worlds_dir $shard_main_name $shard_cave_name
             ;;
         'Mod管理')
-            mod_panel $architecture $repo_root_dir $dst_root_dir $klei_root_dir/$worlds_dir $shard_main_name $shard_cave_name
+            color_print error "${_action}功能暂未写好" -n; count_down 3 dot
             ;;
         '更新脚本')
-            color_print info '开始更新脚本仓库...'
-            git -C $repo_root_dir pull
-            color_print info '更新完毕！'
+            exit 1
+            update_repo
             ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'
             exit 0
             ;;
         *)
-            color_print error "${_selected}功能暂未写好"
-            continue
+            color_print error "${_action}功能暂未写好" -n; count_down 3 dot
             ;;
         esac
-
     done
 }
 
-check_requirements $os $architecture $dst_root_dir
 main_panel
