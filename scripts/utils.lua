@@ -155,3 +155,17 @@ function value_zh2en(value_type, value_zh)
     local index = indexof(value_types[value_type]["zh"], value_zh)
     return value_types[value_type]["en"][index]
 end
+
+function file_exist(path)
+    local command = "if [ -e "..path.." ]; then return 0; else return 1; fi"
+    local status = os.execute(command)
+    if status then
+        return true
+    else
+        return false
+    end
+end
+
+function copy_file(source_file_path, destination_path)
+    os.execute("cp " .. source_file_path .. " " .. destination_path)
+end
