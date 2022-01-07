@@ -26,10 +26,6 @@ declare worlds_dir='worlds'
 declare shard_main_name='Main'
 declare shard_cave_name='Cave'
 
-
-#Bash版本检查
-
-
 # 名词说明: 单个地上世界 or 单个地下世界, 称为shard。一整个存档, 称为cluster。
 # 名词说明: 拿两个主机开一个cluster, 称为multi-server
 
@@ -311,7 +307,7 @@ function install_dependencies() {
             # 32bit Ubuntu/Debian
             #sudo apt install -y libgcc1 libstdc++6 libcurl4-gnutls-dev   #? lua5.2 openssl libssl-dev curl
             color_print error '还未测试过32位Ubuntu需要哪些依赖库'
-            exit(1)
+            exit 1
             _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
         fi
     elif [[ $os == 'CentOS' ]]; then
@@ -325,7 +321,7 @@ function install_dependencies() {
             # 32bit CentOS/Redhat
             #sudo yum install -y glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6   #? libcurl lua5.2 openssl openssl-devel curl
             color_print error '还未测试过32位CentOS需要哪些依赖库'
-            exit(1)
+            exit 1
             _requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
         fi
     else
@@ -435,6 +431,11 @@ function check_environment() {
     check_os
     check_user_is_root
     check_script_position
+    #Bash版本检查
+    if echo $BASH_VERSION | grep -sqv ^5.; then
+        color_print error 'Bash版本过低, 请升级到5.0！'
+        exit 1
+    fi
 
     clone_repo
     if [[ ! -e $repo_root_dir/.skip_requirements_check ]] ||
