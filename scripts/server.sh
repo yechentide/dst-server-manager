@@ -219,7 +219,7 @@ function server_panel() {
                 continue
             fi
             
-            declare -r _shard_path=$(echo $_shard | sed -e 's#-#/#g')
+            declare _shard_path=$(echo $_shard | sed -e 's#-#/#g')
             check_shard_is_ok $3/$4/$_shard_path
 
             start_shard $1 $2 $3 $4 $_shard
