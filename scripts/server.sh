@@ -198,6 +198,10 @@ function server_panel() {
                 color_print warn '请先新建一个存档！ ' -n; count_down 3 dot
                 continue
             fi
+            
+            declare -r _shard_path=$(echo $_shard | sed -e 's#-#/#g')
+            check_shard_is_ok $3/$4/$_shard_path
+
             start_shard $1 $2 $3 $4 $_shard
             ;;
         '关闭服务端')
