@@ -75,7 +75,7 @@ function color_print() {
     if [[ -p /dev/stdin ]]; then        # <-- make pipe work
         declare -r _str=$(cat -)        # <-- make pipe work
     else
-        declare -r _str=$2
+        declare -r _str="$2"
     fi
 
     declare _prefix=''
