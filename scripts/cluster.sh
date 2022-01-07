@@ -230,23 +230,21 @@ function configure_server_ini() {
 #   $3: $shard_???_name     Main / Cave
 #   $4: _is_main            yes / no
 function create_cluster_in_multi_server() {
+    declare _emmm
+    yes_or_no _emmm warn '创建单shard(多主机服务器)我还没有测试, 可能有bug, 是否继续？'
+    if [[ $_emmm == 'no' ]]; then return 0; fi
+
     # cluster.ini
     configure_cluster_ini $1 $2 'yes' $4
 
     # server.ini
     configure_server_ini $1 $2 $3 $4
 
-    # leveldataoverride.lua
-    #echo ''; color_print info "开始配置$5/$6世界的设置..."
-    #if [[ $7 == 0 ]]; then
-    #    configure_level_setting $1/templates/main_worldgenoverride.lua $3/$4/$5/$6/worldgenoverride.lua
-    #else
-    #    configure_level_setting $1/templates/cave_worldgenoverride.lua $3/$4/$5/$6/worldgenoverride.lua
-    #fi
+    # 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $cluster_path true true Main Cave
     if [[ $4 == 'yes' ]]; then
-        lua -e "print('使用lua来配置主世界worldgenoverride.lua')"
+        lua $1/scripts/configure_world.lua $1 new $2 'true' 'false' $3 'nil'
     else
-        lua -e "print('使用lua来配置洞穴worldgenoverride.lua')"
+        lua $1/scripts/configure_world.lua $1 new $2 'false' 'true' 'nil' $3
     fi
 }
 
@@ -263,13 +261,8 @@ function create_cluster_in_single_server() {
     configure_server_ini $1 $2 $3 'yes'
     configure_server_ini $1 $2 $4 'no'
 
-    # leveldataoverride.lua
-    #echo ''; color_print info '开始配置主世界的设置...'
-    #configure_level_setting $1/templates/main_worldgenoverride.lua $3/$4/$5/$6/worldgenoverride.lua
-    #echo ''; color_print info '开始配置洞穴的设置...'
-    #configure_level_setting $1/templates/cave_worldgenoverride.lua $3/$4/$5/$7/worldgenoverride.lua
-    lua -e "print('使用lua来配置主世界worldgenoverride.lua')"
-    lua -e "print('使用lua来配置洞穴worldgenoverride.lua')"
+    # 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $cluster_path true true Main Cave
+    lua $1/scripts/configure_world.lua $1 new $2 'true' 'true' $3 $4
 }
 
 # Parameters:
@@ -316,6 +309,56 @@ function create_cluster() {
     color_print success "新的世界$_new_cluster创建完成～"
 }
 
+# Parameters:
+#   $1: cluster dir         ~/Klei/worlds/cluster_name
+#   $2: $shard_???_name     Main
+#   $3: $shard_???_name     Cave
+function check_cluster_is_ok() {
+    if [[ -e $1/Master ]]; then color_print warn '主shard文件夹名为Master, 本脚本默认为Main, 请手动修改！'; exit 1; fi
+    check_shard_is_ok $1/$2
+    check_shard_is_ok $1/$3
+}
+
+# Parameters:
+#   $1: shard dir         ~/Klei/worlds/cluster_name/shard
+function check_shard_is_ok() {
+    if [[ -e $1/leveldataoverride.lua ]]; then
+        color_print warn "存档文件夹 $1 里面检测到leveldataoverride.lua文件"
+        color_print warn '用来开服的存档应该把这个文件改名为worldgenoverride.lua'
+        color_print warn '推荐使用本脚本新配置一个worldgenoverride.lua再覆盖过去'
+        exit 1
+    fi
+    if head -n 1 $1/worldgenoverride.lua | grep -sq 'KLEI'; then
+        color_print warn "$1/worldgenoverride.lua文件第一行错误, 删掉return前面的 KLEI     1"
+        exit 1
+    fi
+}
+
+# Parameters:
+#   $1: $repo_root_dir      ~/DSTServerManager
+#   $2: $klei_root_dir      ~/Klei
+#   $3: worlds derictory    worlds
+#   $4: $shard_main_name    Main
+function update_shard_setting() {
+    color_print info '重写配置shard选项...'
+
+    declare _shard
+    if ! select_shard_from_dir _shard $2/$3; then
+        color_print warn '未找到存档！'
+        color_print warn '请先新建一个存档！ ' -n; count_down 3 dot
+        return 0
+    fi
+    declare -r _shard_path=$(echo $_shard | sed -e 's#-#/#g')
+
+    check_shard_is_ok $2/$3/$_shard_path
+
+    declare _is_main='false'
+    if echo $_shard | grep -sq $4; then _is_main='true'; fi
+
+    # 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager update $shard_path true
+    lua $1/scripts/configure_world.lua $1 update $2/$3/$_shard_path $_is_main
+}
+
 ##############################################################################################
 
 # Parameters:
@@ -341,6 +384,9 @@ function cluster_panel() {
         case $_action in
         '新建存档')
             create_cluster $1 $2 $3 $4 $5 $6
+            ;;
+        '更改世界选项')
+            update_shard_setting $1 $3 $4 $5
             ;;
         '删除存档')
             declare _cluster=''

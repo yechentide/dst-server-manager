@@ -1,24 +1,37 @@
 #!/usr/bin/env lua
 -- arg[1]: $repo_root_dir  -->  /home/tide/DSTServerManager
---package.path = package.path..';'..arg[1]..'/scripts/lua/?.lua;'..arg[1]..'/templates/?.lua;'
---dofile("/home/tide/DSTServerManager/scripts/utils.lua")
---dofile("/home/tide/DSTServerManager/scripts/model/value_types.lua")
---dofile("/home/tide/DSTServerManager/scripts/model/main_table.lua")
---dofile("/home/tide/DSTServerManager/scripts/model/cave_table.lua")
+
+-- arg[2]: $destination    -->  /home/tide/Klei/worlds/cluster/Main/worldgenoverride.lua
+package.path = package.path..';'..arg[1]..'/scripts/?.lua;'..';'..arg[1]..'/scripts/model/?.lua;'..arg[1]..'/templates/?.lua;'
+require("utils")
 require("value_types")
 require("main_table")
 require("cave_table")
 
-function change_value(table)
-    local target = select_one(get_keys(table))
-    local value_type = table[target]["type"]
-    local value_option = value_types[value_type]["zh"]
-    local new_value = select_one(value_option)
+local temp_file_path_main = arg[1].."/templates/server_main.lua"
+local temp_file_path_cave = arg[1].."/templates/server_cave.lua"
 
-    table[target]["default"] = value_zh2en(value_type, new_value)
+-- Return: new model
+function update_model_from_file(old_model, new_file_path)
+    local new_data = dofile(new_file_path)
+    local new_table = new_data["overrides"]
+
+    for group, child_table in pairs(old_model) do
+        for zhkey, table in pairs(child_table) do
+            local en = table["en"]
+            local old_value = table["default"]
+            local new_value = new_table[en]
+            --print(string.format("%s: %s --> %s", en, old_value, new_value))
+            if new_value ~= nil and new_value ~= old_value then
+                table["default"] = new_value
+            end
+        end
+    end
+
+    return old_model
 end
 
-function display_options(array, table, prefix, is_generation)
+function display_model(array, table, prefix, is_generation)
     for i, key in ipairs(array) do
         while true do
             clear()
@@ -39,7 +52,12 @@ function display_options(array, table, prefix, is_generation)
             local answer = yes_or_no("info", "是否有需要修改的？")
             
             if answer then
-                change_value(table[key])
+                local group_table = table[key]
+                local target = select_one(get_keys(group_table))
+                local value_type = group_table[target]["type"]
+                local value_options = value_types[value_type]["zh"]
+                local new_value = select_one(value_options)
+                group_table[target]["default"] = value_zh2en(value_type, new_value)
             else
                 break
             end
@@ -49,62 +67,19 @@ function display_options(array, table, prefix, is_generation)
     end
 end
 
-function configure_world(is_main, is_generation)
-    local prefix = ""
-    local array = {}
-    local table = {}
-    if is_main then
-        if is_generation then
-            array = main_generations_array; table = main_generations_table; prefix = "地上世界 - 生成设置 - ";
-        else
-            array = main_settings_array; table = main_settings_table; prefix = "地上世界 - 选项设置 - ";
-        end
-    else
-        if is_generation then
-            array = cave_generations_array; table = cave_generations_table; prefix = "地底世界 - 生成设置 - ";
-        else
-            array = cave_settings_array; table = cave_settings_table; prefix = "地底世界 - 选项设置 - ";
-        end
-    end
-    display_options(array, table, prefix, is_generation)
-end
+function apply_changes_to_file(table, file_path)
+    local old_data = dofile(file_path)
+    local old_table = old_data["overrides"]
 
-function start_configure(has_main, has_cave)
-    clear()
-    print_divider("-", 36)
-    color_print("info", "开始配置世界！", true)
-    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
-    
-    local result = {}
+    for group, child_table in pairs(table) do
+        for zhkey, table in pairs(child_table) do
+            local en = table["en"]
+            local new_value = table["default"]
+            local old_value = old_table[en]
 
-    if has_main then
-        configure_world(true, true); result["maingenerations"] = main_generations_table;
-        configure_world(true, false); result["mainsettings"] = main_settings_table;
-    end
-    if has_cave then
-        configure_world(false, true); result["cavegenerations"] = cave_generations_table;
-        configure_world(false, false); result["cavesettings"] = cave_settings_table;
-    end
-
-    clear()
-    color_print("success", "世界配置完成！", true)
-    print_divider("-", 36)
-
-    return result
-end
-
--- main(true, true)
-
-function confirm_settings(table, temp_path, output_path)
-    local template_file = dofile(temp_path)
-    local template = template_file["overrides"]
-
-    for tmp01, value in pairs(table) do
-        for tmp02, v in pairs(value) do
-            local old_value = template[v["en"]]
-            if old_value ~= nil and old_value ~= v["default"] then
-                --print(string.format("%s:\t\t\t%s ---> %s", v["en"], old_value, v["default"]))
-                local command = "sed -i -e \"s/"..v["en"].."=\\\""..old_value.."\\\"/"..v["en"].."=\\\""..v["default"].."\\\"/g\" "..output_path
+            if old_value ~= nil and old_value ~= new_value then
+                --print(string.format("%s:\t\t\t%s ---> %s", en, old_value, new_value))
+                local command = "sed -i -e \"s/"..en.."=\\\""..old_value.."\\\"/"..en.."=\\\""..new_value.."\\\"/g\" "..file_path
                 --print(command)
                 os.execute(command)
             end
@@ -112,16 +87,96 @@ function confirm_settings(table, temp_path, output_path)
     end
 end
 
-function config_panal()
-    local template_file_path = arg[1].."/templates/server_main.lua"
-    local output_file_path = "./worldgenoverride.lua"
-    os.execute("cp " .. template_file_path .. " " .. output_file_path)
-
-    result = start_configure(true, false)
-    if result["maingenerations"] ~= nil then
-        confirm_settings(result["maingenerations"], template_file_path, output_file_path)
+function configure_shard(shard_path, is_main, is_update)
+    local destination_path = shard_path.."/worldgenoverride.lua"
+    if not file_exist(destination_path) then
+        if is_main then
+            copy_file(arg[1].."/templates/server_main.lua", destination_path)
+        else
+            copy_file(arg[1].."/templates/server_cave.lua", destination_path)
+        end
     end
-    if result["mainsettings"] ~= nil then
-        confirm_settings(result["mainsettings"], template_file_path, output_file_path)
+
+    local model = {}
+    local group_name_array = {}
+
+    if is_main then
+        if is_update then
+            model = update_model_from_file(main_settings_table, destination_path)
+        else
+            model = main_generations_table
+            group_name_array = main_generations_array
+            display_model(group_name_array, model, "地上世界 - 生成设置 - ", true)
+            apply_changes_to_file(model, destination_path)
+            model = main_settings_table
+        end
+        
+        group_name_array = main_settings_array
+        display_model(group_name_array, model, "地上世界 - 选项设置 - ", false)
+        apply_changes_to_file(model, destination_path)
+    else
+        if is_update then
+            model = update_model_from_file(cave_settings_table, destination_path)
+        else
+            model = cave_generations_table
+            group_name_array = cave_generations_array
+            display_model(group_name_array, model, "地底世界 - 生成设置 - ", true)
+            apply_changes_to_file(model, destination_path)
+            model = cave_settings_table
+        end
+        
+        group_name_array = cave_settings_array
+        display_model(group_name_array, model, "地底世界 - 选项设置 - ", false)
+        apply_changes_to_file(model, destination_path)
     end
 end
+
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+
+function generate_new(cluster_path, has_main, has_cave, main_dir_name, cave_dir_name)
+    clear()
+    print_divider("-", 36)
+    color_print("info", "开始配置世界！", true)
+    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
+
+    if has_main == "true" then configure_shard(cluster_path.."/"..main_dir_name, true, false) end
+    if has_cave == "true" then configure_shard(cluster_path.."/"..cave_dir_name, false, false) end
+
+    clear()
+    color_print("success", "世界配置完成！", true)
+    print_divider("-", 36)
+end
+
+function change_options(shard_path, is_main)
+    clear()
+    print_divider("-", 36)
+    color_print("info", "开始配置世界！", true)
+    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
+    
+    if is_main == "true" then
+        configure_shard(shard_path, true, true)
+    else
+        configure_shard(shard_path, false, true)
+    end
+
+    clear()
+    color_print("success", "世界配置完成！", true)
+    print_divider("-", 36)
+end
+
+function convert_from_other(input_file_path, output_file_path)
+    os.exit(1)
+end
+
+if arg[2] == 'new' then
+    -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $cluster_path true true Main Cave
+    generate_new(arg[3], arg[4], arg[5], arg[6], arg[7])
+elseif arg[2] == 'update' then
+    -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager update $shard_path true
+    change_options(arg[3], arg[4])
+elseif arg[2] == 'convert' then
+    color_print("error", "导入功能还没写emmm", true)
+    os.exit(1)
+end
+
