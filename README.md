@@ -12,52 +12,85 @@
 
 ## 下载使用
 
-有两种方法：
-
-1. 将`DSTManager.sh`文件上传到服务器，运行`~/DSTManager.sh`。它会帮你配置环境。
-2. 无需上传任何东西，在服务器直接运行下面两行代码
-
-  ```shell
-  cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh
-  ~/DSTManager.sh
-  ```
+- 首先要把脚本放到服务器上面  
+    虽然直接上传`DSTManager.sh`并运行也可以  
+    但还是推荐使用命令直接从仓库下载, 只需要一行!
+    ```shell
+    cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTServerManager/DSTManager.sh ~/DSTManager.sh
+    ```
+- 日常使用使用下面的命令
+    ```shell
+    ~/DSTManager.sh
+    ```
 
 ## 功能
 
-### 已添加
+### 想添加的功能
 
-- [x] 开启服务端(32位&64位)
-- [x] 关闭服务端
-- [x] 升级服务端
-- [x] 新建存档
-- [x] 删除存档
-- [x] 生成世界后修改世界选项
-- [x] 添加mod
-- [x] 更新脚本
-- [x] 统一代码风格， 并使用`declare`来声明变量
-- [x] 只开主世界，只开洞穴的功能(多主机服务器)
+想添加, 不代表最后都会添加, shellscript和lua语言我写烦了...
+- 服务端管理
+    - [x] 启动32位服务端
+    - [x] 启动64位服务端
+    - [x] 关闭服务器
+    - [x] 重启服务端
+    - [x] 更新服务端
+    - [ ] 自动更新服务端
+- 存档管理
+    - [x] 新建存档(地上+地底)
+    - [x] 单世界存档(仅地上or仅地底, 多主机服务器)
+    - [x] 整理世界设置, 用lua写model
+    - [x] 使用lua编辑世界设置
+    - [x] 建好的存档的世界选项修改功能
+    - [x] 删除存档
+    - [ ] 撤销删除功能
+    - [ ] 备份存档
+    - [ ] 还原存档
+    - [ ] 导入本地存档
+    - [ ] 白名单/黑名单/管理员名单管理
+    - [ ] 开启测试服功能
+- Mod管理
+    - [ ] 添加Mod
+    - [ ] 删除Mod
+    - [ ] 配置Mod
+    - [ ] 更新Mod
+- 命令行
+    - [ ] 提供dst控制台输入界面
+    - [ ] 提供特定命令的快捷选项
+- 其他工具
+    - [ ] 文件位置结构输出功能(类似tree命令的输出)
+    - [ ] 玩家上线记录
+    - [ ] 显示进过服务器的玩家列表
+    - [ ] 青少年模式
+- 脚本相关
+    - [ ] 后台检测脚本更新
+    - [x] 更新脚本
+    - [ ] 切换远程仓库
+- 帮助(这个大部分以说明为主)
+    - [ ] 添加帮助函数
+    - [ ] 单主机服务器开服帮助
+    - [ ] 双主机服务器开服帮助
+    - [ ] 本地存档上传帮助
+    - [ ] 其他脚本迁移帮助
+    - [ ] 其他脚本介绍&下载
+- 其他
+    - [x] 统一代码风格， 并使用`declare`来声明变量
+    - [ ] 更新README以及docs
 
-![init](./docs/images/init.png)
-![create01](./docs/images/create01.png)
-![create02](./docs/images/create02.png)
-![start&stop](./docs/images/start&stop.gif)
+### 使用界面
 
-### 待添加
-
-- [x] 后台检测脚本更新
-- [ ] 本地存档上传帮助
-- [ ] 其他脚本迁移帮助
-- [ ] 撤销删除
-- [ ] helper文档
-- [ ] player monitor
-- [ ] git remote切换
-- [ ] 存档备份，还原
-- [ ] 配置mod(本地配置后复制粘贴)
-- [ ] 删除mod(从服务端&存档里删除)
-- [ ] 管理白名单，黑名单，管理员名单
-- [ ] 更多的检测机制
-- [ ] 自动更新服务端
-- [ ] 开启测试服功能
-- [ ] 完善 worldgenoverride.lua
-- [ ] 检测Cluster里面是否存在地表/地底文件夹
-- [ ] 更多的检测机制
+- 启动脚本
+![启动脚本](./docs/images/1.gif)
+- 新建存档
+![新建存档](./docs/images/2.gif)
+- 配置世界01
+![配置世界01](./docs/images/3.gif)
+- 配置世界02
+![配置世界02](./docs/images/4.gif)
+- 启动服务器
+![启动服务器](./docs/images/1.png)
+- 删除存档
+![删除存档](./docs/images/2.png)
+- 配置世界03
+![配置世界03](./docs/images/3.png)
+- 关闭存档
+![关闭存档](./docs/images/4.png)
