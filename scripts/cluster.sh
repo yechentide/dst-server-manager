@@ -183,7 +183,7 @@ function configure_cluster_ini() {
 
     if [[ $3 == 'yes' ]]; then
         if [[ $4 == 'yes' ]]; then
-            color info '修改bind_ip --> 0.0.0.0'
+            color_print info '修改bind_ip --> 0.0.0.0'
             sed -i "s/bind_ip = \(127.0.0.1\)/bind_ip = 0.0.0.0/g" $2/cluster.ini
         else
             read_line _answer 36 '请输入主服务器的ip地址: '
@@ -230,10 +230,6 @@ function configure_server_ini() {
 #   $3: $shard_???_name     Main / Cave
 #   $4: _is_main            yes / no
 function create_cluster_in_multi_server() {
-    declare _emmm
-    yes_or_no _emmm warn '创建单shard(多主机服务器)我还没有测试, 可能有bug, 是否继续？'
-    if [[ $_emmm == 'no' ]]; then return 0; fi
-
     # cluster.ini
     configure_cluster_ini $1 $2 'yes' $4
 
@@ -279,7 +275,6 @@ function create_cluster() {
 
     yes_or_no _use_multi_server info '是否使用多个主机开服？'
     if [[ $_use_multi_server == 'yes' ]]; then
-        exit 1
         yes_or_no _is_main info '本服务器上的世界，是否为主世界？'
     fi
 
@@ -328,10 +323,12 @@ function check_shard_is_ok() {
         color_print warn '推荐使用本脚本新配置一个worldgenoverride.lua再覆盖过去'
         exit 1
     fi
-    if head -n 1 $1/worldgenoverride.lua | grep -sq 'KLEI'; then
-        color_print warn "$1/worldgenoverride.lua文件第一行错误, 删掉return前面的 KLEI     1"
-        exit 1
-    fi
+}
+
+# Parameters:
+#   $1: shard dir         ~/Klei/worlds/cluster_name/shard
+function remove_klei_from_worldgenoverride() {
+    sed -i -e 's/^KLEI     1 //g' $1/worldgenoverride.lua
 }
 
 # Parameters:
@@ -351,6 +348,7 @@ function update_shard_setting() {
     declare -r _shard_path=$(echo $_shard | sed -e 's#-#/#g')
 
     check_shard_is_ok $2/$3/$_shard_path
+    remove_klei_from_worldgenoverride $2/$3/$_shard_path
 
     declare _is_main='false'
     if echo $_shard | grep -sq $4; then _is_main='true'; fi
