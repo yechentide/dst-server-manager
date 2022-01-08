@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.5'
+declare -r script_version='v1.3.0.6'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -449,19 +449,31 @@ function check_bash_version() {
         select _selected in yes no; do break; done
         if [[ $_selected == 'yes' ]]; then
             color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
-            if [[ $os == 'Ubuntu' ]]; then color_print error '本脚本暂不支持为Ubuntu升级Bash'; fi
-            if [[ $os == 'CentOS' ]]; then update_bash_in_centos; return 0; fi
+            update_bash
+
+            if /usr/local/bin/bash --version | grep -sqv ^5.; then
+                color_print error '好像升级失败了...'; exit 1
+            else
+                color_print success 'Bash升级成功！请重新运行脚本！'; exit 0
+            fi
         fi
         color_print info '退出脚本'
         exit 1
     fi
 }
 
-function update_bash_in_centos() {
+function update_bash() {
     mkdir /tmp/work && cd /tmp/work
-    sudo yum -y update
-    sudo yum -y install curl
-    sudo yum -y groupinstall "Development Tools"
+    if [[ $os == 'Ubuntu' ]]; then
+        sudo apt -y update
+        sudo apt -y install curl
+        sudo apt -y install build-essential
+    fi
+    if [[ $os == 'CentOS' ]]; then
+        sudo yum -y update
+        sudo yum -y install curl
+        sudo yum -y groupinstall "Development Tools"
+    fi
     curl -O https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
     tar xvf bash-5.0.tar.gz
     cd bash-5.0
@@ -469,13 +481,6 @@ function update_bash_in_centos() {
     make
     sudo make install
     cd ~
-    if echo $BASH_VERSION | grep -sqv ^5.; then
-        color_print error '好像升级失败了...'
-        exit 1
-    else
-        color_print success 'Bash升级成功！请重新运行脚本！'
-        exit 0
-    fi
 }
 
 function check_environment() {
