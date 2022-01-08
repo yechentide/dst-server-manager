@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.6'
+declare -r script_version='v1.3.0.7'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -451,10 +451,10 @@ function check_bash_version() {
             color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
             update_bash
 
-            if /usr/local/bin/bash --version | grep -sqv ^5.; then
-                color_print error '好像升级失败了...'; exit 1
-            else
+            if /usr/local/bin/bash --version | grep -sq 'version 5'; then
                 color_print success 'Bash升级成功！请重新运行脚本！'; exit 0
+            else
+                color_print error '好像升级失败了...'; exit 1
             fi
         fi
         color_print info '退出脚本'
@@ -483,6 +483,20 @@ function update_bash() {
     cd ~
 }
 
+function add_alias() {
+    if ! cat ~/.bashrc | grep -sq "^alias dst="; then
+        echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
+    fi
+
+    if ! cat ~/.bashrc | grep -sq "^alias lua="; then
+        if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
+            if [[ -e /usr/bin/5.3 ]]; then sudo ln -s /usr/bin/lua5.3 /usr/bin/lua; fi
+        fi
+    fi
+    echo '' >> ~/.bashrc
+    # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
+}
+
 function check_environment() {
     check_os
     check_user_is_root
@@ -491,8 +505,10 @@ function check_environment() {
 
     clone_repo
     if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
+        add_alias
         install_dependencies
         remove_old_dot_files
+        color_print info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～' -n; count_down 3 dot
         touch $repo_root_dir/.skip_requirements_check
     fi
 
