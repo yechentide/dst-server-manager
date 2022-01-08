@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.5'
+declare -r script_version='v1.3.0.6'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -451,7 +451,7 @@ function check_bash_version() {
             color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
             update_bash
 
-            if echo $BASH_VERSION | grep -sqv ^5.; then
+            if /usr/local/bin/bash --version | grep -sqv ^5.; then
                 color_print error '好像升级失败了...'; exit 1
             else
                 color_print success 'Bash升级成功！请重新运行脚本！'; exit 0
