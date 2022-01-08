@@ -490,7 +490,7 @@ function add_alias() {
 
     if ! cat ~/.bashrc | grep -sq "^alias lua="; then
         if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
-            if [[ -e /usr/bin/5.3 ]]; then ln -s /usr/bin/5.3 /usr/bin/lua; fi
+            if [[ -e /usr/bin/5.3 ]]; then sudo ln -s /usr/bin/5.3 /usr/bin/lua; fi
         fi
         # if [[ $os == 'CentOS' ]]; then echo ''; fi
     fi
@@ -503,10 +503,10 @@ function check_environment() {
     check_user_is_root
     check_script_position
     check_bash_version
-    add_alias
 
     clone_repo
     if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
+        add_alias
         install_dependencies
         remove_old_dot_files
         touch $repo_root_dir/.skip_requirements_check
