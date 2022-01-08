@@ -1,8 +1,4 @@
 return {
-    baseid="SURVIVAL_TOGETHER",
-    desc="preset for main shard",
-    name="ServerMain",
-    version=1,
     overrides={
         -- generations
         angrybees="default",

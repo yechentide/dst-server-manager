@@ -1,8 +1,4 @@
 return {
-    baseid="DST_CAVE",
-    desc="preset for cave shard",
-    name="ServerCave",
-    version=1,
     overrides={
         -- generations
         banana="default",
