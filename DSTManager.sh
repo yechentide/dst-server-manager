@@ -451,10 +451,10 @@ function check_bash_version() {
             color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
             update_bash
 
-            if /usr/local/bin/bash --version | grep -sqv ^5.; then
-                color_print error '好像升级失败了...'; exit 1
-            else
+            if /usr/local/bin/bash --version | grep -sq 'version 5'; then
                 color_print success 'Bash升级成功！请重新运行脚本！'; exit 0
+            else
+                color_print error '好像升级失败了...'; exit 1
             fi
         fi
         color_print info '退出脚本'
@@ -483,11 +483,20 @@ function update_bash() {
     cd ~
 }
 
+function add_alias() {
+    echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
+    if ! which lua | grep -sq lua && which lua5.3 | grep -sq lua; then
+        echo "alias lua='lua5.3'" >> ~/.bashrc
+    fi
+    source ~/.bashrc
+}
+
 function check_environment() {
     check_os
     check_user_is_root
     check_script_position
     check_bash_version
+    add_alias
 
     clone_repo
     if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
