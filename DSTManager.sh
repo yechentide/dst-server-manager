@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.6'
+declare -r script_version='v1.3.0.7'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -492,10 +492,9 @@ function add_alias() {
         if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
             if [[ -e /usr/bin/5.3 ]]; then sudo ln -s /usr/bin/lua5.3 /usr/bin/lua; fi
         fi
-        # if [[ $os == 'CentOS' ]]; then echo ''; fi
     fi
     echo '' >> ~/.bashrc
-    source ~/.bashrc
+    # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
 }
 
 function check_environment() {
@@ -509,6 +508,7 @@ function check_environment() {
         add_alias
         install_dependencies
         remove_old_dot_files
+        color_print info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～' -n; count_down 3 dot
         touch $repo_root_dir/.skip_requirements_check
     fi
 
