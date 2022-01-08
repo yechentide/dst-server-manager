@@ -114,7 +114,7 @@ function start_shard() {
     declare -r _cluster=$(echo $5 | awk -F- '{print $1}')
     declare -r _shard=$(echo $5 | awk -F- '{print $2}')
 
-    declare -r _time_out=60
+    declare -r _time_out=90
     color_print info '正在启动shard ' -n; color_print 36 $5 -n; color_print 33 ' ...'
     color_print info "更新mod等都需要时间，请等待$_time_out秒"
     color_print info '如果启动失败，可以再尝试几次'
@@ -212,6 +212,7 @@ function server_panel() {
     
         case $_action in
         '启动服务端')
+            color_print warn '请先启动地上世界(主世界)！'
             declare _shard
             if ! select_shard_from_dir _shard $3/$4; then
                 color_print warn '未找到存档！'

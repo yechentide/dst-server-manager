@@ -282,59 +282,61 @@ function update_repo() {
 function is_package_installed() {
     if [[ $os == 'Ubuntu' ]]; then
         # https://news.mynavi.jp/techplus/article/20190222-775519/
-        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'ok'; fi
+        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'yes'; fi
     fi
     if [[ $os == 'CentOS' ]]; then
-        if yum list installed | grep -sq $1; then echo 'ok'; fi
+        if yum list installed | grep -sq $1; then echo 'yes'; fi
     fi
 }
 
-function install_dependencies() {
-    declare _is_sudoer=0
+# Return: 依赖包的数组
+function get_dependencies() {
+    declare -a _requires
+    if [[ $os == 'Ubuntu' ]]; then
+        if [[ $architecture == 64 ]]; then
+            _requires=(lib32gcc1 lua5.3 tmux wget git)
+        else
+            color_print error '暂不支持32位Ubuntu'; exit 1      #_requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
+        fi
+    elif [[ $os == 'CentOS' ]]; then
+        if [[ $architecture == 64 ]]; then
+            _requires=(glibc.i686 libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
+        else
+            color_print error '暂不支持32位CentOS'; exit 1      #_requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
+        fi
+    else
+        color_print error "本脚本暂不支持当前系统版本"; exit 1
+    fi
+    echo ${_requires[@]}
+}
+
+# Return: 'yes' / 'no'
+function check_user_is_sudoer() {
     declare _sudoer_group=''
     if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; fi
     if [[ $os == 'CentOS' ]]; then _sudoer_group='wheel'; fi
-
     if groups | grep -sqv $_sudoer_group; then
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
         color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
         color_print warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ " -n; count_down 3 dot
-        _is_sudoer=1
-    fi
-
-    declare -a _requires=()
-    declare _manager=''
-
-    if [[ $os == 'Ubuntu' ]]; then
-        _manager='apt'
-        if [[ $architecture == 64 ]]; then
-            # 64bit Ubuntu/Debian
-            _requires=(lib32gcc1 lua5.3 tmux wget git)
-        else
-            # 32bit Ubuntu/Debian
-            color_print error '暂不支持32位Ubuntu'; exit 1
-            _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
-        fi
-    elif [[ $os == 'CentOS' ]]; then
-        _manager='yum'
-        if [[ $architecture == 64 ]]; then
-            # 64bit CentOS/Redhat
-            _requires=(glibc.i686 libstdc++.i686 tmux.x86_64 wget.x86_64 git.x86_64)
-        else
-            # 32bit CentOS/Redhat
-            color_print error '暂不支持32位CentOS'; exit 1
-            _requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
-        fi
+        echo 'no'
     else
-        color_print error "本脚本暂不支持当前系统版本"
-        exit 1
+        echo 'yes'
     fi
+}
+
+function install_dependencies() {
+    declare _is_sudoer=$(check_user_is_sudoer)
+    declare -a _requires=$(get_dependencies)
+    declare _manager=''
+    if [[ $os == 'Ubuntu' ]]; then _manager='apt'; fi
+    if [[ $os == 'CentOS' ]]; then _manager='yum'; fi
 
     echo ''
     color_print info '需要下载或更新的软件: '
     echo ${_requires[@]}
 
-    if [[ $_is_sudoer == 1 ]]; then
+    if [[ $_is_sudoer == 'no' ]]; then
         color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
         declare _is_installed
         yes_or_no _is_installed warn '是否已安装？'
@@ -361,7 +363,7 @@ function install_dependencies() {
 
     declare _flag=1
     for _package in ${_requires[@]}; do
-        if [[ $(is_package_installed $_package) == 'ok' ]]; then
+        if [[ $(is_package_installed $_package) == 'yes' ]]; then
             color_print success "依赖包$_package"
         else
             color_print error "依赖包$_package"
@@ -437,20 +439,42 @@ function install_dst() {
     fi
 }
 
+function check_bash_version() {
+    if echo $BASH_VERSION | grep -sqv ^5.; then
+        color_print error 'Bash版本过低, 请升级到5.0！'
+        color_print warn '是否由脚本来执行升级操作？'
+        declare _selected
+        select _selected in yes no; do break; done
+        if [[ $_selected == 'yes' ]]; then
+            if [[ $os == 'Ubuntu' ]]; then color_print error '本脚本暂不支持为Ubuntu升级Bash'; fi
+            if [[ $os == 'CentOS' ]]; then update_bash_in_centos; return 0; fi
+        fi
+        exit 1
+    fi
+}
+
+function update_bash_in_centos() {
+    mkdir /tmp/work && cd /tmp/work
+    sudo yum -y update
+    sudo yum -y install curl
+    sudo yum -y groupinstall "Development Tools"
+    curl -O https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
+    tar xvf bash-5.0.tar.gz
+    cd bash-5.0
+    ./configure
+    make
+    sudo make install
+    cd ~
+}
+
 function check_environment() {
     check_os
     check_user_is_root
     check_script_position
-    #Bash版本检查
-    if echo $BASH_VERSION | grep -sqv ^5.; then
-        color_print error 'Bash版本过低, 请升级到5.0！'
-        exit 1
-    fi
+    check_bash_version
 
     clone_repo
-    if [[ ! -e $repo_root_dir/.skip_requirements_check ]] ||
-        ! which tmux > /dev/null 2>&1 || 
-        ! which lua > /dev/null 2>&1; then
+    if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
         install_dependencies
         remove_old_dot_files
         touch $repo_root_dir/.skip_requirements_check
