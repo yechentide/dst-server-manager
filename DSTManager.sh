@@ -484,9 +484,14 @@ function update_bash() {
 }
 
 function add_alias() {
-    echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
-    if ! which lua | grep -sq lua && which lua5.3 | grep -sq lua; then
-        echo "alias lua='lua5.3'" >> ~/.bashrc
+    if ! cat ~/.bashrc | grep -sq "^alias dst="; then
+        echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
+    fi
+
+    if ! cat ~/.bashrc | grep -sq "^alias lua="; then
+        if ! which lua | grep -sq lua && which lua5.3 | grep -sq lua; then
+            echo "alias lua='lua5.3'" >> ~/.bashrc
+        fi
     fi
     source ~/.bashrc
 }
