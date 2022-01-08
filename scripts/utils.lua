@@ -157,9 +157,9 @@ function value_zh2en(value_type, value_zh)
 end
 
 function file_exist(path)
-    local command = "if [ -e "..path.." ]; then return 0; else return 1; fi"
-    local status = os.execute(command)
-    if status then
+    local command = "if [ -e "..path.." ]; then echo 'yes'; else echo 'no'; fi"
+    local result = exec_linux_command_get_output(command)
+    if result == "yes\n" then
         return true
     else
         return false

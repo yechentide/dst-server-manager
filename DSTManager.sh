@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.2'
+declare -r script_version='v1.3.0.5'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -25,10 +25,6 @@ declare klei_root_dir="$HOME/Klei"
 declare worlds_dir='worlds'
 declare shard_main_name='Main'
 declare shard_cave_name='Cave'
-
-
-#Bash版本检查
-
 
 # 名词说明: 单个地上世界 or 单个地下世界, 称为shard。一整个存档, 称为cluster。
 # 名词说明: 拿两个主机开一个cluster, 称为multi-server
@@ -280,64 +276,70 @@ function update_repo() {
     color_print success '脚本仓库更新完毕！'
 }
 
-function install_dependencies() {
-    # 检测所需依赖是否已经下载
-    # 确认是否下载依赖
-    declare _is_sudoer=0
-    declare _sudoer_group=''
-    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; else _sudoer_group='wheel'; fi
+# Parameters:
+#   $1: package
+# Return: 'yes' / ''
+function is_package_installed() {
+    if [[ $os == 'Ubuntu' ]]; then
+        # https://news.mynavi.jp/techplus/article/20190222-775519/
+        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'yes'; fi
+    fi
+    if [[ $os == 'CentOS' ]]; then
+        if yum list installed | grep -sq $1; then echo 'yes'; fi
+    fi
+}
 
+# Return: 依赖包的数组
+function get_dependencies() {
+    declare -a _requires
+    if [[ $os == 'Ubuntu' ]]; then
+        if [[ $architecture == 64 ]]; then
+            # 可能不需要的: lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386
+            _requires=(lib32gcc1 lua5.3 tmux wget git)
+        else
+            color_print error '暂不支持32位Ubuntu'; exit 1      #_requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
+        fi
+    elif [[ $os == 'CentOS' ]]; then
+        if [[ $architecture == 64 ]]; then
+            # 可能不需要的:glibc.i686
+            _requires=(libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
+        else
+            color_print error '暂不支持32位CentOS'; exit 1      #_requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
+        fi
+    else
+        color_print error "本脚本暂不支持当前系统版本"; exit 1
+    fi
+    echo ${_requires[@]}
+}
+
+# Return: 0 / 1
+function check_user_is_sudoer() {
+    declare _sudoer_group=''
+    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; fi
+    if [[ $os == 'CentOS' ]]; then _sudoer_group='wheel'; fi
     if groups | grep -sqv $_sudoer_group; then
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
         color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
         color_print warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ " -n; count_down 3 dot
-        _is_sudoer=1
-    fi
-
-    declare -a _requires=()
-    declare _manager=''
-
-    if [[ $os == 'Ubuntu' ]]; then
-        _manager='apt'
-        if [[ $architecture == 64 ]]; then
-            # 64bit Ubuntu/Debian
-            #sudo dpkg --add-architecture i386
-            #sudo apt install -y lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386   #? lua5.2 openssl libssl-dev curl
-            #sudo apt install libsdl2-2.0-0:i386            # To fix a sdl warning during dst installation
-            # https://github.com/ValveSoftware/steam-for-linux/issues/7036
-            #_requires=(lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386 tmux wget git)
-            _requires=(lib32gcc1 lua5.3 tmux wget git)
-        else
-            # 32bit Ubuntu/Debian
-            #sudo apt install -y libgcc1 libstdc++6 libcurl4-gnutls-dev   #? lua5.2 openssl libssl-dev curl
-            color_print error '还未测试过32位Ubuntu需要哪些依赖库'
-            exit(1)
-            _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
-        fi
-    elif [[ $os == 'CentOS' ]]; then
-        _manager='yum'
-        if [[ $architecture == 64 ]]; then
-            # 64bit CentOS/Redhat
-            #sudo yum install -y glibc.i686 libstdc++.i686   #? libstdc++ libcurl.i686 lua5.2 openssl openssl-devel curl
-            # dnf install SDL2.i686 SDL2.x86_64             # To fix a sdl warning during dst installation
-            _requires=(glibc.i686 libstdc++.i686 tmux.x86_64 wget.x86_64 git.x86_64)
-        else
-            # 32bit CentOS/Redhat
-            #sudo yum install -y glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6   #? libcurl lua5.2 openssl openssl-devel curl
-            color_print error '还未测试过32位CentOS需要哪些依赖库'
-            exit(1)
-            _requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
-        fi
+        return 1
     else
-        color_print error "本脚本暂不支持当前系统版本"
-        exit 1
+        return 0
     fi
+}
+
+function install_dependencies() {
+    declare _is_sudoer
+    if check_user_is_sudoer; then _is_sudoer='yes'; else _is_sudoer='no'; fi
+    declare -a _requires=$(get_dependencies)
+    declare _manager=''
+    if [[ $os == 'Ubuntu' ]]; then _manager='apt'; fi
+    if [[ $os == 'CentOS' ]]; then _manager='yum'; fi
 
     echo ''
     color_print info '需要下载或更新的软件: '
     echo ${_requires[@]}
 
-    if [[ $_is_sudoer == 1 ]]; then
+    if [[ $_is_sudoer == 'no' ]]; then
         color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
         declare _is_installed
         yes_or_no _is_installed warn '是否已安装？'
@@ -356,20 +358,27 @@ function install_dependencies() {
 
     color_print info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 ' -n; count_down 3
 
-    #if [[ $os == 'Ubuntu' && $architecture == 64 ]]; then sudo dpkg --add-architecture i386; fi
     eval "sudo $_manager update && sudo $_manager upgrade -y"
     declare _package
     for _package in ${_requires[@]}; do
         eval "sudo $_manager install -y $_package"
     done
-    color_print success '依赖包检测完成! '
-    
-    if [[ $os == 'CentOS' ]]; then
-        print_divider '-'
-        color_print info '报错 libcurl.so.4 (RedHat/CentOS) 的话输入以下命令:'
-        color_print info 'cd /usr/lib && ln -s libcurl.so.4 libcurl-gnutls.so.4'
-        print_divider '-'
+
+    if [[ $architecture == 64 && $os == 'CentOS' ]]; then
+        # To fix: libcurl-gnutls.so.4: cannot open shared object file: No such file or directory
+        sudo ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4
     fi
+
+    declare _flag=1
+    for _package in ${_requires[@]}; do
+        if [[ $(is_package_installed $_package) == 'yes' ]]; then
+            color_print success "依赖包$_package"
+        else
+            color_print error "依赖包$_package"
+            _flag=0
+        fi
+    done
+    if [[ $_flag == 0 ]]; then color_print error '依赖包安装失败'; exit 1; fi
 }
 
 function remove_old_dot_files() {
@@ -431,15 +440,52 @@ function install_dst() {
     fi
 }
 
+function check_bash_version() {
+    if echo $BASH_VERSION | grep -sqv ^5.; then
+        color_print error 'Bash版本过低, 请升级到5.0！'
+        color_print warn '是否由脚本来执行升级操作？'
+        PS3='请输入选项数字> '
+        declare _selected
+        select _selected in yes no; do break; done
+        if [[ $_selected == 'yes' ]]; then
+            color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
+            if [[ $os == 'Ubuntu' ]]; then color_print error '本脚本暂不支持为Ubuntu升级Bash'; fi
+            if [[ $os == 'CentOS' ]]; then update_bash_in_centos; return 0; fi
+        fi
+        color_print info '退出脚本'
+        exit 1
+    fi
+}
+
+function update_bash_in_centos() {
+    mkdir /tmp/work && cd /tmp/work
+    sudo yum -y update
+    sudo yum -y install curl
+    sudo yum -y groupinstall "Development Tools"
+    curl -O https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
+    tar xvf bash-5.0.tar.gz
+    cd bash-5.0
+    ./configure
+    make
+    sudo make install
+    cd ~
+    if echo $BASH_VERSION | grep -sqv ^5.; then
+        color_print error '好像升级失败了...'
+        exit 1
+    else
+        color_print success 'Bash升级成功！请重新运行脚本！'
+        exit 0
+    fi
+}
+
 function check_environment() {
     check_os
     check_user_is_root
     check_script_position
+    check_bash_version
 
     clone_repo
-    if [[ ! -e $repo_root_dir/.skip_requirements_check ]] ||
-        ! which tmux > /dev/null 2>&1 || 
-        ! which lua > /dev/null 2>&1; then
+    if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
         install_dependencies
         remove_old_dot_files
         touch $repo_root_dir/.skip_requirements_check
