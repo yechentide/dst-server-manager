@@ -149,7 +149,7 @@ function configure_cluster_ini() {
 
     while true; do
         # endless 无尽 survival 生存 wilderness 荒野 lavaarena 熔炉 quagmire 暴食
-        read_line _answer 36 '请输入游戏模式(默认为survival(生存), 其他选项:endless(无尽) wilderness(荒野)): '
+        read_line _answer 36 '请输入游戏模式(默认为survival(生存), 其他选项:endless(无尽) wilderness(荒野)): ' warn '请输入英文'
         if [[ ${#_answer} == 0 ]]; then _answer='survival'; break; fi
         if echo 'endless survival wilderness' | grep -sqv $_answer; then color_print error '输入错误'; else break; fi
     done

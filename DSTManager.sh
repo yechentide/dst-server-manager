@@ -294,13 +294,15 @@ function get_dependencies() {
     declare -a _requires
     if [[ $os == 'Ubuntu' ]]; then
         if [[ $architecture == 64 ]]; then
+            # 可能不需要的: lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386
             _requires=(lib32gcc1 lua5.3 tmux wget git)
         else
             color_print error '暂不支持32位Ubuntu'; exit 1      #_requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
         fi
     elif [[ $os == 'CentOS' ]]; then
         if [[ $architecture == 64 ]]; then
-            _requires=(glibc.i686 libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
+            # 可能不需要的:glibc.i686
+            _requires=(libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
         else
             color_print error '暂不支持32位CentOS'; exit 1      #_requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
         fi
@@ -310,7 +312,7 @@ function get_dependencies() {
     echo ${_requires[@]}
 }
 
-# Return: 'yes' / 'no'
+# Return: 0 / 1
 function check_user_is_sudoer() {
     declare _sudoer_group=''
     if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; fi
@@ -319,14 +321,15 @@ function check_user_is_sudoer() {
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
         color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
         color_print warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ " -n; count_down 3 dot
-        echo 'no'
+        return 1
     else
-        echo 'yes'
+        return 0
     fi
 }
 
 function install_dependencies() {
-    declare _is_sudoer=$(check_user_is_sudoer)
+    declare _is_sudoer
+    if check_user_is_sudoer; then _is_sudoer='yes'; else _is_sudoer='no'; fi
     declare -a _requires=$(get_dependencies)
     declare _manager=''
     if [[ $os == 'Ubuntu' ]]; then _manager='apt'; fi
@@ -361,6 +364,11 @@ function install_dependencies() {
         eval "sudo $_manager install -y $_package"
     done
 
+    if [[ $architecture == 64 && $os == 'CentOS' ]]; then
+        # To fix: libcurl-gnutls.so.4: cannot open shared object file: No such file or directory
+        sudo ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4
+    fi
+
     declare _flag=1
     for _package in ${_requires[@]}; do
         if [[ $(is_package_installed $_package) == 'yes' ]]; then
@@ -371,13 +379,6 @@ function install_dependencies() {
         fi
     done
     if [[ $_flag == 0 ]]; then color_print error '依赖包安装失败'; exit 1; fi
-    
-    if [[ $os == 'CentOS' ]]; then
-        print_divider '-'
-        color_print info '报错 libcurl.so.4 (RedHat/CentOS) 的话输入以下命令:'
-        color_print info 'cd /usr/lib && ln -s libcurl.so.4 libcurl-gnutls.so.4'
-        print_divider '-'
-    fi
 }
 
 function remove_old_dot_files() {
@@ -443,12 +444,15 @@ function check_bash_version() {
     if echo $BASH_VERSION | grep -sqv ^5.; then
         color_print error 'Bash版本过低, 请升级到5.0！'
         color_print warn '是否由脚本来执行升级操作？'
+        PS3='请输入选项数字> '
         declare _selected
         select _selected in yes no; do break; done
         if [[ $_selected == 'yes' ]]; then
+            color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
             if [[ $os == 'Ubuntu' ]]; then color_print error '本脚本暂不支持为Ubuntu升级Bash'; fi
             if [[ $os == 'CentOS' ]]; then update_bash_in_centos; return 0; fi
         fi
+        color_print info '退出脚本'
         exit 1
     fi
 }
@@ -465,6 +469,13 @@ function update_bash_in_centos() {
     make
     sudo make install
     cd ~
+    if echo $BASH_VERSION | grep -sqv ^5.; then
+        color_print error '好像升级失败了...'
+        exit 1
+    else
+        color_print success 'Bash升级成功！请重新运行脚本！'
+        exit 0
+    fi
 }
 
 function check_environment() {
