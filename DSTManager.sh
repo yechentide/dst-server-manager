@@ -489,10 +489,12 @@ function add_alias() {
     fi
 
     if ! cat ~/.bashrc | grep -sq "^alias lua="; then
-        if ! which lua | grep -sq lua && which lua5.3 | grep -sq lua; then
-            echo "alias lua='lua5.3'" >> ~/.bashrc
+        if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
+            if [[ -e /usr/bin/5.3 ]]; then ln -s /usr/bin/5.3 /usr/bin/lua; fi
         fi
+        # if [[ $os == 'CentOS' ]]; then echo ''; fi
     fi
+    echo '' >> ~/.bashrc
     source ~/.bashrc
 }
 
