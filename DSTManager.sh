@@ -465,8 +465,9 @@ function check_bash_version() {
 function update_bash() {
     mkdir /tmp/work && cd /tmp/work
     if [[ $os == 'Ubuntu' ]]; then
-        sudo apt-get update
-        sudo apt-get install build-essential
+        sudo apt -y update
+        sudo apt -y install curl
+        sudo apt -y install build-essential
     fi
     if [[ $os == 'CentOS' ]]; then
         sudo yum -y update
