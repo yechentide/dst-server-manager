@@ -276,12 +276,24 @@ function update_repo() {
     color_print success '脚本仓库更新完毕！'
 }
 
+# Parameters:
+#   $1: package
+# Return: 'yes' / ''
+function is_package_installed() {
+    if [[ $os == 'Ubuntu' ]]; then
+        # https://news.mynavi.jp/techplus/article/20190222-775519/
+        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'ok'; fi
+    fi
+    if [[ $os == 'CentOS' ]]; then
+        if yum list installed | grep -sq $1; then echo 'ok'; fi
+    fi
+}
+
 function install_dependencies() {
-    # 检测所需依赖是否已经下载
-    # 确认是否下载依赖
     declare _is_sudoer=0
     declare _sudoer_group=''
-    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; else _sudoer_group='wheel'; fi
+    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; fi
+    if [[ $os == 'CentOS' ]]; then _sudoer_group='wheel'; fi
 
     if groups | grep -sqv $_sudoer_group; then
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
@@ -297,31 +309,20 @@ function install_dependencies() {
         _manager='apt'
         if [[ $architecture == 64 ]]; then
             # 64bit Ubuntu/Debian
-            #sudo dpkg --add-architecture i386
-            #sudo apt install -y lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386   #? lua5.2 openssl libssl-dev curl
-            #sudo apt install libsdl2-2.0-0:i386            # To fix a sdl warning during dst installation
-            # https://github.com/ValveSoftware/steam-for-linux/issues/7036
-            #_requires=(lib32gcc1 lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386 tmux wget git)
             _requires=(lib32gcc1 lua5.3 tmux wget git)
         else
             # 32bit Ubuntu/Debian
-            #sudo apt install -y libgcc1 libstdc++6 libcurl4-gnutls-dev   #? lua5.2 openssl libssl-dev curl
-            color_print error '还未测试过32位Ubuntu需要哪些依赖库'
-            exit 1
+            color_print error '暂不支持32位Ubuntu'; exit 1
             _requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
         fi
     elif [[ $os == 'CentOS' ]]; then
         _manager='yum'
         if [[ $architecture == 64 ]]; then
             # 64bit CentOS/Redhat
-            #sudo yum install -y glibc.i686 libstdc++.i686   #? libstdc++ libcurl.i686 lua5.2 openssl openssl-devel curl
-            # dnf install SDL2.i686 SDL2.x86_64             # To fix a sdl warning during dst installation
             _requires=(glibc.i686 libstdc++.i686 tmux.x86_64 wget.x86_64 git.x86_64)
         else
             # 32bit CentOS/Redhat
-            #sudo yum install -y glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6   #? libcurl lua5.2 openssl openssl-devel curl
-            color_print error '还未测试过32位CentOS需要哪些依赖库'
-            exit 1
+            color_print error '暂不支持32位CentOS'; exit 1
             _requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
         fi
     else
@@ -352,13 +353,22 @@ function install_dependencies() {
 
     color_print info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 ' -n; count_down 3
 
-    #if [[ $os == 'Ubuntu' && $architecture == 64 ]]; then sudo dpkg --add-architecture i386; fi
     eval "sudo $_manager update && sudo $_manager upgrade -y"
     declare _package
     for _package in ${_requires[@]}; do
         eval "sudo $_manager install -y $_package"
     done
-    color_print success '依赖包检测完成! '
+
+    declare _flag=1
+    for _package in ${_requires[@]}; do
+        if [[ $(is_package_installed $_package) == 'ok' ]]; then
+            color_print success "依赖包$_package"
+        else
+            color_print error "依赖包$_package"
+            _flag=0
+        fi
+    done
+    if [[ $_flag == 0 ]]; then color_print error '依赖包安装失败'; exit 1; fi
     
     if [[ $os == 'CentOS' ]]; then
         print_divider '-'
