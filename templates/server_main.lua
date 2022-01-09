@@ -1,4 +1,5 @@
 return {
+    override_enabled = true,
     overrides={
         -- generations
         angrybees="default",
