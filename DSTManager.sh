@@ -266,7 +266,9 @@ function clone_repo() {
 
 function update_repo() {
     color_print info '开始更新脚本仓库...'
-    rm $repo_root_dir/.need_update > /dev/null 2>&1
+    if [[ -e $repo_root_dir/.need_update ]]; then
+        rm $repo_root_dir/.need_update > /dev/null 2>&1
+    fi
     git -C $repo_root_dir pull
     if [[ $? == 1 ]]; then
         color_print error '脚本仓库更新失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
@@ -525,12 +527,10 @@ check_environment
 ##############################################################################################
 for file in $(ls $repo_root_dir/scripts/*.sh); do source $file; done
 
-#function check_script_update() {
-    # FIXME
-#    exit 1
-#    tmux new -d -s 'check_script_update'
-#    tmux send-keys -t 'check_script_update' "if git -C $repo_root_dir remote show origin | grep -s 'main pushes' | grep -sq 'out of date'; then touch $repo_root_dir/.need_update; fi; tmux kill-session" ENTER
-#}
+function check_script_update() {
+    tmux new -d -s 'check_script_update'
+    tmux send-keys -t 'check_script_update' "if git -C $repo_root_dir remote show origin | grep -s 'main pushes' | grep -sq 'out of date'; then touch $repo_root_dir/.need_update; fi; tmux kill-session" ENTER
+}
 
 function display_running_clusters() {
     declare -r -a _running_cluster_list=$(generate_shard_list_from_tmux | tr '\n' ' ')
@@ -556,7 +556,7 @@ function main_panel_header() {
 }
 
 function main_panel() {
-    # check_script_update
+    check_script_update
     declare _action
     declare -r -a _action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
 
