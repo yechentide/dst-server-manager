@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.7'
+declare -r script_version='v1.3.0.9'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
