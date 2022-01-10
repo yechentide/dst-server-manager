@@ -16,7 +16,7 @@
 set -eu
 
 declare os='MacOS'
-declare -r script_version='v1.3.0.9'
+declare -r script_version='v1.3.0.10'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
@@ -490,9 +490,15 @@ function add_alias() {
         echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
     fi
 
-    if ! cat ~/.bashrc | grep -sq "^alias lua="; then
+    if ! which lua > /dev/null 2>&1; then
         if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
-            if [[ -e /usr/bin/5.3 ]]; then sudo ln -s /usr/bin/lua5.3 /usr/bin/lua; fi
+            if [[ -e /usr/bin/lua5.3 ]]; then
+                sudo ln -s /usr/bin/lua5.3 /usr/bin/lua
+                color_print info '添加新的symbolic link /usr/bin/lua ' -n; count_down 3 dot
+            else
+                color_print error '未能找到Lua命令 ' -n; count_down 3 dot
+                exit 1
+            fi
         fi
     fi
     echo '' >> ~/.bashrc
