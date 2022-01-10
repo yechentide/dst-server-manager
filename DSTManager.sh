@@ -489,7 +489,11 @@ function add_alias() {
     if ! cat ~/.bashrc | grep -sq "^alias dst="; then
         echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
     fi
+    echo '' >> ~/.bashrc
+    # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
+}
 
+function add_symbolic_link() {
     if ! which lua > /dev/null 2>&1; then
         if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
             if [[ -e /usr/bin/lua5.3 ]]; then
@@ -501,8 +505,6 @@ function add_alias() {
             fi
         fi
     fi
-    echo '' >> ~/.bashrc
-    # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
 }
 
 function check_environment() {
@@ -517,6 +519,7 @@ function check_environment() {
         install_dependencies
         remove_old_dot_files
         color_print info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～' -n; count_down 3 dot
+        add_symbolic_link
         touch $repo_root_dir/.skip_requirements_check
     fi
 
