@@ -1,6 +1,9 @@
-cave_generations_array = {"世界", "资源", "生物以及刷新点", "敌对生物以及刷新点"}
+-- 注: lua里面要用中文当key的话, 得像这样 --> [[[中文]] ] 或者 ["中文"]
+-- 由于dictionary的key是无序的, 所以这里用array来保存key的顺序
 cave_generations_table = {
+    array = {"世界", "资源", "生物以及刷新点", "敌对生物以及刷新点"},
     ["世界"] = {
+        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "试金石", "洞穴光照", "失败的冒险家", "开始资源多样化"},
         ["生物群落"] = {
             en = "task_set",
             default = "cave_default",
@@ -48,6 +51,7 @@ cave_generations_table = {
         }
     },
     ["资源"] = {
+        array = {"草", "巨石", "树苗", "池塘", "燧石", "芦苇", "苔藓", "蘑菇", "尖灌木", "浆果丛", "荧光花", "蘑菇树", "发光浆果", "洞穴蕨类", "洞穴香蕉", "树(所有)"},
         ["草"] = {
             en = "grass",
             default = "default",
@@ -130,6 +134,7 @@ cave_generations_table = {
         }
     },
     ["生物以及刷新点"] = {
+        array = {"兔屋", "石虾", "缀食者", "穴居猴桶", "蛞蝓龟窝"},
         ["兔屋"] = {
             en = "bunnymen",
             default = "default",
@@ -157,6 +162,7 @@ cave_generations_table = {
         }
     },
     ["敌对生物以及刷新点"] = {
+        array = {"蝙蝠", "触手", "蛛网岩", "蜘蛛巢", "发条装置", "梦魇裂隙", "洞穴蠕虫"},
         ["蝙蝠"] = {
             en = "bats",
             default = "default",
@@ -195,9 +201,10 @@ cave_generations_table = {
     }
 }
 
-cave_settings_array = {"世界", "资源再生", "生物", "敌对生物", "巨兽"}
 cave_settings_table = {
+    array = {"世界", "资源再生", "生物", "敌对生物", "巨兽"};
     ["世界"] = {
+        array = {"雨", "地震", "远古大门", "洞穴蠕虫攻击"},
         ["雨"] = {
             en = "weather",
             default = "default",
@@ -220,6 +227,7 @@ cave_settings_table = {
         }
     },
     ["资源再生"] = {
+        array = {"重生速度", "荧光花", "蘑菇树", "月亮蘑菇树", "球状光虫花"},
         ["重生速度"] = {
             en = "regrowth",
             default = "default",
@@ -247,6 +255,7 @@ cave_settings_table = {
         }
     },
     ["生物"] = {
+        array = {"猪", "兔人", "尘蛾", "石虾", "鼹鼠", "穴居猴", "蛞蝓龟", "蜗牛龟", "球状光虫", "蘑菇地精", "草壁虎转化"},
         ["猪"] = {
             en = "pigs_setting",
             default = "default",
@@ -304,6 +313,7 @@ cave_settings_table = {
         }
     },
     ["敌对生物"] = {
+        array = {"蜘蛛", "蝙蝠", "鱼人", "喷射蜘蛛", "洞穴蜘蛛", "穴居悬蛛", "蜘蛛战士", "遗迹梦魇", "裸鼹鼠蝙蝠"},
         ["蜘蛛"] = {
             en = "spiders_setting",
             default = "default",
@@ -351,6 +361,7 @@ cave_settings_table = {
         }
     },
     ["巨兽"] = {
+        array = {"果蝇王", "树精守卫", "毒菌蟾蜍", "蜘蛛女王"},
         ["果蝇王"] = {
             en = "fruitfly",
             default = "default",
