@@ -1,3 +1,2 @@
 test/*
-.skip_requirements_check
-.need_update
+.cache
