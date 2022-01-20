@@ -1,375 +1,181 @@
 # Parameters:
-#   $1: 存档文件夹          ~/Klei/worlds
-# Return:
-#   返回一行字符串。例子: c01 c02 c03
-function generate_cluster_list_from_dir() {
-    find $1 -maxdepth 2 -type d | sed -e "s#$1##g" | sed -e "s#^/##g" | grep / | sed -e "s#/#-#g" | awk -F- '{print $1}' | sort | uniq
-}
-
-# Parameters:
-#   $1: cluster name(在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
-#   $2: 存档文件夹          ~/Klei/worlds
-function select_cluster_from_dir() {
-    declare -n _tmp="$1"
-    declare -a _shard_list=$(generate_cluster_list_from_dir "$2")
-    if [[ ${#_shard_list} -gt 0 ]]; then
-        select_one _shard_list _tmp
-    else
-        return 1
-    fi
-}
-
-# Parameters:
-#   $1: input   (在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
-#   $2: color
-#   $3: message
-#   $4: color(可省略)
-#   $5: message(可省略)
-function read_line() {
-    color_print $2 "$3"
-    if [[ $# == 5 ]]; then
-        color_print $4 "$5"
-    fi
-    echo -n '> '
-    declare -n _tmp="$1"
-    read _tmp
-}
-
-##############################################################################################
-
-#function check_port_usage_of_ubuntu() {
-#    # 检测防火墙端口开放状态
-#    # 提示配置安全组
-#
-#    # Ubuntu:
-#    # sudo ufw status
-#    # Status: inactive
-#    # Status: active
-#    # sudo ufw allow 6666/udp
-#    # 6666/udp                   ALLOW       Anywhere
-#    # 6666/udp (v6)              ALLOW       Anywhere (v6)
-#    if [[ $(sudo ufw status | grep active) ]]; then
-#        color_print info '此主机已经开启防火墙！'
-#        color_print info '请注意开放对应的UDP端口'
-#        color_print info '需要在云服供应商的网页上配置安全组规则, 并在主机上配置防火墙'
-#    fi
-#}
-
-# Parameters:
-#   $1: 存档所在文件夹          ~/Klei/worlds
-#   $2: 存档名字               c01
+#   $1: cluster name      例: c01
 function delete_cluster() {
+    declare -r _accent_color=36
     # stop shard
-    declare -a _shard_list=$(generate_shard_list_from_tmux | grep ^$2)
-    if [[ ${#_shard_list} -gt 0 ]]; then
-        declare _shard
-        for _shard in $_shard_list; do
-            echo "stop $_shard..."
-            stop_shard $_shard
-        done
-    fi
+    stop_shards_of_cluster $1
 
-    declare _answer
-    yes_or_no _answer warn "确定要删除存档$2?"
-    if [[ $_answer == 'no' ]]; then
-        color_print info '取消删除 ' -n; count_down 3 dot
+    yes_or_no warn "确定要删除存档$1?"
+    if [[ $answer == 'no' ]]; then
+        color_print info '取消删除 ' -n; count_down -d 3
         return 0
     fi
 
-    declare -r _new_path="/tmp/$2-$(date '+%Y%m%d-%H%M%S')"
-    mv $1/$2 $_new_path > /dev/null 2>&1
+    if [[ ! -e /tmp/deleted_cluster ]]; then mkdir -p /tmp/deleted_cluster; fi
+    declare -r _new_path="/tmp/deleted_cluster/$1-$(date '+%Y%m%d-%H%M%S')"
+    mv $klei_root_dir/$worlds_dir/$1 $_new_path > /dev/null 2>&1
 
     if [[ $? ]]; then
-        color_print success "存档 $2 已经移动到$_new_path，主机关机时会自动删除! "
-        color_print info '要是后悔了，主机关机之前还来得及哦～ ' -n; count_down 3 dot
+        accent_color_print -p 2 success $_accent_color '存档 ' $1 ' 已经移动到 ' $_new_path '，主机关机时会自动删除!'
+        color_print info '要是后悔了，主机关机之前还来得及哦～ ' -n; count_down -d 3
     else
         color_print error '似乎出现了什么错误...'
     fi
 }
 
-# Parameters:
-#   $1: token (在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
+# Return: token         --> $answer
 function get_token() {
-    declare -n _tmp_token="$1"
+    answer=''
     while true; do
-        read_line _tmp_token info '请输入token: '
-        if [[ ${#_tmp_token} == 0 ]]; then
+        read_line answer info '请输入token: '
+        if [[ ${#answer} == 0 ]]; then
             color_print error '你输入token了吗？？？'
             continue
         fi
-        # pds-g^KU_J9MSP3g1^xif7KCbh91B3UMjQACFCYCHre2g/tGCZeYrjQ5wkVtc=
-        if echo $_tmp_token | grep -sqv '^pds-g^KU'; then
+        # 格式: pds-g^KU_J9MSP3g1^xif7KC......
+        if echo $answer | grep -sqv '^pds-g^KU'; then
             color_print error '输入的token不对'
             color_print error '服务器token是以pds-g^KU开头的'
             continue
         fi
         break
     done
-    echo "token = $_tmp_token"
+    echo "token = $answer"
 }
 
 ##############################################################################################
 
 # Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: cluster derictory   ~/Klei/worlds/???
-#   $3: _use_multi_server   yes / no
-#   $4: _is_main_server     yes / no
-function configure_cluster_ini() {
-    echo ''
-    color_print info '开始创建cluster.ini'
-    color_print info '空栏状态下回车，即可使用默认值'
-    cp $1/templates/cluster.ini $2/cluster.ini
+#   $1: cluster path        ~/Klei/worlds/c01
+#   $2: shard name          Main
+function create_shard() {
+    array=('地上世界' '洞穴世界')
+    select_one info '该shard是...'
 
-    declare _answer
-
-    while true; do
-        read_line _answer 36 '请输入服务器名字(将会显示在服务器列表): '
-        if [[ ${#_answer} == 0 ]]; then color_print error '输入错误'; else break; fi
-    done
-    color_print 39 "服务器名字: $_answer"
-    sed -i "s/cluster_name = \(鸽子们的摸鱼日常\)/cluster_name = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '请输入服务器介绍(将会显示在服务器列表): '
-    color_print 39 "服务器介绍: $_answer"
-    sed -i "s/cluster_description = \(咕咕咕！\)/cluster_description = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '请输入服务器密码(不设密码请空着): '
-    color_print 39 "服务器密码: $_answer"
-    sed -i "s/cluster_password = \(password\)/cluster_password = $_answer/g" $2/cluster.ini
-
-    while true; do
-        # social 休闲 cooperative 合作 competitive 竞赛 madness 疯狂
-        read_line _answer 36 '请输入服务器风格(默认为cooperative(合作), 其他选项: competitive(竞赛) social(休闲) madness(疯狂))' warn '请输入英文'
-        if [[ ${#_answer} == 0 ]]; then _answer='cooperative'; break; fi
-        if echo 'social cooperative competitive madness' | grep -sqv $_answer; then color_print error '输入错误'; else break; fi
-    done
-    color_print 39 "服务器风格: $_answer"
-    sed -i "s/cluster_intention = \(cooperative\)/cluster_intention = $_answer/g" $2/cluster.ini
-
-    while true; do
-        # endless 无尽 survival 生存 wilderness 荒野 lavaarena 熔炉 quagmire 暴食
-        read_line _answer 36 '请输入游戏模式(默认为survival(生存), 其他选项:endless(无尽) wilderness(荒野)): ' warn '请输入英文'
-        if [[ ${#_answer} == 0 ]]; then _answer='survival'; break; fi
-        if echo 'endless survival wilderness' | grep -sqv $_answer; then color_print error '输入错误'; else break; fi
-    done
-    color_print 39 "游戏模式: $_answer"
-    sed -i "s/game_mode = \(survival\)/game_mode = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '请输入最大玩家人数(默认6): '
-    if [[ ${#_answer} == 0 ]]; then _answer='6'; fi
-    color_print 39 "最大玩家人数: $_answer"
-    sed -i "s/max_players = \(6\)/max_players = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '是否开启pvp(默认false, 其他选项true): '
-    if [[ ${#_answer} == 0 ]]; then _answer='false'; fi
-    color_print 39 "pvp: $_answer"
-    sed -i "s/pvp = \(false\)/pvp = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '开启无人暂停(默认true, 其他选项false): '
-    if [[ ${#_answer} == 0 ]]; then _answer='true'; fi
-    color_print 39 "无人暂停: $_answer"
-    sed -i "s/pause_when_empty = \(true\)/pause_when_empty = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '开启投票(默认true, 其他选项false): '
-    if [[ ${#_answer} == 0 ]]; then _answer='true'; fi
-    color_print 39 "投票: $_answer"
-    sed -i "s/vote_enabled = \(true\)/vote_enabled = $_answer/g" $2/cluster.ini
-
-    read_line _answer 36 '最大存档快照数(默认6, 可以用来回档): '
-    if [[ ${#_answer} == 0 ]]; then _answer='6'; fi
-    color_print 39 "最大存档快照数: $_answer"
-    sed -i "s/max_snapshots = \(6\)/max_snapshots = $_answer/g" $2/cluster.ini
-
-    if [[ $3 == 'yes' ]]; then
-        if [[ $4 == 'yes' ]]; then
-            color_print info '修改bind_ip --> 0.0.0.0'
-            sed -i "s/bind_ip = \(127.0.0.1\)/bind_ip = 0.0.0.0/g" $2/cluster.ini
-        else
-            read_line _answer 36 '请输入主服务器的ip地址: '
-            color_print 39 "主服务器的ip地址: $_answer"
-            sed -i "s/master_ip = \(127.0.0.1\)/master_ip = $_answer/g" $2/cluster.ini
-        fi
-
-        read_line _answer 36 '请输入要服务器之间的通信端口' warn '请确保两边的服务器都开启这个端口(UDP)'
-        color_print warn "主服务器和副服务器将使用UDP端口$_answer, 请确保防火墙和安全组设置里打开了UDP端口$_answer"
-        sed -i "s/master_port = \(10888\)/master_port = $_answer/g" $2/cluster.ini
-    fi
-
-    color_print success 'cluster.ini创建完成！'
-}
-
-# Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: cluster derictory   ~/Klei/worlds/???
-#   $3: $shard_???_name     Main / Cave
-#   $4: _is_main_shard      yes / no
-function configure_server_ini() {
-    if [[ ! -e $2/$3 ]]; then mkdir -p $2/$3; fi
-    if [[ $4 == 'yes' ]]; then 
-        declare -r _default_port=11000
-        declare -r _template_file=$1/templates/main_server.ini
+    # 复制shard模板过去
+    if [[ $answer == '地上世界' ]]; then
+        cp -r $repo_root_dir/templates/cluster/shard_forest $1/$2
     else
-        declare -r _default_port=11001
-        declare -r _template_file=$1/templates/cave_server.ini
+        cp -r $repo_root_dir/templates/cluster/shard_cave $1/$2
     fi
 
-    declare _answer
-    echo ''
-    color_print info "开始创建$3/server.ini"
-    read_line _answer 36 "请输入$3世界端口(默认值$_default_port, 范围2000~65535): "
-    if [[ ${#_answer} == 0 ]]; then _answer=$_default_port; fi
-    sed "s/server_port = \($_default_port\)/server_port = $_answer/g" $_template_file > $2/$3/server.ini
-    color_print warn "$3世界将使用端口$_answer, 请确保防火墙和安全组设置里打开了端口$_answer"
-    color_print success "$3/server.ini创建完成！" -n; count_down 3 dot
-}
+    # 编辑server.ini
+    lua $repo_root_dir/scripts/edit_shard_ini.lua $repo_root_dir $1/$2
 
-# Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: cluster dir         ~/Klei/worlds/cluster_name
-#   $3: $shard_???_name     Main / Cave
-#   $4: _is_main            yes / no
-function create_cluster_in_multi_server() {
-    # cluster.ini
-    configure_cluster_ini $1 $2 'yes' $4
-
-    # server.ini
-    configure_server_ini $1 $2 $3 $4
-
-    # 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $cluster_path true true Main Cave
-    if [[ $4 == 'yes' ]]; then
-        lua $1/scripts/configure_world.lua $1 new $2 'true' 'false' $3 'nil'
+    # 编辑worldgenoverride.lua
+    if [[ $answer == '地上世界' ]]; then
+        lua $repo_root_dir/scripts/configure_world.lua $repo_root_dir 'new' "$1/$2" 'true'
     else
-        lua $1/scripts/configure_world.lua $1 new $2 'false' 'true' 'nil' $3
+        lua $repo_root_dir/scripts/configure_world.lua $repo_root_dir 'new' "$1/$2" 'false'
     fi
 }
 
-# Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: cluster dir         ~/Klei/worlds/cluster_name
-#   $3: $shard_???_name     Main
-#   $4: $shard_???_name     Cave
-function create_cluster_in_single_server() {
-    # cluster.ini
-    configure_cluster_ini $1 $2 'no' 'yes'
-    
-    # server.ini
-    configure_server_ini $1 $2 $3 'yes'
-    configure_server_ini $1 $2 $4 'no'
-
-    # 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $cluster_path true true Main Cave
-    lua $1/scripts/configure_world.lua $1 new $2 'true' 'true' $3 $4
-}
-
-# Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: $dst_root_dir       ~/Server
-#   $3: $klei_root_dir      ~/Klei
-#   $4: worlds derictory    worlds
-#   $5: $shard_main_name    Main
-#   $6: $shard_cave_name    Cave
 function create_cluster() {
-    color_print info '开始创建新的世界...'
-    declare _use_multi_server='no'
-    declare _is_main='no'
-
-    yes_or_no _use_multi_server info '是否使用多个主机开服？'
-    if [[ $_use_multi_server == 'yes' ]]; then
-        yes_or_no _is_main info '本服务器上的世界，是否为主世界？'
-    fi
-
-    declare _new_cluster
-    read_line _new_cluster info '请输入新存档的文件夹名字' warn '(这个名字不是显示在服务器列表的名字)'
-    if generate_cluster_list_from_dir $3/$4 | grep -sq $_new_cluster; then
+    color_print info '开始创建新的存档...'
+    
+    read_line info '请输入新存档的文件夹名字' warn '(这个名字不是显示在服务器列表的名字)'
+    declare -r _new_cluster=$answer
+    if generate_list_from_dir -c | grep -sq $_new_cluster; then
         color_print error '该名字已经存在！'
+        color_print tip '请换个名字或者先去把旧的存档删了'
         return 0
     fi
-    color_print 39 "存档文件夹名字: $_new_cluster"
+    declare -r _cluster_path="$klei_root_dir/$worlds_dir/$_new_cluster"
+    color_print info "存档文件夹名字: $_new_cluster"
 
-    mkdir -p $3/$4/$_new_cluster
+    # 复制cluster模板过去
+    cp -r $repo_root_dir/templates/cluster $_cluster_path
+
+    # 输入token
     declare _token
-    get_token _token
-    echo $_token > $3/$4/$_new_cluster/cluster_token.txt
+    get_token
+    echo $answer > $_cluster_path/cluster_token.txt
 
-    if [[ $_use_multi_server == 'yes' ]]; then
-        if [[ $_is_main == 'yes' ]]; then
-            create_cluster_in_multi_server $1 $3/$4/$_new_cluster $5 $_is_main
-        else
-            create_cluster_in_multi_server $1 $3/$4/$_new_cluster $6 $_is_main
+    # 编辑cluster.ini
+    lua $repo_root_dir/scripts/edit_cluster_ini.lua $repo_root_dir "$klei_root_dir/$worlds_dir/$_new_cluster"
+
+    # 添加shard
+    while true; do
+        yes_or_no info '是否要添加shard?'
+        if [[ $answer == 'no' ]]; then break; fi
+
+        color_print info '请为shard取个名字吧'
+        read_line tip '地面世界的话推荐Forest, 洞穴世界的话推荐Cave, 主世界的话推荐Main'
+        if [[ -e $_cluster_path/$answer ]]; then
+            color_print error "存档${_new_cluster}里面已存在${$answer}!"
+            continue
         fi
-    else
-        create_cluster_in_single_server $1 $3/$4/$_new_cluster $5 $6
-    fi
+        create_shard $_cluster_path $answer
+    done
 
-    color_print success "新的世界$_new_cluster创建完成～"
+    color_print success "新的存档$_new_cluster创建完成～"
+    color_print info "存档位置: $_cluster_path"
+    color_print info '要添加/配置Mod的话, 请使用Mod管理面板'
 }
 
-# Parameters:
-#   $1: cluster dir         ~/Klei/worlds/cluster_name
-#   $2: $shard_???_name     Main
-#   $3: $shard_???_name     Cave
-function check_cluster_is_ok() {
-    if [[ -e $1/Master ]]; then color_print warn '主shard文件夹名为Master, 本脚本默认为Main, 请手动修改！'; exit 1; fi
-    check_shard_is_ok $1/$2
-    check_shard_is_ok $1/$3
-}
+function update_world_setting() {
+    color_print info '修改shard的配置选项...'
 
-# Parameters:
-#   $1: shard dir         ~/Klei/worlds/cluster_name/shard
-function check_shard_is_ok() {
-    if [[ -e $1/leveldataoverride.lua ]]; then
-        color_print warn "存档文件夹 $1 里面检测到leveldataoverride.lua文件"
-        color_print warn '用来开服的存档应该把这个文件改名为worldgenoverride.lua'
-        color_print warn '推荐使用本脚本新配置一个worldgenoverride.lua再覆盖过去'
-        exit 1
-    fi
-}
+    array=$(generate_list_from_dir -s)
+    if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; return; fi
+    select_one info '请选择一个shard'
 
-# Parameters:
-#   $1: shard dir         ~/Klei/worlds/cluster_name/shard
-function remove_klei_from_worldgenoverride() {
-    sed -i -e 's/^KLEI     1 //g' $1/worldgenoverride.lua
-}
+    declare -r _shard=$answer
+    declare -r _shard_path="$klei_root_dir/$worlds_dir/$_shard"
+    stop_shard $_shard
 
-# Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: $klei_root_dir      ~/Klei
-#   $3: worlds derictory    worlds
-#   $4: $shard_main_name    Main
-function update_shard_setting() {
-    color_print info '重写配置shard选项...'
-
-    declare _shard
-    if ! select_shard_from_dir _shard $2/$3; then
-        color_print warn '未找到存档！'
-        color_print warn '请先新建一个存档！ ' -n; count_down 3 dot
+    remove_klei_from_worldgenoverride $_shard_path
+    if ! check_shard $_shard_path; then
+        accent_color_print warn 36 '这个shard ' $_shard ' 不符合该脚本的标准'
         return 0
     fi
-    declare -r _shard_path=$(echo $_shard | sed -e 's#-#/#g')
 
-    check_shard_is_ok $2/$3/$_shard_path
-    remove_klei_from_worldgenoverride $2/$3/$_shard_path
+    if cat $_shard_path/worldgenoverride.lua | grep -sq 'CAVE'; then
+        lua $repo_root_dir/scripts/configure_world.lua $repo_root_dir 'update' $_shard_path 'false'
+    else
+        lua $repo_root_dir/scripts/configure_world.lua $repo_root_dir 'update' $_shard_path 'true'
+    fi
+}
 
-    declare _is_main='false'
-    if echo $_shard | grep -sq $4; then _is_main='true'; fi
+function update_ini_setting() {
+    color_print info '修改cluster的配置选项...'
 
-    # 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager update $shard_path true
-    lua $1/scripts/configure_world.lua $1 update $2/$3/$_shard_path $_is_main
+    array=$(generate_list_from_dir -cs)
+    if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; return; fi
+    color_print info '选择存档名来修改cluster.ini, 选择shard名来修改server.ini'
+    select_one info '请选择一个存档'
+
+    if echo $answer | grep -sqv -; then
+        declare -r _cluster=$answer
+        declare -r _cluster_path="$klei_root_dir/$worlds_dir/$_cluster"
+        stop_shards_of_cluster $_cluster
+
+        if ! check_cluster $_cluster_path; then
+            accent_color_print warn 36 '这个存档 ' $_cluster ' 不符合该脚本的标准'
+            return 0
+        fi
+
+        lua $repo_root_dir/scripts/edit_cluster_ini.lua $repo_root_dir $_cluster_path
+    else
+        declare -r _shard=$answer
+        declare -r _shard_path="$klei_root_dir/$worlds_dir/$_shard"
+        stop_shard $_shard
+
+        if ! check_shard $_shard_path; then
+            accent_color_print warn 36 '这个shard ' $_shard ' 不符合该脚本的标准'
+            return 0
+        fi
+
+        lua $repo_root_dir/scripts/edit_shard_ini.lua $repo_root_dir $_shard_path
+    fi
 }
 
 ##############################################################################################
 
-# Parameters:
-#   $1: $repo_root_dir      ~/DSTServerManager
-#   $2: $dst_root_dir       ~/Server
-#   $3: $klei_root_dir      ~/Klei
-#   $4: worlds derictory    worlds
-#   $5: $shard_main_name    Main
-#   $6: $shard_cave_name    Cave
 function cluster_panel() {
     declare _action
-    declare -r -a _action_list=('新建存档' '更改世界选项' '删除存档' '返回')
-    # ToDo: 备份存档 还原存档 导入存档
+    declare -r -a _action_list=('新建存档' '修改存档配置' '修改世界配置' '删除存档' '返回')
+    # ToDo: 导入存档 '备份存档' '还原存档'
 
     while true; do
         echo ''
@@ -377,29 +183,35 @@ function cluster_panel() {
         display_running_clusters
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
-        select_one _action_list _action
+        ARRAY=${_action_list[@]}; select_one
+        declare -r _action=$ANSWER
 
         case $_action in
         '新建存档')
-            create_cluster $1 $2 $3 $4 $5 $6
+            create_cluster
             ;;
-        '更改世界选项')
-            update_shard_setting $1 $3 $4 $5
+        '修改存档配置')
+            update_ini_setting
+            ;;
+        '修改世界配置')
+            update_world_setting
             ;;
         '删除存档')
+            array=$(generate_list_from_dir -c)
+            if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; continue; fi
+
+            multi_select warn '请选择你要删除的存档'
             declare _cluster=''
-            if ! select_cluster_from_dir _cluster $3/$4; then
-                color_print warn '未找到任何存档！ ' -n; count_down 3 dot
-                continue
-            fi
-            delete_cluster $3/$4 $_cluster
+            for _cluster in ${array[@]}; do
+                delete_cluster $_cluster
+            done
             ;;
         '返回')
             color_print info '即将返回主面板 ' -n; count_down 3
             return 0
             ;;
         *)
-            color_print error "${_action}功能暂未写好" -n; count_down 3 dot
+            color_print error "${_action}功能暂未写好" -n; count_down -d 3
             ;;
         esac
     done

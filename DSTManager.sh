@@ -1,33 +1,45 @@
 #!/usr/bin/env bash
 
-#################### #################### References #################### ####################
-# https://dontstarve.fandom.com/wiki/Guides/Don%E2%80%99t_Starve_Together_Dedicated_Servers
-# https://steamcommunity.com/id/ToNiO44/myworkshopfiles/?section=guides&appid=322330
-##############################################################################################
-
 #################### ################### Repositories ################### ####################
 # 作者: yechentide      贴吧@夜尘tide
 # Github: https://github.com/yechentide/DSTServerManager
 # Gitee:  https://gitee.com/yechentide/DSTServerManager
-# 主要使用Github，上传Gitee只是单纯为了方便国内VPS下载...
-# 欢迎会shellscript的伙伴来一起写开服脚本！
+# 主要使用Github, 上传Gitee只是单纯为了方便国内VPS下载...
+# 欢迎会 shellscript / lua 的伙伴来一起写开服脚本！
 ##############################################################################################
 
 set -eu
 
+# 这个脚本里将会读取其他的全部shell脚本, 所以以下全局变量在其他shell脚本里可用
 declare os='MacOS'
-declare -r script_version='v1.3.0.10'
+declare -r script_version='v1.3.1'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 
-declare dst_root_dir="$HOME/Server"
-declare klei_root_dir="$HOME/Klei"
-declare worlds_dir='worlds'
-declare shard_main_name='Main'
-declare shard_cave_name='Cave'
+declare -r dst_root_dir="$HOME/Server"
+declare -r mod_dir_v1="$dst_root_dir/mods"
+declare -r mod_dir_v2="$dst_root_dir/ugc_mods"
+declare -r klei_root_dir="$HOME/Klei"
+declare -r worlds_dir='worlds'
+declare -r backup_dir="$klei_root_dir/backup"
+declare -r main_shard_name='Main'
+declare -r overground_shard_name='Forest'
+declare -r underground_shard_name='Cave'
+
+declare -r repo_url_china='https://gitee.com/yechentide/DSTServerManager'
+declare -r repo_url_global='https://github.com/yechentide/DSTServerManager'
 
 # 名词说明: 单个地上世界 or 单个地下世界, 称为shard。一整个存档, 称为cluster。
-# 名词说明: 拿两个主机开一个cluster, 称为multi-server
+# 名词说明: 拿两个主机开一个cluster, 称为multi-server(多主机)
+# 名词说明: 一个cluster里面有3个以上shard, 称为多层世界
+
+# 注意: 本脚本里面, 各种路径不以 / 结尾。所以连结路径和文件名时要注意下
+
+# 1.3.0.10为止, 使用了declare -n来从函数里面传递数据, 但这在旧版本Bash无法使用
+# 具体哪个版本开始可以用不清楚, 目前只知道Bash 4.3用不了, Bash 5.0可以用
+# 为了降低Bash版本需求, 设置2个全局变量来传递
+declare answer=''
+declare -a array=()
 
 ##############################################################################################
 # 一些常用的函数
@@ -59,13 +71,27 @@ declare shard_cave_name='Cave'
 # 取消全部格式
 #   格式: \033[m  或者  \033[0m
 #
+# Options: (option必须在普通参数前面)
+#   -n: 添加这个选项的话, 将会使用echo的-n选项 = 输出不改行
 # Parameters:
-#   $1: color code. 0~255
-#   $2: output string
-#   -n: make sure it is the last parameter. use -n option of echo.
+#   $1: 颜色代码(0~255) or 特定的字符串
+#   $2: 需要改颜色的字符串
 function color_print() {
+    OPTIND=0
     declare -r _esc=$(printf "\033")    # 更改输出颜色用的前缀
     declare -r _reset="${_esc}[0m"      # 重置所有颜色，字体设定
+    declare _new_line='true'
+    declare _no_prefix='false'
+
+    declare _option
+    while getopts :n _option; do
+        case $_option in
+            n)  _new_line='false' ;;
+            p)  _no_prefix='true' ;;
+            *)  echo 'error in function color_print'; exit 1; ;;
+        esac
+    done
+    shift $((OPTIND - 1))
 
     if [[ $# == 0 ]] || [[ $# == 1 && ! -p /dev/stdin ]]; then
         echo "${_esc}[1;38;5;9m[Error] 参数数量错误. 用法: color_print 颜色 字符串${_esc}[m"
@@ -85,41 +111,87 @@ function color_print() {
         _color=33; _prefix='[INFO] '; ;;
     'warn')     # 黄
         _color=190; _prefix='[WARN] '; ;;
-    'success')   # 绿
+    'success')  # 绿
         _color=46; _prefix='[OK] '; ;;
     'error')    # 红
         _color=196; _prefix='[ERROR] '; ;;
-    'log')      # 橙
-        _color=215; _prefix='[LOG] '; ;;
+    'tip')      # 橙
+        _color=215; _prefix='[TIP] '; ;;
     'debug')
         _color=141; _prefix='[debug] '; ;;
     *)
         _color=$1; ;;
     esac
 
-    if echo $@ | grep -sq ' \-n'; then
-        echo -n "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
-    else
+    if [[ $_no_prefix == 'true' ]]; then _prefix=''; fi
+    if [[ $_new_line == 'true' ]]; then
         echo "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
+    else
+        echo -n "${_esc}[38;5;${_color}m${_prefix}${_str}${_reset}"
     fi
+    OPTIND=0
 }
 # Parameters:
+#   $1: 主颜色
+#   $2: 强调色
+#   $3: message
+#   .....
+function accent_color_print() {
+    OPTIND=0
+    declare _accent_pattern=1
+    while getopts :p: _option; do
+        case $_option in
+            p)  _accent_pattern=$OPTARG ;;
+            *)  echo 'error in function accent_color_print'; exit 1; ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    case $_accent_pattern in
+    1)      #   --- * ---
+        color_print -n $1 "$3"; color_print -np $2 "$4"; color_print -p $1 "$5"
+        ;;
+    2)      #   --- * --- * ---
+        color_print -n $1 "$3"; color_print -np $2 "$4"; color_print -np $1 "$5"; color_print -np $2 "$6"; color_print -p $1 "$7"
+        ;;
+    *)
+        color_print error 'accent_color_print()参数错误:'
+        color_print error "$@"
+        exit 1
+        ;;
+    esac
+    OPTIND=0
+}
+# Options: (option必须在普通参数前面)
+#   -d: 添加这个选项的话, 将会使用点来代替数字
+# Parameters:
 #   $1: seconds
-#   dot: make sure it is the last parameter. output dot instead number.
 function count_down() {
-    if echo $@ | grep -sq 'dot'; then
+    OPTIND=0
+    declare _use_dot='false'
+    declare _option
+    while getopts :d _option; do
+        case $_option in
+            d)  _use_dot='true' ;;
+            *)  echo 'error in function count_down'; exit 1; ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+    
+    if [[ $_use_dot == 'true' ]]; then
         for i in $(seq $1 -1 1); do
-            echo -n '.' | color_print 102 -n
+            color_print -n 102 '.'
             sleep 1
         done
         echo ''
     else
         for i in $(seq $1 -1 1); do
-            echo -n "$i " | color_print 102 -n
+            echo -n "$i " | color_print -n 102
             sleep 1
         done
         color_print 102 '0'
     fi
+    OPTIND=0
 }
 # Parameters:
 #   $1: divider charactor
@@ -131,41 +203,38 @@ function print_divider() {
     fi
 }
 # Parameters:
-#   $1: answer(在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
-#   $2: color code. 0~255
-#   $3: 提示用户的信息
+#   $1: color code. 0~255
+#   $2: 提示用户的信息
+# Return: 回答 --> $answer
+# Usage:
+#   yes_or_no info 'Are you ready?'; echo $answer
 function yes_or_no() {
-    declare -n _tmp="$1"
-    declare _selected
+    answer=''
     PS3='请输入选项数字> '
-
     while true; do
-        if [[ $# -lt 3 ]]; then
-            color_print $2 '请确认...'
-        else
-            color_print $2 $3
-        fi
-        select _selected in yes no; do break; done
-        if [[ ${#_selected} == 0 ]]; then
+        color_print $1 "$2"
+        select answer in yes no; do break; done
+        if [[ ${#answer} == 0 ]]; then
             color_print error '请输入正确的数字！'
             continue
         fi
-        _tmp=$_selected
         return 0
     done
 }
+# 代入数组的方法: array=${_your_array[@]}
 # Parameters:
-#   $1: array           注意传进来的是变量名(也就是不加$)
-#   $2: selected one    (在函数内部会更改这个参数原来位置的值), 注意传进来的是变量名(也就是不加$)
+#   $1: color code. 0~255
+#   $2: 提示用户的信息
+# Return: 回答 --> $answer
+# Usage:
+#   array=${_your_array[@]}; select_one info '选个吧'; echo $answer
 function select_one() {
-    declare -n _array="$1"
-    declare -n _selected="$2"
+    answer=''
     PS3='请输入选项数字> '
-
     while true; do
-        color_print info '请从下面选择一个选项'
-        select _selected in ${_array[@]}; do break; done
-        if [[ ${#_selected} == 0 ]]; then
+        color_print $1 "$2"
+        select answer in ${array[@]}; do break; done
+        if [[ ${#answer} == 0 ]]; then
             color_print error '请输入正确的数字！'
             continue
         fi
@@ -193,14 +262,32 @@ function check_os() {
         color_print error '本脚本暂不支持此Linux系统：'
         cat /etc/os-release | grep ^NAME | color_print error
         cat /etc/os-release | grep ^VERSION= | color_print error
+        color_print tip '你可以换个系统, 或者自己修改这个脚本, 或者联系作者(需求多的话才会添加支持)'
         exit 1
     fi
 }
 
 function check_user_is_root() {
     if echo $HOME | grep -sq ^/root; then
-        color_print error '请勿使用root用户执行本脚本！'
+        color_print error '出于安全方面考虑, 请勿使用root用户执行本脚本！'
+        color_print tip '请使用sudo权限的用户执行本脚本'
+        color_print tip '推荐把脚本上传到 /home/用户名 文件夹里面'
         exit 1
+    fi
+}
+
+# Return: 'yes' / 'no' --> $answer
+function check_user_is_sudoer() {
+    declare _sudoer_group=''
+    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; fi
+    if [[ $os == 'CentOS' ]]; then _sudoer_group='wheel'; fi
+    if groups | grep -sqv $_sudoer_group; then
+        color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
+        color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
+        color_print -n warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ "; count_down -d 3
+        answer='no'
+    else
+        answer='yes'
     fi
 }
 
@@ -212,7 +299,7 @@ function check_script_position() {
         echo "检测到该脚本位于root用户的家目录之下: $current_script_dir"
         echo '该脚本将会被删除'
         echo "脚本仓库将会安装到当前用户$(whoami)的家目录$HOME"
-        echo "新的脚本将会位于$HOME/DSTManager.sh"
+        echo "新的脚本将会位于$HOME/DSTManager.sh, 启动脚本请执行该文件"
         rm $0
     fi
 }
@@ -232,20 +319,17 @@ function clone_repo() {
         color_print warn '未发现脚本仓库！'
     fi
 
-    color_print info "准备下载脚本仓库至$repo_root_dir " -n; count_down 3 dot
+    color_print -n info "准备下载脚本仓库至$repo_root_dir "; count_down -d 3
 
-    declare _is_server_in_china
-    yes_or_no _is_server_in_china info '请问这个主机是否位于国内？'
-    if [[ $_is_server_in_china == 'yes' ]]; then
-        declare -r _repo_url='https://gitee.com/yechentide/DSTServerManager'
+    yes_or_no info '请问这个主机是否位于国内？'
+    if [[ $answer == 'yes' ]]; then
         color_print info '远程仓库将使用gitee上的仓库'
         color_print warn 'gitee网站有时候会无法访问, 如果无法下载, 请隔一段时间重试'
+        git clone $repo_url_china $repo_root_dir
     else
-        declare -r _repo_url='https://github.com/yechentide/DSTServerManager'
         color_print info '远程仓库将使用github上的仓库'
+        git clone $repo_url_global $repo_root_dir
     fi
-
-    git clone $_repo_url $repo_root_dir
 
     if [[ $? == 1 ]]; then
         color_print error '脚本仓库下载失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
@@ -254,85 +338,47 @@ function clone_repo() {
         exit 1
     fi
 
-    rm $0
+    rm $0       # 删除被执行的脚本文件
     ln -s $repo_root_dir/DSTManager.sh $HOME/DSTManager.sh
 
     echo ''
     color_print success '脚本仓库下载完成！请重新运行脚本。'
-    color_print info '以后运行脚本请使用该命令：  ~/DSTManager.sh'
+    color_print info '以后运行脚本请使用该命令： ~/DSTManager.sh'
     sleep 3
     exit 0
 }
 
-function update_repo() {
-    color_print info '开始更新脚本仓库...'
-    if [[ -e $repo_root_dir/.need_update ]]; then
-        rm $repo_root_dir/.need_update > /dev/null 2>&1
-    fi
-    git -C $repo_root_dir pull
-    if [[ $? == 1 ]]; then
-        color_print error '脚本仓库更新失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
-        color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
-        return
-    fi
-    color_print success '脚本仓库更新完毕！'
-}
-
 # Parameters:
-#   $1: package
+#   $1: package name
 # Return: 'yes' / ''
 function is_package_installed() {
     if [[ $os == 'Ubuntu' ]]; then
         # https://news.mynavi.jp/techplus/article/20190222-775519/
         if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'yes'; fi
-    fi
-    if [[ $os == 'CentOS' ]]; then
+    elif [[ $os == 'CentOS' ]]; then
         if yum list installed | grep -sq $1; then echo 'yes'; fi
     fi
 }
 
-# Return: 依赖包的数组
+# Return: 依赖包的数组 --> $array
 function get_dependencies() {
-    declare -a _requires
+    array=()
     if [[ $os == 'Ubuntu' ]]; then
-        if [[ $architecture == 64 ]]; then
-            # 可能不需要的: lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386
-            _requires=(lib32gcc1 lua5.3 tmux wget git)
-        else
-            color_print error '暂不支持32位Ubuntu'; exit 1      #_requires=(libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git)
-        fi
+        # 可能不需要的: lib32stdc++6 libcurl4-gnutls-dev:i386 libsdl2-2.0-0:i386
+        array=(lib32gcc1 lua5.3 tmux wget git curl)
+        # 32位: libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git
     elif [[ $os == 'CentOS' ]]; then
-        if [[ $architecture == 64 ]]; then
-            # 可能不需要的:glibc.i686
-            _requires=(libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
-        else
-            color_print error '暂不支持32位CentOS'; exit 1      #_requires=(glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git)
-        fi
-    else
-        color_print error "本脚本暂不支持当前系统版本"; exit 1
-    fi
-    echo ${_requires[@]}
-}
-
-# Return: 0 / 1
-function check_user_is_sudoer() {
-    declare _sudoer_group=''
-    if [[ $os == 'Ubuntu' ]]; then _sudoer_group='sudo'; fi
-    if [[ $os == 'CentOS' ]]; then _sudoer_group='wheel'; fi
-    if groups | grep -sqv $_sudoer_group; then
-        color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
-        color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
-        color_print warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ " -n; count_down 3 dot
-        return 1
-    else
-        return 0
+        # 可能不需要的:glibc.i686
+        array=(libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
+        # 32位: glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git
     fi
 }
 
 function install_dependencies() {
-    declare _is_sudoer
-    if check_user_is_sudoer; then _is_sudoer='yes'; else _is_sudoer='no'; fi
-    declare -a _requires=$(get_dependencies)
+    check_user_is_sudoer
+    declare -r _is_sudoer=$answer
+    get_dependencies
+    declare -a _requires=$array
     declare _manager=''
     if [[ $os == 'Ubuntu' ]]; then _manager='apt'; fi
     if [[ $os == 'CentOS' ]]; then _manager='yum'; fi
@@ -343,22 +389,20 @@ function install_dependencies() {
 
     if [[ $_is_sudoer == 'no' ]]; then
         color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
-        declare _is_installed
-        yes_or_no _is_installed warn '是否已安装？'
-        if [[ $_is_installed == 'yes' ]]; then return 0; fi
+        yes_or_no warn '是否已安装？'
+        if [[ $answer == 'yes' ]]; then return 0; fi
 
         color_print error '无权限下载安装必须软件，终止运行脚本。请联系服务器管理员解决。'
         exit 1
     fi
 
-    declare _start_install
-    yes_or_no _start_install warn '是否要开始安装依赖？'
-    if [[ $_start_install == 'no' ]]; then
+    yes_or_no warn '是否要开始安装依赖？'
+    if [[ $answer == 'no' ]]; then
         color_print error '终止安装依赖包, 结束脚本'
         exit 1
     fi
 
-    color_print info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 ' -n; count_down 3
+    color_print -n info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 '; count_down 3
 
     eval "sudo $_manager update && sudo $_manager upgrade -y"
     declare _package
@@ -366,7 +410,7 @@ function install_dependencies() {
         eval "sudo $_manager install -y $_package"
     done
 
-    if [[ $architecture == 64 && $os == 'CentOS' ]]; then
+    if [[ $os == 'CentOS' ]]; then
         # To fix: libcurl-gnutls.so.4: cannot open shared object file: No such file or directory
         sudo ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4
     fi
@@ -383,12 +427,6 @@ function install_dependencies() {
     if [[ $_flag == 0 ]]; then color_print error '依赖包安装失败'; exit 1; fi
 }
 
-function remove_old_dot_files() {
-    # 旧版本使用的文件
-    if [[ -e $repo_root_dir/.first_run ]]; then rm $repo_root_dir/.first_run; fi
-    if [[ -e $repo_root_dir/.skip_check ]]; then rm $repo_root_dir/.skip_check; fi
-}
-
 function install_steamcmd() {
     # https://developer.valvesoftware.com/wiki/SteamCMD#Linux
     if [[ ! -e ~/Steam ]]; then mkdir ~/Steam; fi
@@ -398,12 +436,12 @@ function install_steamcmd() {
     fi
 
     echo ''
-    color_print warn '未在~/Steam 发现steamcmd.sh，开始下载' -n; count_down 3 dot
+    color_print -n warn '未在~/Steam 发现steamcmd.sh，开始下载'; count_down -d 3
     # 该用哪个网站？
     # wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
     # wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz
     wget --output-document ~/Steam/steamcmd_linux.tar.gz 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' && tar -xvzf ~/Steam/steamcmd_linux.tar.gz --directory ~/Steam
-    
+
     if [[ $? ]]; then
         color_print success 'steamcmd.sh脚本下载完成！'
         rm -f ~/Steam/steamcmd_linux.tar.gz > /dev/null 2>&1
@@ -414,14 +452,15 @@ function install_steamcmd() {
 }
 
 function install_dst() {
-    if [[ -e $dst_root_dir/bin/dontstarve_dedicated_server_nullrenderer && -e $dst_root_dir/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
+    if [[ -e $dst_root_dir/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
         color_print success '饥荒服务端已经下载好啦～'
         return 0
     fi
-    
+
     echo ''
     color_print warn "路径$dst_root_dir 未找到饥荒服务端，即将开始下载..."
-    color_print info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 ' -n; count_down 3
+    color_print -n info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 '; count_down 3
+    if [[ -e $dst_root_dir ]]; then rm -rf $dst_root_dir > /dev/null 2>&1; fi
     mkdir -p $dst_root_dir
     ~/Steam/steamcmd.sh +force_install_dir $dst_root_dir +login anonymous +app_update 343050 validate +quit
     # Error: /Steam/linux32/steamcmd: No such file or directory
@@ -430,102 +469,85 @@ function install_dst() {
         color_print success '饥荒服务端下载安装完成!'
         color_print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
         color_print info '不用担心, 这个不影响下载/更新DST'
-        color_print info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ ' -n; count_down 6 dot
+        color_print -n info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ '; count_down -d 6
     else
         color_print error '似乎出现了什么错误...'
-        declare _try_again
-        yes_or_no _tyr_again info '重新下载？'
-        if [[ $_tyr_again == 'yes' ]]; then
-            rm -rf $1 > /dev/null 2>&1
+        yes_or_no info '重新下载？'
+        if [[ $answer == 'yes' ]]; then
+            rm -rf $dst_root_dir > /dev/null 2>&1
             install_dst
         fi
     fi
 }
 
-function check_bash_version() {
-    if echo $BASH_VERSION | grep -sqv ^5.; then
-        color_print error 'Bash版本过低, 请升级到5.0！'
-        color_print warn '是否由脚本来执行升级操作？'
-        PS3='请输入选项数字> '
-        declare _selected
-        select _selected in yes no; do break; done
-        if [[ $_selected == 'yes' ]]; then
-            color_print info '升级过程可能有点长, 请等待10分钟, 这期间请不要断开连接'
-            update_bash
-
-            if /usr/local/bin/bash --version | grep -sq 'version 5'; then
-                color_print success 'Bash升级成功！请重新运行脚本！'; exit 0
-            else
-                color_print error '好像升级失败了...'; exit 1
-            fi
-        fi
-        color_print info '退出脚本'
-        exit 1
-    fi
-}
-
-function update_bash() {
-    mkdir /tmp/work && cd /tmp/work
-    if [[ $os == 'Ubuntu' ]]; then
-        sudo apt -y update
-        sudo apt -y install curl
-        sudo apt -y install build-essential
-    fi
-    if [[ $os == 'CentOS' ]]; then
-        sudo yum -y update
-        sudo yum -y install curl
-        sudo yum -y groupinstall "Development Tools"
-    fi
-    curl -O https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
-    tar xvf bash-5.0.tar.gz
-    cd bash-5.0
-    ./configure
-    make
-    sudo make install
-    cd ~
-}
-
 function add_alias() {
     if ! cat ~/.bashrc | grep -sq "^alias dst="; then
         echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
+        echo '' >> ~/.bashrc
     fi
-    echo '' >> ~/.bashrc
     # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
 }
 
-function add_symbolic_link() {
-    if ! which lua > /dev/null 2>&1; then
-        if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
-            if [[ -e /usr/bin/lua5.3 ]]; then
-                sudo ln -s /usr/bin/lua5.3 /usr/bin/lua
-                color_print info '添加新的symbolic link /usr/bin/lua ' -n; count_down 3 dot
-            else
-                color_print error '未能找到Lua命令 ' -n; count_down 3 dot
-                exit 1
-            fi
+function check_lua() {
+    if which lua > /dev/null 2>&1; then return 0; fi
+
+    if [[ $os == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
+        if [[ -e /usr/bin/lua5.3 ]]; then
+            sudo ln -s /usr/bin/lua5.3 /usr/bin/lua
+        elif [[ -e /usr/bin/lua5.2 ]]; then
+            sudo ln -s /usr/bin/lua5.2 /usr/bin/lua
+        elif [[ -e /usr/bin/lua5.1 ]]; then
+            sudo ln -s /usr/bin/lua5.1 /usr/bin/lua
+        else
+            color_print -n error '未能找到Lua命令 '; count_down -d 3
+            exit 1
         fi
+        color_print -n info '添加新的symbolic link /usr/bin/lua '; count_down -d 3
+        return 0
     fi
+    color_print -n error '未能找到Lua命令 '; count_down -d 3
+    exit 1
+}
+
+function process_old_dot_file() {
+    if [[ ! -e $repo_root_dir ]]; then
+        mkdir -p $repo_root_dir/.cache
+    fi
+    if [[ -e $repo_root_dir/.skip_requirements_check ]]; then
+        mv $repo_root_dir/.skip_requirements_check $repo_root_dir/.cache/.skip_requirements_check
+    fi
+    if [[ -e $repo_root_dir/.need_update ]]; then
+        mv $repo_root_dir/.need_update $repo_root_dir/.cache/.need_update
+    fi
+}
+
+function make_directories() {
+    mkdir -p $klei_root_dir/$worlds_dir
+    mkdir -p $backup_dir
+    mkdir -p $mod_dir_v1
+    mkdir -p $mod_dir_v2
+    mkdir -p $repo_root_dir/.cache
 }
 
 function check_environment() {
     check_os
+    if [[ $architecture == 32 ]]; then color_print error '暂不支持32位系统'; fi
     check_user_is_root
     check_script_position
-    check_bash_version
 
     clone_repo
-    if [[ ! -e $repo_root_dir/.skip_requirements_check ]]; then
+    process_old_dot_file
+    if [[ ! -e $repo_root_dir/.cache/.skip_requirements_check ]]; then
         add_alias
         install_dependencies
-        remove_old_dot_files
-        color_print info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～' -n; count_down 3 dot
-        add_symbolic_link
-        touch $repo_root_dir/.skip_requirements_check
+        color_print -n info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～'; count_down -d 3
+        check_lua
+        make_directories
+        touch $repo_root_dir/.cache/.skip_requirements_check
     fi
 
     install_steamcmd
-    install_dst $dst_root_dir
-    mkdir -p $klei_root_dir/$worlds_dir
+    install_dst
 
     color_print info '即将跳转到主面板'
     sleep 1
@@ -538,12 +560,22 @@ for file in $(ls $repo_root_dir/scripts/*.sh); do source $file; done
 
 function check_script_update() {
     tmux new -d -s 'check_script_update'
-    tmux send-keys -t 'check_script_update' "if git -C $repo_root_dir remote show origin | grep -s 'main pushes' | grep -sq 'out of date'; then touch $repo_root_dir/.need_update; fi; tmux kill-session" ENTER
+    tmux send-keys -t 'check_script_update' "if git -C $repo_root_dir remote show origin | grep -s 'main pushes' | grep -sq 'out of date'; then touch $repo_root_dir/.cache/.need_update; fi; tmux kill-session" ENTER
 }
 
-function display_running_clusters() {
-    declare -r -a _running_cluster_list=$(generate_shard_list_from_tmux | tr '\n' ' ')
-    color_print 30 "运行中的世界 ==> $_running_cluster_list"
+function update_repo() {
+    color_print info '开始更新脚本仓库...'
+    if [[ -e $repo_root_dir/.need_update ]]; then
+        rm $repo_root_dir/.need_update
+    fi
+    git -C $repo_root_dir checkout .
+    git -C $repo_root_dir pull
+    if [[ $? == 1 ]]; then
+        color_print error '脚本仓库更新失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
+        color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
+        return
+    fi
+    color_print success '脚本仓库更新完毕！'
 }
 
 function main_panel_header() {
@@ -564,9 +596,15 @@ function main_panel_header() {
     fi
 }
 
+##############################################################################################
+
+function display_running_clusters() {
+    declare -r -a _running_cluster_list=$(generate_list_from_tmux -s | tr '\n' ' ')
+    color_print 30 "运行中的世界 ==> $_running_cluster_list"
+}
+
 function main_panel() {
     check_script_update
-    declare _action
     declare -r -a _action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
 
     while true; do
@@ -577,18 +615,19 @@ function main_panel() {
         display_running_clusters
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
-        select_one _action_list _action
+        array=${_action_list[@]}; select_one
+        declare -r _action=$answer
 
         case $_action in
         '服务端管理')
-            server_panel $architecture $dst_root_dir $klei_root_dir $worlds_dir
+            server_panel
             ;;
         '存档管理')
             cluster_panel $repo_root_dir $dst_root_dir $klei_root_dir $worlds_dir $shard_main_name $shard_cave_name
             ;;
-        'Mod管理')
-            color_print error "${_action}功能暂未写好" -n; count_down 3 dot
-            ;;
+        #'Mod管理')
+        #    color_print -n error "${_action}功能暂未写好"; count_down -d 3
+        #    ;;
         '更新脚本')
             update_repo
             ;;
@@ -597,7 +636,7 @@ function main_panel() {
             exit 0
             ;;
         *)
-            color_print error "${_action}功能暂未写好" -n; count_down 3 dot
+            color_print -n error "${_action}功能暂未写好"; count_down -d 3
             ;;
         esac
     done
