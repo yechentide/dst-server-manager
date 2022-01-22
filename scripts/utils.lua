@@ -18,9 +18,9 @@ function color_print(color, str, need_new_line)
     elseif color == "error" then
         _color = 196
         _prefix = "[ERROR] "
-    elseif color == "log" then
+    elseif color == "tip" then
         _color = 215
-        _prefix = "[LOG] "
+        _prefix = "[TIP] "
     elseif color == "debug" then
         _color = 141
         _prefix = "[DEBUG] "
@@ -44,8 +44,8 @@ function sleep(seconds)
     os.execute("sleep " .. tonumber(seconds))
 end
 
-function sleepms (ms) 
-    local sec = tonumber(os.clock() + ms); 
+function sleepms(seconds) 
+    local sec = tonumber(os.clock() + seconds); 
     while (os.clock() < sec) do 
     end 
 end
@@ -72,7 +72,7 @@ function exec_linux_command_get_output(command)
     local handle = io.popen(command,"r")
     local content = handle:read("*all")
     handle:close()
-    return content
+    return string.sub(content, 1, #content-1)
 end
 
 function print_divider(char, color)
@@ -103,9 +103,9 @@ function yes_or_no(color, message)
     print()
 end
 
-function select_one(array)
+function select_one(array, color, message)
     while true do
-        color_print("info", "请从下面选择一个选项", true)
+        color_print(color, message, true)
         for i, v in ipairs(array) do
             print(string.format("%d) %s", i, tostring(v)))
         end
@@ -146,20 +146,20 @@ function get_keys(table)
     return array
 end
 
-function value_en2zh(value_type, value_en)
-    local index = indexof(value_types[value_type]["en"], value_en)
-    return value_types[value_type]["zh"][index]
+function value_en2zh(value_types, target_type, value_en)
+    local index = indexof(value_types[target_type]["en"], value_en)
+    return value_types[target_type]["zh"][index]
 end
 
-function value_zh2en(value_type, value_zh)
-    local index = indexof(value_types[value_type]["zh"], value_zh)
-    return value_types[value_type]["en"][index]
+function value_zh2en(value_types, target_type, value_zh)
+    local index = indexof(value_types[target_type]["zh"], value_zh)
+    return value_types[target_type]["en"][index]
 end
 
 function file_exist(path)
     local command = "if [ -e "..path.." ]; then echo 'yes'; else echo 'no'; fi"
     local result = exec_linux_command_get_output(command)
-    if result == "yes\n" then
+    if result == "yes" then
         return true
     else
         return false
@@ -168,4 +168,86 @@ end
 
 function copy_file(source_file_path, destination_path)
     os.execute("cp " .. source_file_path .. " " .. destination_path)
+end
+
+function readline(empty_ok, color, message)
+    local _line = ""
+    while true do
+        color_print(color, message, true)
+        io.write("> ")
+        _line = io.read()
+        if empty_ok == false and #_line == 0 then
+            color_print("error", "输入不能为空!", true)
+        else
+            break
+        end
+    end
+    return _line
+end
+
+function get_positive_number()
+    local _num
+    while true do
+        local _input = readline(false, "info", "请输入大于0的数字")
+        _num = tonumber(_input)
+        if _num == nil then
+            color_print("error", "请输入正确的数字!", true)
+        elseif _num <= 0 then
+            color_print("error", "请输入大于0的数字!", true)
+        else
+            break
+        end
+    end
+    return _num
+end
+
+function get_port()
+    local _num
+    while true do
+        local _input = readline(false, "info", "请输入2000~65535之间的数字")
+        _num = tonumber(_input)
+        if _num == nil then
+            color_print("error", "请输入正确的数字!", true)
+        elseif _num < 2000 or 65535 < _num then
+            color_print("error", "端口指定范围为 2000~65535 !", true)
+        else
+            break
+        end
+    end
+    return _num
+end
+
+function split(input, char)
+    if char == nil then char = "%s" end
+    local _array={}
+    for str in string.gmatch(input, "([^"..char.."]+)") do
+        table.insert(_array, str)
+    end
+    return _array
+end
+
+function get_ipv4_address()
+    while true do
+        local _input = readline(false, "info", "请输入IPv4地址")
+        local _list = split(_input, ".")
+        local _count = 0
+        local _flag = true
+
+        for _, v in ipairs(_list) do
+            _count = _count + 1
+            local _num = tonumber(v)
+            if _num == nil or _num < 0 or 255 < _num then
+                _flag = false
+            end
+        end
+        if _count ~= 4 then _flag = false end
+        
+        if _flag then
+            return _input
+        else
+            color_print("error", "错误的IPv4地址: ".._input, true)
+            color_print("tip", "IPv4格式为: 111.111.111.111", true)
+            color_print("tip", "111的部分可以是0~255的数字", true)
+        end
+    end
 end

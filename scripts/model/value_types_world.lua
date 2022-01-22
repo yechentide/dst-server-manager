@@ -1,4 +1,4 @@
-value_types = {
+world_value_types = {
     event = {
         en = {"none", "default", "crow_carnival", "hallowed_nights", "winters_feast", "year_of_the_gobbler", "year_of_the_varg", "year_of_the_pig", "year_of_the_carrat", "year_of_the_beefalo"},
         zh = {"无", "自动", "盛夏鸭年华", "万圣夜", "冬季盛宴", "火鸡之年", "座狼之年", "猪王之年", "胡萝卜鼠之年", "皮弗娄牛之年"}

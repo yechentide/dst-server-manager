@@ -1,7 +1,7 @@
 return {
-    override_enabled = true,
     worldgen_preset = "DST_CAVE",
     settings_preset = "DST_CAVE",
+    override_enabled = true,
     overrides={
         -- generations
         banana="default",
