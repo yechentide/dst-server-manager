@@ -319,24 +319,24 @@ end
 
 function save_configuration_to_file(configuration, file_path)
     os.execute("echo '' > "..file_path)
-    os.execute("gsed -i -e '$i return {' "..file_path)
+    os.execute("sed -i -e '$i return {' "..file_path)
 
     for key, setting_table in pairs(configuration) do
-        os.execute("gsed -i -e '$i \\    [\""..key.."\"]={' "..file_path)
+        os.execute("sed -i -e '$i \\    [\""..key.."\"]={' "..file_path)
         local enabled = setting_table["enabled"]
-        os.execute("gsed -i -e '$i \\        enabled="..tostring(enabled)..",' "..file_path)
-        os.execute("gsed -i -e '$i \\        configuration_options={' "..file_path)
+        os.execute("sed -i -e '$i \\        enabled="..tostring(enabled)..",' "..file_path)
+        os.execute("sed -i -e '$i \\        configuration_options={' "..file_path)
         local options = setting_table["configuration_options"]
         for k, v in pairs(options) do
             local _value = v
             if type(_value) == "string" then _value = "\"".._value.."\"" end
-            os.execute("gsed -i -e '$i \\            [\""..k.."\"]="..tostring(_value)..",' "..file_path)
+            os.execute("sed -i -e '$i \\            [\""..k.."\"]="..tostring(_value)..",' "..file_path)
         end
-        os.execute("gsed -i -e '$i \\        }' "..file_path)
-        os.execute("gsed -i -e '$i \\    },' "..file_path)
+        os.execute("sed -i -e '$i \\        }' "..file_path)
+        os.execute("sed -i -e '$i \\    },' "..file_path)
     end
 
-    os.execute("gsed -i -e '$i }' "..file_path)
+    os.execute("sed -i -e '$i }' "..file_path)
 end
 
 function reset_dofile_modinfo()

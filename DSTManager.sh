@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局变量在其他shell脚本里可用
 declare os='MacOS'
-declare -r script_version='v1.4.0.1'
+declare -r script_version='v1.4.0.3'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -610,6 +610,8 @@ function main_panel() {
         echo ''
         color_print 208 '>>>>>> >>>>>> 主面板 <<<<<< <<<<<<'
         display_running_clusters
+        array=()
+        answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
         array=${_action_list[@]}; select_one info '请从下面选一个'

@@ -146,6 +146,8 @@ function server_panel() {
         echo ''
         color_print 70 '>>>>>> 服务端管理 <<<<<<'
         display_running_clusters
+        array=()
+        answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
         array=${_action_list[@]}; select_one info '请从下面选一个'
@@ -167,12 +169,12 @@ function server_panel() {
                 continue
             fi
             # 选择了cluster
+            color_print info "将启动存档 $answer 里所有的世界!"
             declare _shard=''
             if ! check_cluster "$klei_root_dir/$worlds_dir/$answer"; then continue; fi
             for _shard in $(generate_list_from_cluster $answer); do
                 declare _shard_path="$klei_root_dir/$worlds_dir/$answer/$_shard"
                 if check_shard $_shard_path; then
-                    echo 'shard ok'
                     start_shard "$answer-$_shard"
                 fi
             done

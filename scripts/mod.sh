@@ -72,7 +72,10 @@ function add_mods_to_setting_file() {
 }
 
 function update_mod() {
-    tmux new -d -s 'update_mods' "cd $dst_root_dir/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -only_update_server_mods -ugc_directory $ugc_directory -persistent_storage_root $repo_root_dir/.cache/.klei -conf_dir download_mods -cluster tmp -shard master"
+    if ls $ugc_directory | grep -sq .acf$; then rm $ugc_directory/*.acf; fi
+
+    declare -r _session_name='update_mods'
+    tmux new -d -s "$_session_name" "cd $dst_root_dir/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -only_update_server_mods -ugc_directory $ugc_directory -persistent_storage_root $repo_root_dir/.cache/.klei -conf_dir xxxxxx -cluster tmp -shard master"
     declare -r _time_out=360
     color_print info '正在下载/更新Mod...'
     color_print info '一次性指定的Mod越多, 下载越耗时间'
@@ -80,12 +83,13 @@ function update_mod() {
     declare _i
     for _i in $(seq 1 $_time_out); do
         sleep 1
-        if tmux capture-pane -t 'update_mods' -p -S - | grep -sq 'FinishDownloadingServerMods Complete'; then
-            color_print success 'Mod下载完成!'
+        #if tmux capture-pane -t "$_session_name" -p -S - | grep -sq 'FinishDownloadingServerMods Complete'; then
+        if ! tmux ls 2>&1 | grep -sq $_session_name; then
+            color_print success 'Mod下载/更新完成!'
             return 0
         fi
     done
-    tmux kill-session -t 'update_mods'
+    #tmux kill-session -t "$_session_name"
     color_print error 'Mod下载/更新失败...'
 }
 
@@ -142,7 +146,7 @@ function configure_mods_in_cluster() {
     lua $repo_root_dir/scripts/mod_manager.lua $repo_root_dir $1
 
     declare _path
-    for _path in ${#mod_file_list[@]}; do
+    for _path in ${mod_file_list[@]}; do
         cp $_tmp_path $_path
     done
     rm $_tmp_path
@@ -164,6 +168,8 @@ function mod_panel() {
         echo ''
         color_print 70 '>>>>>> 服务端管理 <<<<<<'
         display_running_clusters
+        array=()
+        answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
         array=${_action_list[@]}; select_one info '请从下面选一个'

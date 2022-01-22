@@ -100,6 +100,7 @@ function create_cluster() {
         if [[ $answer == 'no' ]]; then break; fi
 
         color_print info '请为shard取个名字吧'
+        read_line tip '必须要有一个主世界, 最多只能有一个主世界!'
         read_line tip '地面世界的话推荐Forest, 洞穴世界的话推荐Cave, 主世界的话推荐Main'
         if [[ -e $_cluster_path/$answer ]]; then
             color_print error "存档${_new_cluster}里面已存在${$answer}!"
@@ -179,6 +180,8 @@ function cluster_panel() {
         echo ''
         color_print 70 '>>>>>> 存档管理 <<<<<<'
         display_running_clusters
+        array=()
+        answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
         array=${_action_list[@]}; select_one info '请从下面选一个'
@@ -195,7 +198,7 @@ function cluster_panel() {
             update_world_setting
             ;;
         '删除存档')
-            array=$(generate_list_from_dir -c)
+            array=($(generate_list_from_dir -c))
             if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
             multi_select warn '(多选用空格隔开)请选择你要删除的存档'

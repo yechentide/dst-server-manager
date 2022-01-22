@@ -165,8 +165,6 @@ function configure_modoverride(target_file)
     save_configuration_to_file(configuration, target_file)
 end
 
-configure_modoverride(target_file_path)
-
 if arg[2] == 'add' then
     add_new_mods(target_file_path)
 elseif arg[2] == 'update' then
