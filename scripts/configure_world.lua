@@ -98,7 +98,7 @@ function select_preset()
     local result = exec_linux_command_get_output("ls "..presets_dir_path)
     local presets = split(result, "\n")
     local answer = select_one(presets, "info", "请选择一个模板")
-    return answer
+    return arg[1].."/templates/world_presets/"..answer
 end
 
 ----------------------------------------------------------------------------------------------
@@ -152,11 +152,11 @@ function change_options(shard_dir_path, is_overground)
     color_print("info", "开始配置世界！", true)
     color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
 
-    if is_overground == "true" then
-        configure_shard(shard_path, true, true)
-    else
-        configure_shard(shard_path, false, true)
-    end
+    --if is_overground == "true" then
+    --    configure_shard(shard_path, true, true)
+    --else
+    --    configure_shard(shard_path, false, true)
+    --end
 
     -- 读取model, 更新model
     local model_set = {}

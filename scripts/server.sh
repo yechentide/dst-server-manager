@@ -149,12 +149,12 @@ function server_panel() {
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
         array=${_action_list[@]}; select_one info '请从下面选一个'
-        declare -r _action=$answer
+        declare _action=$answer
 
         case $_action in
         '启动服务端')
             array=$(generate_list_from_dir -cs)
-            if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; continue; fi
+            if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
             color_print tip '请确保先启动主世界'
             select_one tip '选择存档名则会启动该存档下的所有shard, 选择shard名则只会启动这个shard'
@@ -169,16 +169,17 @@ function server_panel() {
             # 选择了cluster
             declare _shard=''
             if ! check_cluster "$klei_root_dir/$worlds_dir/$answer"; then continue; fi
-            for _shard in $(generate_list_from_cluster); do
+            for _shard in $(generate_list_from_cluster $answer); do
                 declare _shard_path="$klei_root_dir/$worlds_dir/$answer/$_shard"
                 if check_shard $_shard_path; then
+                    echo 'shard ok'
                     start_shard "$answer-$_shard"
                 fi
             done
             ;;
         '关闭服务端')
             array=$(generate_list_from_tmux -cs)
-            if [[ ${#array} -gt 0 ]]; then color error '没有运行中的shard!'; continue; fi
+            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的shard!'; continue; fi
 
             select_one tip '选择存档名则会关闭该存档下的所有shard, 选择shard名则只会关闭这个shard'
             # 选择了shard
@@ -194,7 +195,7 @@ function server_panel() {
             ;;
         '重启服务端')
             array=$(generate_list_from_tmux -cs)
-            if [[ ${#array} -gt 0 ]]; then color error '没有运行中的shard!'; continue; fi
+            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的shard!'; continue; fi
 
             select_one tip '选择存档名则会重启该存档下的所有shard, 选择shard名则只会重启这个shard'
             # 选择了shard

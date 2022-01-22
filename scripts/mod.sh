@@ -68,7 +68,7 @@ function add_mods_to_setting_file() {
         echo "ServerModSetup(\"${_id}\")" >> "$mod_dir_v1/dedicated_server_mods_setup.lua"
         _flag=0
     done
-    if [[ $_flag == 0 ]]; return 0; else return 1; fi
+    if [[ $_flag == 0 ]]; then return 0; else return 1; fi
 }
 
 function update_mod() {
@@ -129,13 +129,13 @@ function download_new_mods() {
 # Parameters:
 #   $1: 'add' / 'update'
 function configure_mods_in_cluster() {
-    if ! ls $repo_root_dir/.cache/modinfo | grep -sq '.lua'; then color_print warn '未找到任何mod! 请先下载..'; continue; fi
+    if ! ls $repo_root_dir/.cache/modinfo | grep -sq '.lua'; then color_print warn '未找到任何mod! 请先下载...'; return; fi
     array=$(generate_list_from_dir -c)
-    if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; continue; fi
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
     select_one info '请选择要配置Mod的存档'
     declare -a mod_file_list=($(find $klei_root_dir/$worlds_dir/$answer -type f -name modoverrides.lua))
-    if [[ ${#mod_file_list[@]} == 0 ]]; then color error '未找到modoverrides.lua!'; continue; fi
+    if [[ ${#mod_file_list[@]} == 0 ]]; then color_print error '未找到modoverrides.lua!'; continue; fi
 
     declare -r _tmp_path="$repo_root_dir/.cache/modoverrides.lua"
     cp ${mod_file_list[0]} $_tmp_path
@@ -167,7 +167,7 @@ function mod_panel() {
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
         array=${_action_list[@]}; select_one info '请从下面选一个'
-        declare -r _action=$answer
+        declare _action=$answer
 
         case $_action in
         '下载Mod')

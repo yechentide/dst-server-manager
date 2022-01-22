@@ -16,6 +16,7 @@ function read_line() {
             color_print error '输入不能为空!'
             continue
         fi
+        break
     done
 }
 
@@ -118,9 +119,9 @@ function generate_list_from_cluster() {
     shift $((OPTIND - 1))
 
     if [[ $_add_cluster == 'true' ]]; then
-        find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/##g" | grep -v /
+        find $klei_root_dir/$worlds_dir/$1 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/##g" | grep -v /
     fi
-    find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/c01##g" | sed -e "s#^/##g" | grep -v '^\s*$' | sort -r
+    find $klei_root_dir/$worlds_dir/$1 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/$1##g" | sed -e "s#^/##g" | grep -v '^\s*$' | sort -r
     OPTIND=0
 }
 
@@ -159,7 +160,8 @@ function check_cluster() {
 function check_shard() {
     if [[ ! -e $1/.dstsm ]]; then
         accent_color_print warn 36 '世界 ' $1 ' 不符合本脚本要求!'
-        accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'
+        accent_color_print -p 2 warn 36 '在 ' $1 ' 里未能找到 ' '.dstsm' ' 文件!'
+        color_print tip '.dstsm文件的作用是, 判断世界是否是由本脚本生成的'
         return 1
     fi
     if [[ ! -e $1/server.ini ]]; then
@@ -194,9 +196,4 @@ function get_mod_name_from_modinfo() {
 function generate_mod_id_list_from_setting_file() {
     declare -r _file_path="$mod_dir_v1/dedicated_server_mods_setup.lua"
     cat $_file_path | grep '^ServerModSetup' | awk -F\" '{print $2}'
-}
-
-function generate_mod_id_list_from_cache() {
-    declare _file
-    for _file in $()
 }
