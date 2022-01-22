@@ -622,9 +622,9 @@ function main_panel() {
         '存档管理')
             cluster_panel
             ;;
-        #'Mod管理')
-        #    color_print -n error "${_action}功能暂未写好"; count_down -d 3
-        #    ;;
+        'Mod管理')
+            mod_panel
+            ;;
         '更新脚本')
             update_repo
             ;;
