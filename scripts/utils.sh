@@ -28,17 +28,21 @@ function multi_select() {
     declare -a _result=()
     PS3='(多选请用空格隔开)请输入选项数字> '
     color_print $1 "$2"
-    select answer in ${array[@]}; do break; done
-    for item in ${REPLY[@]}; do
-        if [[ ! $item =~ ^[0-9]+$ ]] || [[ $item -le 0 ]] || [[ $item -gt ${#array[@]} ]]; then
-            color_print warn "请输入正确数字。错误输入将被无视: $item"
-            continue
-        fi
-        declare _index=$(( $item - 1 ))
-        _result+=(${array[_index]})
+    while true; do
+        select answer in ${array[@]}; do break; done
+        declare _item=''
+        for _item in ${REPLY[@]}; do
+            if [[ ! $_item =~ ^[0-9]+$ ]] || [[ $_item -le 0 ]] || [[ $_item -gt ${#array[@]} ]]; then
+                color_print warn "请输入正确数字。错误输入将被无视: $_item"
+                continue
+            fi
+            declare _index=$(( $_item - 1 ))
+            _result+=(${array[_index]})
+        done
+        if [[ ${#_result[@]} -gt 0 ]]; then break; fi
     done
     array=(${_result[@]})
-    color_print info "你选择的: ${_result[@]}"
+    color_print -n info "你选择的: ${_result[*]}"
     count_down -d 3
 }
 
@@ -116,7 +120,7 @@ function generate_list_from_cluster() {
     if [[ $_add_cluster == 'true' ]]; then
         find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/##g" | grep -v /
     fi
-    find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/c01##g" | sed -e "s#^/##g" | grep -v '^\s*$'
+    find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/c01##g" | sed -e "s#^/##g" | grep -v '^\s*$' | sort -r
     OPTIND=0
 }
 
@@ -153,6 +157,11 @@ function check_cluster() {
 #   $1: shard dir         ~/Klei/worlds/cluster_name/shard
 # Return: 0 / 1
 function check_shard() {
+    if [[ ! -e $1/.dstsm ]]; then
+        accent_color_print warn 36 '世界 ' $1 ' 不符合本脚本要求!'
+        accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'
+        return 1
+    fi
     if [[ ! -e $1/server.ini ]]; then
         accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'; return 1
     fi
@@ -167,4 +176,27 @@ function check_shard() {
         return 1
     fi
     return 0
+}
+
+function get_mods_from_dir() {
+    find $mod_dir_v1 -maxdepth 1 -type d -name workshop*
+    find $mod_dir_v2 -mindepth 2 -maxdepth 2 -type d
+}
+
+# Parameters:
+#   $1: modinfo.lua的路径
+function get_mod_name_from_modinfo() {
+    # echo "$(cat $1 | grep ^name | awk -F= '{print $2}' | awk -F\" '{print $2}')"
+    declare -r _name=$(lua -e "dofile(\"$1\") print(name)")
+    echo $_name     # 通过echo来去除头尾的空白
+}
+
+function generate_mod_id_list_from_setting_file() {
+    declare -r _file_path="$mod_dir_v1/dedicated_server_mods_setup.lua"
+    cat $_file_path | grep '^ServerModSetup' | awk -F\" '{print $2}'
+}
+
+function generate_mod_id_list_from_cache() {
+    declare _file
+    for _file in $()
 }

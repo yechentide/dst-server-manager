@@ -200,7 +200,7 @@ function cluster_panel() {
             array=$(generate_list_from_dir -c)
             if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; continue; fi
 
-            multi_select warn '请选择你要删除的存档'
+            multi_select warn '(多选用空格隔开)请选择你要删除的存档'
             declare _cluster=''
             for _cluster in ${array[@]}; do
                 delete_cluster $_cluster

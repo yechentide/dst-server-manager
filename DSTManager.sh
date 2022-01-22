@@ -15,13 +15,16 @@ declare os='MacOS'
 declare -r script_version='v1.3.1'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
-
+# DST服务端文件夹
 declare -r dst_root_dir="$HOME/Server"
+declare -r ugc_directory="$dst_root_dir/ugc_mods"
 declare -r mod_dir_v1="$dst_root_dir/mods"
-declare -r mod_dir_v2="$dst_root_dir/ugc_mods"
+declare -r mod_dir_v2="$ugc_directory/content"
+# 存档文件夹
 declare -r klei_root_dir="$HOME/Klei"
 declare -r worlds_dir='worlds'
 declare -r backup_dir="$klei_root_dir/backup"
+# shard文件夹默认名字
 declare -r main_shard_name='Main'
 declare -r overground_shard_name='Forest'
 declare -r underground_shard_name='Cave'
@@ -29,15 +32,7 @@ declare -r underground_shard_name='Cave'
 declare -r repo_url_china='https://gitee.com/yechentide/DSTServerManager'
 declare -r repo_url_global='https://github.com/yechentide/DSTServerManager'
 
-# 名词说明: 单个地上世界 or 单个地下世界, 称为shard。一整个存档, 称为cluster。
-# 名词说明: 拿两个主机开一个cluster, 称为multi-server(多主机)
-# 名词说明: 一个cluster里面有3个以上shard, 称为多层世界
-
-# 注意: 本脚本里面, 各种路径不以 / 结尾。所以连结路径和文件名时要注意下
-
-# 1.3.0.10为止, 使用了declare -n来从函数里面传递数据, 但这在旧版本Bash无法使用
-# 具体哪个版本开始可以用不清楚, 目前只知道Bash 4.3用不了, Bash 5.0可以用
-# 为了降低Bash版本需求, 设置2个全局变量来传递
+# 为了降低Bash版本需求, 设置2个全局变量来传递值
 declare answer=''
 declare -a array=()
 
@@ -73,6 +68,7 @@ declare -a array=()
 #
 # Options: (option必须在普通参数前面)
 #   -n: 添加这个选项的话, 将会使用echo的-n选项 = 输出不改行
+#   -p: 添加这个选项的话, 将不会输出[INFO]之类的前缀
 # Parameters:
 #   $1: 颜色代码(0~255) or 特定的字符串
 #   $2: 需要改颜色的字符串
@@ -177,15 +173,16 @@ function count_down() {
         esac
     done
     shift $((OPTIND - 1))
-    
+
+    declare _i
     if [[ $_use_dot == 'true' ]]; then
-        for i in $(seq $1 -1 1); do
+        for _i in $(seq $1 -1 1); do
             color_print -n 102 '.'
             sleep 1
         done
         echo ''
     else
-        for i in $(seq $1 -1 1); do
+        for _i in $(seq $1 -1 1); do
             echo -n "$i " | color_print -n 102
             sleep 1
         done
@@ -231,8 +228,8 @@ function yes_or_no() {
 function select_one() {
     answer=''
     PS3='请输入选项数字> '
+    color_print $1 "$2"
     while true; do
-        color_print $1 "$2"
         select answer in ${array[@]}; do break; done
         if [[ ${#answer} == 0 ]]; then
             color_print error '请输入正确的数字！'
@@ -526,7 +523,7 @@ function make_directories() {
     mkdir -p $backup_dir
     mkdir -p $mod_dir_v1
     mkdir -p $mod_dir_v2
-    mkdir -p $repo_root_dir/.cache
+    mkdir -p $repo_root_dir/.cache/modinfo
 }
 
 function check_environment() {
@@ -556,7 +553,7 @@ clear
 check_environment
 
 ##############################################################################################
-for file in $(ls $repo_root_dir/scripts/*.sh); do source $file; done
+for answer in $(ls $repo_root_dir/scripts/*.sh); do source $answer; done
 
 function check_script_update() {
     tmux new -d -s 'check_script_update'
@@ -623,7 +620,7 @@ function main_panel() {
             server_panel
             ;;
         '存档管理')
-            cluster_panel $repo_root_dir $dst_root_dir $klei_root_dir $worlds_dir $shard_main_name $shard_cave_name
+            cluster_panel
             ;;
         #'Mod管理')
         #    color_print -n error "${_action}功能暂未写好"; count_down -d 3
