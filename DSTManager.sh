@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局变量在其他shell脚本里可用
 declare os='MacOS'
-declare -r script_version='v1.3.1.1'
+declare -r script_version='v1.4.0.3'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -80,7 +80,7 @@ function color_print() {
     declare _no_prefix='false'
 
     declare _option
-    while getopts :n _option; do
+    while getopts :np _option; do
         case $_option in
             n)  _new_line='false' ;;
             p)  _no_prefix='true' ;;
@@ -183,7 +183,7 @@ function count_down() {
         echo ''
     else
         for _i in $(seq $1 -1 1); do
-            echo -n "$i " | color_print -n 102
+            echo -n "$_i " | color_print -n 102
             sleep 1
         done
         color_print 102 '0'
@@ -375,7 +375,7 @@ function install_dependencies() {
     check_user_is_sudoer
     declare -r _is_sudoer=$answer
     get_dependencies
-    declare -a _requires=$array
+    declare -a _requires=${array[@]}
     declare _manager=''
     if [[ $os == 'Ubuntu' ]]; then _manager='apt'; fi
     if [[ $os == 'CentOS' ]]; then _manager='yum'; fi
@@ -534,12 +534,12 @@ function check_environment() {
 
     clone_repo
     process_old_dot_file
+    make_directories
     if [[ ! -e $repo_root_dir/.cache/.skip_requirements_check ]]; then
         add_alias
         install_dependencies
         color_print -n info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～'; count_down -d 3
         check_lua
-        make_directories
         touch $repo_root_dir/.cache/.skip_requirements_check
     fi
 
@@ -610,10 +610,12 @@ function main_panel() {
         echo ''
         color_print 208 '>>>>>> >>>>>> 主面板 <<<<<< <<<<<<'
         display_running_clusters
+        array=()
+        answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
-        array=${_action_list[@]}; select_one
-        declare -r _action=$answer
+        array=${_action_list[@]}; select_one info '请从下面选一个'
+        declare _action=$answer
 
         case $_action in
         '服务端管理')
@@ -622,9 +624,9 @@ function main_panel() {
         '存档管理')
             cluster_panel
             ;;
-        #'Mod管理')
-        #    color_print -n error "${_action}功能暂未写好"; count_down -d 3
-        #    ;;
+        'Mod管理')
+            mod_panel
+            ;;
         '更新脚本')
             update_repo
             ;;

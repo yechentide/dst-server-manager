@@ -27,7 +27,7 @@ function delete_cluster() {
 function get_token() {
     answer=''
     while true; do
-        read_line answer info '请输入token: '
+        read_line info '请输入token: '
         if [[ ${#answer} == 0 ]]; then
             color_print error '你输入token了吗？？？'
             continue
@@ -54,9 +54,9 @@ function create_shard() {
 
     # 复制shard模板过去
     if [[ $answer == '地上世界' ]]; then
-        cp -r $repo_root_dir/templates/cluster/shard_forest $1/$2
+        cp -r $repo_root_dir/templates/shard_forest $1/$2
     else
-        cp -r $repo_root_dir/templates/cluster/shard_cave $1/$2
+        cp -r $repo_root_dir/templates/shard_cave $1/$2
     fi
 
     # 编辑server.ini
@@ -100,6 +100,7 @@ function create_cluster() {
         if [[ $answer == 'no' ]]; then break; fi
 
         color_print info '请为shard取个名字吧'
+        read_line tip '必须要有一个主世界, 最多只能有一个主世界!'
         read_line tip '地面世界的话推荐Forest, 洞穴世界的话推荐Cave, 主世界的话推荐Main'
         if [[ -e $_cluster_path/$answer ]]; then
             color_print error "存档${_new_cluster}里面已存在${$answer}!"
@@ -117,16 +118,15 @@ function update_world_setting() {
     color_print info '修改shard的配置选项...'
 
     array=$(generate_list_from_dir -s)
-    if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; return; fi
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
     select_one info '请选择一个shard'
 
     declare -r _shard=$answer
-    declare -r _shard_path="$klei_root_dir/$worlds_dir/$_shard"
+    declare -r _shard_path="$klei_root_dir/$worlds_dir/$(echo $_shard | sed 's#-#/#g')"
     stop_shard $_shard
 
     remove_klei_from_worldgenoverride $_shard_path
     if ! check_shard $_shard_path; then
-        accent_color_print warn 36 '这个shard ' $_shard ' 不符合该脚本的标准'
         return 0
     fi
 
@@ -141,7 +141,7 @@ function update_ini_setting() {
     color_print info '修改cluster的配置选项...'
 
     array=$(generate_list_from_dir -cs)
-    if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; return; fi
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
     color_print info '选择存档名来修改cluster.ini, 选择shard名来修改server.ini'
     select_one info '请选择一个存档'
 
@@ -158,11 +158,10 @@ function update_ini_setting() {
         lua $repo_root_dir/scripts/edit_cluster_ini.lua $repo_root_dir $_cluster_path
     else
         declare -r _shard=$answer
-        declare -r _shard_path="$klei_root_dir/$worlds_dir/$_shard"
+        declare -r _shard_path="$klei_root_dir/$worlds_dir/$(echo $_shard | sed 's#-#/#g')"
         stop_shard $_shard
 
         if ! check_shard $_shard_path; then
-            accent_color_print warn 36 '这个shard ' $_shard ' 不符合该脚本的标准'
             return 0
         fi
 
@@ -181,10 +180,12 @@ function cluster_panel() {
         echo ''
         color_print 70 '>>>>>> 存档管理 <<<<<<'
         display_running_clusters
+        array=()
+        answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
-        ARRAY=${_action_list[@]}; select_one
-        declare -r _action=$ANSWER
+        array=${_action_list[@]}; select_one info '请从下面选一个'
+        declare _action=$answer
 
         case $_action in
         '新建存档')
@@ -197,8 +198,8 @@ function cluster_panel() {
             update_world_setting
             ;;
         '删除存档')
-            array=$(generate_list_from_dir -c)
-            if [[ ${#array} -gt 0 ]]; then color error '未找到存档!'; continue; fi
+            array=($(generate_list_from_dir -c))
+            if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
             multi_select warn '(多选用空格隔开)请选择你要删除的存档'
             declare _cluster=''

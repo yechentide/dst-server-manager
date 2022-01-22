@@ -16,7 +16,17 @@ function read_line() {
             color_print error '输入不能为空!'
             continue
         fi
+        break
     done
+}
+
+function get_length() {
+    declare _count=0
+    declare _tmp
+    for _tmp in ${array[@]}; do
+        _count=$(($_count+1))
+    done
+    echo $_count
 }
 
 # 代入数组的方法: array=${_your_array[@]}
@@ -28,6 +38,7 @@ function multi_select() {
     declare -a _result=()
     PS3='(多选请用空格隔开)请输入选项数字> '
     color_print $1 "$2"
+
     while true; do
         select answer in ${array[@]}; do break; done
         declare _item=''
@@ -36,6 +47,7 @@ function multi_select() {
                 color_print warn "请输入正确数字。错误输入将被无视: $_item"
                 continue
             fi
+
             declare _index=$(( $_item - 1 ))
             _result+=(${array[_index]})
         done
@@ -96,7 +108,7 @@ function generate_list_from_tmux() {
         tmux ls 2>&1 | grep -s : | awk '{print $1}' | sed -e "s/://g" | grep - | awk -F- '{print $1}' | uniq
     fi
     if [[ $_add_shard == 'true' ]]; then
-        tmux ls 2>&1 | grep -s : | awk '{print $1}' | sed -e "s/://g" | grep -
+        tmux ls 2>&1 | grep -s : | awk '{print $1}' | sed -e "s/://g" | grep - | sort -r
     fi
     OPTIND=0
 }
@@ -118,9 +130,9 @@ function generate_list_from_cluster() {
     shift $((OPTIND - 1))
 
     if [[ $_add_cluster == 'true' ]]; then
-        find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/##g" | grep -v /
+        find $klei_root_dir/$worlds_dir/$1 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/##g" | grep -v /
     fi
-    find $klei_root_dir/$worlds_dir/c01 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/c01##g" | sed -e "s#^/##g" | grep -v '^\s*$' | sort -r
+    find $klei_root_dir/$worlds_dir/$1 -maxdepth 1 -type d | sed -e "s#$klei_root_dir/$worlds_dir/$1##g" | sed -e "s#^/##g" | grep -v '^\s*$' | sort -r
     OPTIND=0
 }
 
@@ -157,11 +169,13 @@ function check_cluster() {
 #   $1: shard dir         ~/Klei/worlds/cluster_name/shard
 # Return: 0 / 1
 function check_shard() {
-    if [[ ! -e $1/.dstsm ]]; then
-        accent_color_print warn 36 '世界 ' $1 ' 不符合本脚本要求!'
-        accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'
-        return 1
-    fi
+    # 导入世界功能做好了再加上这个检测
+    #if [[ ! -e $1/.dstsm ]]; then
+    #    accent_color_print warn 36 '世界 ' $1 ' 不符合本脚本要求!'
+    #    accent_color_print -p 2 warn 36 '在 ' $1 ' 里未能找到 ' '.dstsm' ' 文件!'
+    #    color_print tip '.dstsm文件的作用是, 判断世界是否是由本脚本生成的'
+    #    return 1
+    #fi
     if [[ ! -e $1/server.ini ]]; then
         accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'; return 1
     fi
@@ -194,9 +208,4 @@ function get_mod_name_from_modinfo() {
 function generate_mod_id_list_from_setting_file() {
     declare -r _file_path="$mod_dir_v1/dedicated_server_mods_setup.lua"
     cat $_file_path | grep '^ServerModSetup' | awk -F\" '{print $2}'
-}
-
-function generate_mod_id_list_from_cache() {
-    declare _file
-    for _file in $()
 }

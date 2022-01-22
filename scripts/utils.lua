@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
-function color_print(color, str, need_new_line)
+function color_print(color, str, need_new_line, no_prefix)
     local _esc = "\27"              -- 更改输出颜色用的前缀
     local _reset = _esc.."[0m"      -- 重置所有颜色，字体设定
     local _prefix = ""
@@ -28,6 +28,7 @@ function color_print(color, str, need_new_line)
         _color = color
     end
 
+    if no_prefix then _prefix = "" end
     local _output = string.format("%s[38;5;%sm%s%s", _esc, _color, _prefix..str, _reset)
     if need_new_line then
         print(_output)
@@ -45,8 +46,8 @@ function sleep(seconds)
 end
 
 function sleepms(seconds) 
-    local sec = tonumber(os.clock() + seconds); 
-    while (os.clock() < sec) do 
+    local _sec = tonumber(os.clock() + seconds); 
+    while (os.clock() < _sec) do 
     end 
 end
 
@@ -69,10 +70,10 @@ function count_down(seconds, use_dot)
 end
 
 function exec_linux_command_get_output(command)
-    local handle = io.popen(command,"r")
-    local content = handle:read("*all")
-    handle:close()
-    return string.sub(content, 1, #content-1)
+    local _handle = io.popen(command,"r")
+    local _content = _handle:read("*all")
+    _handle:close()
+    return string.sub(_content, 1, #_content-1)
 end
 
 function print_divider(char, color)
@@ -91,7 +92,7 @@ function yes_or_no(color, message)
         print("2) no")
         io.write("请输入选项数字> ")
         local _answer = io.read()
-        
+
         if _answer == "1" then
             return true
         elseif _answer == "2" then
@@ -104,8 +105,8 @@ function yes_or_no(color, message)
 end
 
 function select_one(array, color, message)
+    color_print(color, message, true)
     while true do
-        color_print(color, message, true)
         for i, v in ipairs(array) do
             print(string.format("%d) %s", i, tostring(v)))
         end
@@ -121,17 +122,41 @@ function select_one(array, color, message)
     print()
 end
 
-function array2string(array)
-    local str = ""
-    for i, option in ipairs(array) do
-        str = str .. option .. " "
+-- Retuen: indexes
+function multi_select(array, color, message)
+    local _result = {}
+    color_print(color, message, true)
+    while true do
+        for i, v in ipairs(array) do
+            print(string.format("%d) %s", i, tostring(v)))
+        end
+        io.write("(多选请用空格隔开)请输入选项数字> ")
+        for _, input in ipairs(split(io.read(), " ")) do
+            local _num = tonumber(input)
+            if _num ~= nil and 1 <= _num and _num <= #array then
+                _result[#_result+1] = _num
+            else
+                color_print("warn", "请输入正确数字。错误输入将被无视: "..input, true)
+            end
+        end
+        if #_result > 0 then break end
     end
-    return str
+    color_print("info", "你选择的: "..array2string(_result), false)
+    count_down(3, true)
+    return _result
+end
+
+function array2string(array)
+    local _str = ""
+    for _, _item in ipairs(array) do
+        _str = _str .. _item .. " "
+    end
+    return _str
 end
 
 function indexof(array, target)
-    for i, elem in ipairs(array) do
-        if elem == target then
+    for i, _elem in ipairs(array) do
+        if _elem == target then
             return i
         end
     end
@@ -139,27 +164,27 @@ function indexof(array, target)
 end
 
 function get_keys(table)
-    local array = {}
-    for k, v in pairs(table) do
-        array[#array+1] = k
+    local _array = {}
+    for k, _ in pairs(table) do
+        _array[#_array+1] = k
     end
-    return array
+    return _array
 end
 
 function value_en2zh(value_types, target_type, value_en)
-    local index = indexof(value_types[target_type]["en"], value_en)
-    return value_types[target_type]["zh"][index]
+    local _index = indexof(value_types[target_type]["en"], value_en)
+    return value_types[target_type]["zh"][_index]
 end
 
 function value_zh2en(value_types, target_type, value_zh)
-    local index = indexof(value_types[target_type]["zh"], value_zh)
-    return value_types[target_type]["en"][index]
+    local _index = indexof(value_types[target_type]["zh"], value_zh)
+    return value_types[target_type]["en"][_index]
 end
 
 function file_exist(path)
-    local command = "if [ -e "..path.." ]; then echo 'yes'; else echo 'no'; fi"
-    local result = exec_linux_command_get_output(command)
-    if result == "yes" then
+    local _command = "if [ -e "..path.." ]; then echo 'yes'; else echo 'no'; fi"
+    local _result = exec_linux_command_get_output(_command)
+    if _result == "yes" then
         return true
     else
         return false
@@ -241,7 +266,7 @@ function get_ipv4_address()
             end
         end
         if _count ~= 4 then _flag = false end
-        
+
         if _flag then
             return _input
         else
@@ -250,4 +275,96 @@ function get_ipv4_address()
             color_print("tip", "111的部分可以是0~255的数字", true)
         end
     end
+end
+
+function tablelength(table)
+    local _count = 0
+    for _ in pairs(table) do _count = _count + 1 end
+    return _count
+end
+
+-- Return: 保存在.cacha/modinfo里面的mod的ID数组
+function get_installed_mods_id(cache_dir)
+    local _id_list_string = exec_linux_command_get_output("ls "..cache_dir.." | awk -F. '{print $1}'")
+    if #_id_list_string == 0 then return {} end
+    return split(_id_list_string, "\n")
+end
+
+-- Return: 保存在modoverrides.lua里面的mod的ID数组
+function get_added_mods_id(configuration, installed_mods)
+    local added_mods = {}
+    for key,_ in pairs(configuration) do
+        local id = split(key, "-")[2]
+        added_mods[#added_mods+1] = installed_mods[id]
+    end
+    return added_mods
+end
+
+function generate_installed_mods_table(cache_dir)
+    local _table = {}
+    local _id_list = get_installed_mods_id(cache_dir)
+    _table["id_array"] = _id_list
+    _table["name_array"] = {}
+
+    for index, id in ipairs(_id_list) do
+        dofile(modinfo_cache_dir.."/"..id..".lua")
+        _table["name_array"][index] = name
+        _table[id] = name
+        _table[name] = id
+    end
+
+    reset_dofile_modinfo()
+    return _table
+end
+
+function save_configuration_to_file(configuration, file_path)
+    os.execute("echo '' > "..file_path)
+    os.execute("sed -i -e '$i return {' "..file_path)
+
+    for key, setting_table in pairs(configuration) do
+        os.execute("sed -i -e '$i \\    [\""..key.."\"]={' "..file_path)
+        local enabled = setting_table["enabled"]
+        os.execute("sed -i -e '$i \\        enabled="..tostring(enabled)..",' "..file_path)
+        os.execute("sed -i -e '$i \\        configuration_options={' "..file_path)
+        local options = setting_table["configuration_options"]
+        for k, v in pairs(options) do
+            local _value = v
+            if type(_value) == "string" then _value = "\"".._value.."\"" end
+            os.execute("sed -i -e '$i \\            [\""..k.."\"]="..tostring(_value)..",' "..file_path)
+        end
+        os.execute("sed -i -e '$i \\        }' "..file_path)
+        os.execute("sed -i -e '$i \\    },' "..file_path)
+    end
+
+    os.execute("sed -i -e '$i }' "..file_path)
+end
+
+function reset_dofile_modinfo()
+    if name ~= nil then name = nil end
+    if description ~= nil then description = nil end
+    if author ~= nil then author = nil end
+    if version ~= nil then version = nil end
+    if forumthread ~= nil then forumthread = nil end
+    if api_version ~= nil then api_version = nil end
+
+    if client_only_mod ~= nil then client_only_mod = nil end
+    if all_clients_require_mod ~= nil then all_clients_require_mod = nil end
+    if configuration_options ~= nil then configuration_options = nil end
+    if server_filter_tags ~= nil then server_filter_tags = nil end
+
+    if dst_compatible ~= nil then dst_compatible = nil end
+    if dont_starve_compatible ~= nil then dont_starve_compatible = nil end
+    if reign_of_giants_compatible ~= nil then reign_of_giants_compatible = nil end
+    if shipwrecked_compatible ~= nil then shipwrecked_compatible = nil end
+    if hamlet_compatible ~= nil then hamlet_compatible = nil end
+    if porkland_compatible ~= nil then porkland_compatible = nil end
+end
+
+function is_mod_configurable(mod_id)
+    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    if configuration_options ~= nil then
+        return true
+    end
+    reset_dofile_modinfo()
+    return false
 end
