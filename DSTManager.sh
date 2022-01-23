@@ -538,7 +538,7 @@ function check_environment() {
     if [[ ! -e $repo_root_dir/.cache/.skip_requirements_check ]]; then
         add_alias
         install_dependencies
-        color_print -n info '输入source ~/.bashrc 或者重写登录后, 即可使用dst来执行脚本～'; count_down -d 3
+        color_print -n info '输入source ~/.bashrc 或者重新登录后, 即可使用dst来执行脚本～'; count_down -d 3
         check_lua
         touch $repo_root_dir/.cache/.skip_requirements_check
     fi
