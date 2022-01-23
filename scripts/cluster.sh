@@ -60,6 +60,7 @@ function create_shard() {
     fi
 
     # 编辑server.ini
+    color_print -n warn '如果本世界是主世界的话, 接下来请把is_master选项改成true'; count_down -d 3
     lua $repo_root_dir/scripts/edit_shard_ini.lua $repo_root_dir $1/$2
 
     # 编辑worldgenoverride.lua
@@ -72,7 +73,7 @@ function create_shard() {
 
 function create_cluster() {
     color_print info '开始创建新的存档...'
-    
+
     read_line info '请输入新存档的文件夹名字' warn '(这个名字不是显示在服务器列表的名字)'
     declare -r _new_cluster=$answer
     if generate_list_from_dir -c | grep -sq $_new_cluster; then
@@ -96,11 +97,11 @@ function create_cluster() {
 
     # 添加shard
     while true; do
-        yes_or_no info '是否要添加shard?'
+        yes_or_no info '是否要添加地表/洞穴世界?'
         if [[ $answer == 'no' ]]; then break; fi
 
-        color_print info '请为shard取个名字吧'
-        read_line tip '必须要有一个主世界, 最多只能有一个主世界!'
+        color_print warn '注意: 必须要有一个主世界, 最多只能有一个主世界!'
+        color_print info '请为这个世界取个名字吧(文件夹名)'
         read_line tip '地面世界的话推荐Forest, 洞穴世界的话推荐Cave, 主世界的话推荐Main'
         if [[ -e $_cluster_path/$answer ]]; then
             color_print error "存档${_new_cluster}里面已存在${$answer}!"
@@ -115,11 +116,11 @@ function create_cluster() {
 }
 
 function update_world_setting() {
-    color_print info '修改shard的配置选项...'
+    color_print info '修改世界的配置选项...'
 
     array=$(generate_list_from_dir -s)
     if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
-    select_one info '请选择一个shard'
+    select_one info '请选择一个世界'
 
     declare -r _shard=$answer
     declare -r _shard_path="$klei_root_dir/$worlds_dir/$(echo $_shard | sed 's#-#/#g')"
@@ -138,7 +139,7 @@ function update_world_setting() {
 }
 
 function update_ini_setting() {
-    color_print info '修改cluster的配置选项...'
+    color_print info '修改存档的配置选项...'
 
     array=$(generate_list_from_dir -cs)
     if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
@@ -184,6 +185,8 @@ function cluster_panel() {
         answer=''
 
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
+        color_print tip '存档是指包含了地表/洞穴世界的文件夹(存档=cluster)'
+        color_print tip '世界是指1个地表世界或者1个洞穴世界的文件夹(世界=shard)'
         array=${_action_list[@]}; select_one info '请从下面选一个'
         declare _action=$answer
 

@@ -60,10 +60,11 @@ function add_mods_to_setting_file() {
             color_print warn "ID $_id 已存在!"
             continue
         fi
-        if [[ $(is_dst_mod $_id) == 'no' ]]; then
-            color_print error "ID $_id 不是饥荒联机版的Mod"
-            continue
-        fi
+        # 国内会被墙...
+        #if [[ $(is_dst_mod $_id) == 'no' ]]; then
+        #    color_print error "ID $_id 不是饥荒联机版的Mod"
+        #    continue
+        #fi
         color_print info "添加Mod: $_id"
         echo "ServerModSetup(\"${_id}\")" >> "$mod_dir_v1/dedicated_server_mods_setup.lua"
         _flag=0

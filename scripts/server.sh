@@ -219,7 +219,7 @@ function server_panel() {
             return 0
             ;;
         *)
-            color_print -n error "${_action}功能暂未写好" ; count_down -d 3
+            color_print -n error "${_action}功能暂未写好"; count_down -d 3
             ;;
         esac
     done
