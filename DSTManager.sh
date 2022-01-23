@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局变量在其他shell脚本里可用
 declare os='MacOS'
-declare -r script_version='v1.4.0.5'
+declare -r script_version='v1.4.0.6'
 declare -r architecture=$(getconf LONG_BIT)
 declare -r repo_root_dir="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -533,8 +533,8 @@ function check_environment() {
     check_script_position
 
     clone_repo
-    process_old_dot_file
     make_directories
+    process_old_dot_file
     if [[ ! -e $repo_root_dir/.cache/.skip_requirements_check ]]; then
         add_alias
         install_dependencies

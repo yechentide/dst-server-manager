@@ -119,7 +119,7 @@ function update_world_setting() {
     color_print info '修改世界的配置选项...'
 
     array=$(generate_list_from_dir -s)
-    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
+    if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     select_one info '请选择一个世界'
 
     declare -r _shard=$answer
@@ -142,7 +142,7 @@ function update_ini_setting() {
     color_print info '修改存档的配置选项...'
 
     array=$(generate_list_from_dir -cs)
-    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
+    if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     color_print info '选择"存档名"来修改cluster.ini, 选择"存档名-世界名"来修改server.ini'
     select_one info '请选择一个存档'
 
@@ -202,7 +202,7 @@ function cluster_panel() {
             ;;
         '删除存档')
             array=($(generate_list_from_dir -c))
-            if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
+            if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
             multi_select warn '(多选用空格隔开)请选择你要删除的存档'
             declare _cluster=''

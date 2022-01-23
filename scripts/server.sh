@@ -28,7 +28,7 @@ function stop_shard() {
         return 0
     fi
 
-    accent_color_print info $_accent_color '世界 ' $1 ' ...'
+    accent_color_print info $_accent_color '正在关闭世界 ' $1 ' ...'
     shutdown_shard $1
 
     declare _i
@@ -61,7 +61,7 @@ function start_shard() {
     color_print info "启动需要时间，请等待$_time_out秒"
     color_print info '本脚本启动世界时禁止自动更新mod, 有需要请在Mod管理面板更新'
     color_print info '如果启动失败，可以再尝试一两次'
-    tmux new -d -s $1 "cd $dst_root_dir/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $mod_dir_v2 -persistent_storage_root $klei_root_dir -conf_dir $worlds_dir -cluster $_cluster -shard $_shard"
+    tmux new -d -s $1 "cd $dst_root_dir/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $ugc_directory -persistent_storage_root $klei_root_dir -conf_dir $worlds_dir -cluster $_cluster -shard $_shard"
 
     declare _i
     for _i in $(seq 1 $_time_out); do
@@ -207,7 +207,7 @@ function server_panel() {
             fi
             # 选择了cluster
             declare _shard=''
-            for _shard in $(generate_list_from_cluster); do
+            for _shard in $(generate_list_from_cluster $answer); do
                 restart_shard "$answer-$_shard"
             done
             ;;
