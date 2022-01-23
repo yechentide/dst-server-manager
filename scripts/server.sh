@@ -24,22 +24,22 @@ function force_shutdown_session() {
 function stop_shard() {
     declare -r _accent_color=36
     if [[ $(is_shard_running $1) == 'no' ]]; then
-        accent_color_print warn $_accent_color 'shard ' $1 ' 处于关闭状态！'
+        accent_color_print warn $_accent_color '世界 ' $1 ' 处于关闭状态！'
         return 0
     fi
 
-    accent_color_print info $_accent_color '正在关闭shard ' $1 ' ...'
+    accent_color_print info $_accent_color '世界 ' $1 ' ...'
     shutdown_shard $1
 
     declare _i
     for _i in $(seq 1 30); do
         sleep 1
         if [[ $(is_shard_running $1) == 'no' ]]; then
-            accent_color_print success $_accent_color '成功关闭shard ' $1 ' !'
+            accent_color_print success $_accent_color '成功关闭世界 ' $1 ' !'
             return 0
         fi
     done
-    accent_color_print error $_accent_color 'shard ' $1 ' 关闭失败！'
+    accent_color_print error $_accent_color '世界 ' $1 ' 关闭失败！'
     color_print -n error '请联系作者修bug'; count_down -d 3
     exit 1
 }
@@ -49,7 +49,7 @@ function stop_shard() {
 function start_shard() {
     declare -r _accent_color=36
     if [[ $(is_shard_running $1) == 'yes' ]]; then
-        accent_color_print warn $_accent_color 'shard ' $1 ' 处于启动状态！'
+        accent_color_print warn $_accent_color '世界 ' $1 ' 处于启动状态！'
         return 0
     fi
 
@@ -57,9 +57,9 @@ function start_shard() {
     declare -r _shard=$(echo $1 | awk -F- '{print $2}')
 
     declare -r _time_out=90
-    accent_color_print info $_accent_color '正在启动shard ' $1 ' ...'
+    accent_color_print info $_accent_color '正在启动世界 ' $1 ' ...'
     color_print info "启动需要时间，请等待$_time_out秒"
-    color_print info '本脚本启动shard时禁止自动更新mod, 请在Mod管理面板更新'
+    color_print info '本脚本启动世界时禁止自动更新mod, 有需要请在Mod管理面板更新'
     color_print info '如果启动失败，可以再尝试一两次'
     tmux new -d -s $1 "cd $dst_root_dir/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $mod_dir_v2 -persistent_storage_root $klei_root_dir -conf_dir $worlds_dir -cluster $_cluster -shard $_shard"
 
@@ -67,7 +67,7 @@ function start_shard() {
     for _i in $(seq 1 $_time_out); do
         sleep 1
         if tmux capture-pane -t $1 -p -S - | grep -sq 'Sim paused'; then
-            accent_color_print success $_accent_color '成功启动shard ' $1 ' !'
+            accent_color_print success $_accent_color '成功启动世界 ' $1 ' !'
             return 0
         elif tmux capture-pane -t $1 -p -S - | grep -sq 'Your Server Will Not Start'; then
             color_print error '似乎token不行, 错误信息如下:'
@@ -76,7 +76,7 @@ function start_shard() {
         fi
     done
     tmux kill-session -t $1
-    accent_color_print error $_accent_color 'shard ' $1 ' 启动失败！'
+    accent_color_print error $_accent_color '世界 ' $1 ' 启动失败！'
     color_print tip '请确保先启动主世界'
 }
 
@@ -111,8 +111,8 @@ function stop_all_shard() {
 }
 
 function update_server() {
-    color_print warn '升级服务端之前，将会关闭所有运行中的shard！'
-    yes_or_no warn '是否关闭所有运行中的shard并更新服务端？'
+    color_print warn '升级服务端之前，将会关闭所有运行中的世界！'
+    yes_or_no warn '是否关闭所有运行中的世界, 并更新服务端？'
     if [[ $answer == 'no' ]]; then
         color_print -n info '取消升级 '; count_down -d 3
         return 0

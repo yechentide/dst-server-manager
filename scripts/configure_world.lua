@@ -131,10 +131,10 @@ function generate_new(shard_dir_path, is_overground)
     -- 展示model
     if is_overground == "true" then
         configure_model(model_gen, "地上 - 生成 - ", true)
-        configure_model(model_set, "地上 - 选项 - ", true)
+        configure_model(model_set, "地上 - 选项 - ", false)
     else
         configure_model(model_gen, "洞穴 - 生成 - ", true)
-        configure_model(model_set, "洞穴 - 选项 - ", true)
+        configure_model(model_set, "洞穴 - 选项 - ", false)
     end
 
     -- 保存model
@@ -169,9 +169,9 @@ function change_options(shard_dir_path, is_overground)
 
     -- 展示model
     if is_overground == "true" then
-        configure_model(model_set, "地上 - 选项 - ", true)
+        configure_model(model_set, "地上 - 选项 - ", false)
     else
-        configure_model(model_set, "洞穴 - 选项 - ", true)
+        configure_model(model_set, "洞穴 - 选项 - ", false)
     end
 
     -- 保存model

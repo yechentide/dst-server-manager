@@ -57,7 +57,7 @@ function configure_model(table)
     while true do
         clear()
         print_divider("-", 36)
-        color_print("info", "以下是shard设置, 请根据自身情况修改", true)
+        color_print("info", "以下是世界设置, 请根据自身情况修改", true)
         print()
 
         show_settings(table, show_description)
@@ -90,7 +90,7 @@ end
 
 clear()
 print_divider("-", 36)
-color_print("info", "即将开始配置shard.ini...", true)
+color_print("info", "即将开始配置server.ini...", true)
 
 -- 读取/更新model
 local file_path = arg[2].."/server.ini"
@@ -99,5 +99,5 @@ configure_model(model)
 apply_changes_to_file(model, file_path)
 
 clear()
-color_print("success", "cluster.ini配置完成！", true)
+color_print("success", "server.ini配置完成！", true)
 print_divider("-", 36)

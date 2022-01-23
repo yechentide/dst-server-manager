@@ -167,7 +167,7 @@ function mod_panel() {
 
     while true; do
         echo ''
-        color_print 70 '>>>>>> 服务端管理 <<<<<<'
+        color_print 70 '>>>>>> Mod管理 <<<<<<'
         display_running_clusters
         array=()
         answer=''

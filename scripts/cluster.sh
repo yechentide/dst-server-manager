@@ -60,7 +60,7 @@ function create_shard() {
     fi
 
     # 编辑server.ini
-    color_print -n warn '如果本世界是主世界的话, 接下来请把is_master选项改成true'; count_down -d 3
+    color_print -n warn '如果本世界是主世界的话, 接下来请把is_master选项改成true'; count_down -d 6
     lua $repo_root_dir/scripts/edit_shard_ini.lua $repo_root_dir $1/$2
 
     # 编辑worldgenoverride.lua
@@ -143,7 +143,7 @@ function update_ini_setting() {
 
     array=$(generate_list_from_dir -cs)
     if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
-    color_print info '选择存档名来修改cluster.ini, 选择shard名来修改server.ini'
+    color_print info '选择"存档名"来修改cluster.ini, 选择"存档名-世界名"来修改server.ini'
     select_one info '请选择一个存档'
 
     if echo $answer | grep -sqv -; then
