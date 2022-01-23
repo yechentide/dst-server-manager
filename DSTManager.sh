@@ -579,11 +579,9 @@ function main_panel_header() {
     print_divider '=' | color_print 208
 
     color_print 208 " DST Dedicated Server Manager $script_version"
-    color_print 70  ' 本脚本由yechentide制作, 完全免费! 有问题可以在百度贴吧@夜尘tide'
-    color_print 70  ' 本脚本一切权利归作者所有, 未经许可禁止使用本脚本进行任何的商业活动!'
     color_print 22  ' Github仓库: https://github.com/yechentide/DSTServerManager'
     color_print 22  ' Gitee仓库: https://gitee.com/yechentide/DSTServerManager'
-    color_print 22  ' 欢迎会shellscript的伙伴来一起写开服脚本！'
+    color_print 22  ' 全部代码上传到以上仓库里了, 有兴趣的伙伴可以来一起改善功能！'
 
     print_divider '-' | color_print 208
 
