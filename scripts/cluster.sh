@@ -50,7 +50,7 @@ function get_token() {
 #   $2: shard name          Main
 function create_shard() {
     array=('地上世界' '洞穴世界')
-    select_one info '该shard是...'
+    select_one info '该世界是...'
 
     # 复制shard模板过去
     if [[ $answer == '地上世界' ]]; then
@@ -60,7 +60,7 @@ function create_shard() {
     fi
 
     # 编辑server.ini
-    color_print -n warn '如果本世界是主世界的话, 接下来请把is_master选项改成true'; count_down -d 6
+    color_print -n warn '如果本世界是主世界的话, 接下来请把"是否为主世界"选项改成true'; count_down -d 6
     lua $repo_root_dir/scripts/edit_shard_ini.lua $repo_root_dir $1/$2
 
     # 编辑worldgenoverride.lua
