@@ -9,6 +9,7 @@ require("utils")
 -- 配置完毕以后, 同步到存档里的各个世界
 modinfo_cache_dir = arg[1].."/.cache/modinfo"
 target_file_path = arg[1].."/.cache/modoverrides.lua"
+locale = "zh"
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
@@ -25,7 +26,9 @@ function show_settings(mod_id, current_mod_settings, show_description)
         print(option_name.." = "..tostring(option_value))
         if show_description then
             if option["label"] ~= nil then color_print(242, "    "..option["label"], true) end
-            if option["hover"] ~= nil then color_print(242, "    "..option["hover"], true) end
+            if option["hover"] ~= option["label"] then
+                if option["hover"] ~= nil then color_print(242, "    "..option["hover"], true) end
+            end
         end
     end
     print()
