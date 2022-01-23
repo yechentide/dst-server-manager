@@ -9,12 +9,12 @@ require("utils")
 -- 配置完毕以后, 同步到存档里的各个世界
 modinfo_cache_dir = arg[1].."/.cache/modinfo"
 target_file_path = arg[1].."/.cache/modoverrides.lua"
-locale = "zh"
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
 
 function show_settings(mod_id, current_mod_settings, show_description)
+    reset_dofile_modinfo()
     dofile(modinfo_cache_dir.."/"..mod_id..".lua")
     print("是否启用 = "..tostring(current_mod_settings["enabled"]))
     if show_description then
@@ -23,25 +23,29 @@ function show_settings(mod_id, current_mod_settings, show_description)
     for _, option in ipairs(configuration_options) do
         local option_name = option["name"]
         local option_value = current_mod_settings["configuration_options"][option_name]
-        print(option_name.." = "..tostring(option_value))
+        if option["label"] ~= nil then
+            print(option["label"].." = "..tostring(option_value))
+        else
+            print(option_name.." = "..tostring(option_value))
+        end
         if show_description then
-            if option["label"] ~= nil then color_print(242, "    "..option["label"], true) end
-            if option["hover"] ~= option["label"] then
-                if option["hover"] ~= nil then color_print(242, "    "..option["hover"], true) end
-            end
+            if option["hover"] ~= nil then color_print(242, "    "..option["hover"], true) end
         end
     end
     print()
-    reset_dofile_modinfo()
 end
 
 function get_mod_setting_options(mod_id)
+    reset_dofile_modinfo()
     dofile(modinfo_cache_dir.."/"..mod_id..".lua")
     local options_array = {"是否启用"}
     for _, option in ipairs(configuration_options) do
-        options_array[#options_array+1] = option["name"]
+        if option["label"] ~= nil then
+            options_array[#options_array+1] = option["label"]
+        else
+            options_array[#options_array+1] = option["name"]
+        end
     end
-    reset_dofile_modinfo()
     return options_array
 end
 
@@ -57,8 +61,9 @@ function get_new_setting(mod_id, option, option_index, show_description)
         print("true")
         new_value = select_one({false, true}, "info", "请选择一个值")
     else
+        reset_dofile_modinfo()
         dofile(modinfo_cache_dir.."/"..mod_id..".lua")
-        local option_name = configuration_options[option_index]["name"]
+        --local option_name = configuration_options[option_index]["name"]
         local options = configuration_options[option_index]["options"]
         local values_list = {}
         for _, option in ipairs(options) do
@@ -70,12 +75,24 @@ function get_new_setting(mod_id, option, option_index, show_description)
             end
         end
         new_value = select_one(values_list, "info", "请选择一个值")
-        reset_dofile_modinfo()
     end
 
     print("新的值为: "..tostring(new_value))
     sleep(1)
     return new_value
+end
+
+function get_option_name_from_label(mod_id, label)
+    reset_dofile_modinfo()
+    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    for _, option in ipairs(configuration_options) do
+        if option["label"] ~= nil and option["label"] == label then
+            return option["name"]
+        end
+        if option["name"] == label then
+            return option["name"]
+        end
+    end
 end
 
 function configure_mod(mod_id, mod_name, configuration)
@@ -100,6 +117,7 @@ function configure_mod(mod_id, mod_name, configuration)
         if target_option == "是否启用" then
             current_mod_settings["enabled"] = new_value
         else
+            target_option = get_option_name_from_label(mod_id, target_option)
             current_mod_settings["configuration_options"][target_option] = new_value
         end
     end
@@ -124,6 +142,7 @@ function add_new_mods(target_file)
             color_print("warn", "模组 ".._name.." 已存在, 无需再次添加!", true)
         else
             color_print("success", "添加模组 ".._name, true)
+            reset_dofile_modinfo()
             dofile(modinfo_cache_dir.."/".._id..".lua")
             -- 添加mod设置到model
             configuration["workshop-".._id] = {}
@@ -136,7 +155,6 @@ function add_new_mods(target_file)
             end
             -- 保存model
             save_configuration_to_file(configuration, target_file)
-            reset_dofile_modinfo()
         end
     end
 end
