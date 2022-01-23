@@ -110,12 +110,16 @@ function generate_new(shard_dir_path, is_overground)
     clear()
     print_divider("-", 36)
     color_print("info", "开始配置世界！", true)
-    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
 
     -- 读取model, 更新model
     local model_gen = {}
     local model_set = {}
+    color_print("tip", "standard是游戏里的默认配置, terraria是游戏里的泰拉瑞亚配置", true)
+    color_print("tip", "这两个模板里的草蜥蜴和多枝树均已关闭", true)
     local preset_dir_path = select_preset()
+
+    color_print("tip", "如果要添加自己的模板文件的话, 请在 "..world_presets_dir.." 里面新建文件夹。内容参考world_presets内的其他文件夹。", true)
+    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
     if is_overground == "true" then
         model_gen = forest_generations_table
         model_set = forest_settings_table
