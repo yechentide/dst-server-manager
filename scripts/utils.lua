@@ -361,10 +361,10 @@ function reset_dofile_modinfo()
 end
 
 function is_mod_configurable(mod_id)
+    reset_dofile_modinfo()
     dofile(modinfo_cache_dir.."/"..mod_id..".lua")
     if configuration_options ~= nil then
         return true
     end
-    reset_dofile_modinfo()
     return false
 end
