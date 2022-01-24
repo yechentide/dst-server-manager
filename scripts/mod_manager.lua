@@ -148,10 +148,12 @@ function add_new_mods(target_file)
             configuration["workshop-".._id] = {}
             configuration["workshop-".._id]["enabled"] = true
             configuration["workshop-".._id]["configuration_options"] = {}
-            for _, option in ipairs(configuration_options) do
-                local _key = option["name"]
-                local _value = option["default"]
-                configuration["workshop-".._id]["configuration_options"][_key] = _value
+            if configuration_options ~= nil then
+                for _, option in ipairs(configuration_options) do
+                    local _key = option["name"]
+                    local _value = option["default"]
+                    configuration["workshop-".._id]["configuration_options"][_key] = _value
+                end
             end
             -- 保存model
             save_configuration_to_file(configuration, target_file)
