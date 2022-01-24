@@ -128,11 +128,11 @@ shellscript和lua语言我写烦了, 剩下的看看有没有勇士出现hh...
 ### 准备阶段(第一次运行)
 
 - 下载并运行
-![下载并运行](./docs/images/准备阶段01.png)
+![下载并运行](./docs/images/prepare01.png)
 - 下载依赖包
-![下载依赖包](./docs/images/准备阶段02.png)
+![下载依赖包](./docs/images/prepare02.png)
 - 下载依赖包结束
-![下载依赖包结束](./docs/images/准备阶段03.png)
+![下载依赖包结束](./docs/images/prepare03.png)
 
 ### 主面板
 
@@ -141,36 +141,36 @@ shellscript和lua语言我写烦了, 剩下的看看有没有勇士出现hh...
 ### 服务器管理
 
 - 启动 & 关闭服务端
-![启动 & 关闭服务端](./docs/images/服务端01.png)
+![启动 & 关闭服务端](./docs/images/server01.png)
 
 ### 存档管理
 
 - 新建存档
-![新建存档](./docs/images/存档01.png)
+![新建存档](./docs/images/cluster01.png)
 - 配置cluster.ini
-![配置cluster.ini](./docs/images/存档02.png)
+![配置cluster.ini](./docs/images/cluster02.png)
 - 修改cluster.ini设置
-![修改cluster.ini设置](./docs/images/存档03.png)
+![修改cluster.ini设置](./docs/images/cluster03.png)
 - 往存档里添加世界
-![往存档里添加世界](./docs/images/存档04.png)
+![往存档里添加世界](./docs/images/cluster04.png)
 - 修改server.ini
-![修改server.ini](./docs/images/存档05.png)
+![修改server.ini](./docs/images/cluster05.png)
 - 选择世界配置模板  
     目前只添加了默认配置的模板和泰拉瑞亚的模板  
     要添加新的模板, 可以往`templates/world_presets`文件夹里面添加
-![选择世界配置模板](./docs/images/存档06.png)
+![选择世界配置模板](./docs/images/cluster06.png)
 - 修改世界配置
-![修改世界配置](./docs/images/存档07.png)
+![修改世界配置](./docs/images/cluster07.png)
 - 删除存档
-![删除存档](./docs/images/存档08.png)
+![删除存档](./docs/images/cluster08.png)
 
 ### Mod管理
 
 - 下载Mod
-![下载Mod](./docs/images/模组01.png)
+![下载Mod](./docs/images/mod01.png)
 - 添加Mod到存档
-![添加Mod到存档](./docs/images/模组02.png)
+![添加Mod到存档](./docs/images/mod02.png)
 - 配置Mod
-![配置Mod](./docs/images/模组03.png)
+![配置Mod](./docs/images/mod03.png)
 - 配置Mod
-![配置Mod](./docs/images/模组04.png)
+![配置Mod](./docs/images/mod04.png)
