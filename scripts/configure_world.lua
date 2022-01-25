@@ -57,6 +57,41 @@ function apply_changes_to_file(table, file_path)
     end
 end
 
+function generate_worldgenoverride(file_path, model_generation, model_setting, is_overground)
+    os.execute("echo '' > "..file_path)
+    os.execute("sed -i -e '$i return {' "..file_path)
+
+    if not is_overground then
+        os.execute("sed -i -e '$i \\    worldgen_preset = \"DST_CAVE\",' "..file_path)
+        os.execute("sed -i -e '$i \\    settings_preset = \"DST_CAVE\",' "..file_path)
+    end
+    os.execute("sed -i -e '$i \\    override_enabled = true,' "..file_path)
+    os.execute("sed -i -e '$i \\    overrides={' "..file_path)
+
+    os.execute("sed -i -e '$i \\        -- generations' "..file_path)
+    for _, group_name in pairs(model_generation["array"]) do
+        for _, option_name in ipairs(model_generation[group_name]["array"]) do
+            local key = model_generation[group_name][option_name]["en"]
+            local value = model_generation[group_name][option_name]["value"]
+            if type(value) == "string" then value = "\""..value.."\"" end
+            os.execute("sed -i -e '$i \\        "..k.."="..tostring(value)..",' "..file_path)
+        end
+    end
+
+    os.execute("sed -i -e '$i \\        -- settings' "..file_path)
+    for _, group_name in pairs(model_setting["array"]) do
+        for _, option_name in ipairs(model_setting[group_name]["array"]) do
+            local key = model_setting[group_name][option_name]["en"]
+            local value = model_setting[group_name][option_name]["value"]
+            if type(value) == "string" then value = "\""..value.."\"" end
+            os.execute("sed -i -e '$i \\        "..k.."="..tostring(value)..",' "..file_path)
+        end
+    end
+
+    os.execute("sed -i -e '$i \\    }' "..file_path)
+    os.execute("sed -i -e '$i }' "..file_path)
+end
+
 function configure_model(table, prefix, is_generation)
     local group_array = table["array"]
     for _, group_name in ipairs(group_array) do
@@ -142,8 +177,8 @@ function generate_new(shard_dir_path, is_overground)
     end
 
     -- 保存model
-    apply_changes_to_file(model_gen, shard_dir_path.."/worldgenoverride.lua")
-    apply_changes_to_file(model_set, shard_dir_path.."/worldgenoverride.lua")
+    local file_path = shard_dir_path.."/worldgenoverride.lua"
+    generate_worldgenoverride(file_path, model_gen, model_set, is_overground)
 
     clear()
     color_print("success", "世界配置完成！", true)
@@ -155,12 +190,6 @@ function change_options(shard_dir_path, is_overground)
     print_divider("-", 36)
     color_print("info", "开始配置世界！", true)
     color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
-
-    --if is_overground == "true" then
-    --    configure_shard(shard_path, true, true)
-    --else
-    --    configure_shard(shard_path, false, true)
-    --end
 
     -- 读取model, 更新model
     local model_set = {}
