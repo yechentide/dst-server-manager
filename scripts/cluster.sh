@@ -133,7 +133,7 @@ function update_world_setting() {
     select_one info '请选择一个世界'
 
     declare -r shard=$answer
-    declare -r shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$(echo $_shard | sed 's#-#/#g')"
+    declare -r shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$(echo $shard | sed 's#-#/#g')"
     stop_shard $shard
 
     remove_klei_from_worldgenoverride $shard_path
@@ -224,7 +224,7 @@ function cluster_panel() {
             return 0
             ;;
         *)
-            color_print error "${_action}功能暂未写好" -n; count_down -d 3
+            color_print error "${action}功能暂未写好" -n; count_down -d 3
             ;;
         esac
     done

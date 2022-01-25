@@ -289,7 +289,7 @@ function check_user_is_sudoer() {
     declare sudoer_group=''
     if [[ $OS == 'Ubuntu' ]]; then sudoer_group='sudo'; fi
     if [[ $OS == 'CentOS' ]]; then sudoer_group='wheel'; fi
-    if groups | grep -sqv $_sudoer_group; then
+    if groups | grep -sqv $sudoer_group; then
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
         color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
         color_print -n warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ "; count_down -d 3
@@ -400,7 +400,7 @@ function install_dependencies() {
 
     echo ''
     color_print info '需要下载或更新的软件: '
-    echo "${_requires[@]}"
+    echo "${requires[@]}"
 
     if [[ $is_sudoer == 'no' ]]; then
         color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
@@ -649,7 +649,7 @@ function main_panel() {
             exit 0
             ;;
         *)
-            color_print -n error "${_action}功能暂未写好"; count_down -d 3
+            color_print -n error "${action}功能暂未写好"; count_down -d 3
             ;;
         esac
     done

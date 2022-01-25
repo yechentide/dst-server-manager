@@ -34,7 +34,7 @@ function get_mods_id_from_input() {
         if [[ ${#result[@]} -gt 0 ]]; then break; fi
     done
     array=(${result[@]})
-    #color_print info "输入的ID: ${_result[*]}"
+    #color_print info "输入的ID: ${result[*]}"
 }
 
 ##############################################################################################
@@ -49,8 +49,8 @@ function add_mods_to_setting_file() {
             continue
         fi
         # 国内会被墙...
-        #if [[ $(is_dst_mod $_id) == 'no' ]]; then
-        #    color_print error "ID $_id 不是饥荒联机版的Mod"
+        #if [[ $(is_dst_mod $id) == 'no' ]]; then
+        #    color_print error "ID $id 不是饥荒联机版的Mod"
         #    continue
         #fi
         color_print info "添加Mod: $id"
@@ -181,7 +181,7 @@ function mod_panel() {
             return 0
             ;;
         *)
-            color_print -n error "${_action}功能暂未写好" ; count_down -d 3
+            color_print -n error "${action}功能暂未写好" ; count_down -d 3
             ;;
         esac
     done
