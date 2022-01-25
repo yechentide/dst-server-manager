@@ -10,7 +10,7 @@ require("value_types_world")
 require("table_forest")
 require("table_cave")
 
-local world_presets_dir = arg[1].."/templates/world_presets"
+WORLD_PRESETS_DIR = arg[1].."/templates/world_presets"
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ function generate_new(shard_dir_path, is_overground)
     color_print("tip", "这两个模板里的草蜥蜴和多枝树均已关闭", true)
     local preset_dir_path = select_preset()
 
-    color_print("tip", "如果要添加自己的模板文件的话, 请在 "..world_presets_dir.." 里面新建文件夹。内容参考world_presets内的其他文件夹。", true)
+    color_print("tip", "如果要添加自己的模板文件的话, 请在 "..WORLD_PRESETS_DIR.." 里面新建文件夹。内容参考world_presets内的其他文件夹。", true)
     color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
     if is_overground == "true" then
         model_gen = forest_generations_table
