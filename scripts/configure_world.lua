@@ -68,23 +68,18 @@ function generate_worldgenoverride(file_path, model_generation, model_setting, i
     os.execute("sed -i -e '$i \\    override_enabled = true,' "..file_path)
     os.execute("sed -i -e '$i \\    overrides={' "..file_path)
 
-    os.execute("sed -i -e '$i \\        -- generations' "..file_path)
-    for _, group_name in pairs(model_generation["array"]) do
-        for _, option_name in ipairs(model_generation[group_name]["array"]) do
-            local key = model_generation[group_name][option_name]["en"]
-            local value = model_generation[group_name][option_name]["value"]
-            if type(value) == "string" then value = "\""..value.."\"" end
-            os.execute("sed -i -e '$i \\        "..k.."="..tostring(value)..",' "..file_path)
-        end
-    end
-
-    os.execute("sed -i -e '$i \\        -- settings' "..file_path)
-    for _, group_name in pairs(model_setting["array"]) do
-        for _, option_name in ipairs(model_setting[group_name]["array"]) do
-            local key = model_setting[group_name][option_name]["en"]
-            local value = model_setting[group_name][option_name]["value"]
-            if type(value) == "string" then value = "\""..value.."\"" end
-            os.execute("sed -i -e '$i \\        "..k.."="..tostring(value)..",' "..file_path)
+    local model_list = {model_generation, model_setting}
+    for i, model in ipairs(model_list) do
+        local type = "generations"
+        if i == 2 then type = "settings" end
+        os.execute("sed -i -e '$i \\        -- "..type.."' "..file_path)
+        for _, group_name in pairs(model["array"]) do
+            for _, option_name in ipairs(model[group_name]["array"]) do
+                local key = model[group_name][option_name]["en"]
+                local value = model[group_name][option_name]["value"]
+                if type(value) == "string" then value = "\""..value.."\"" end
+                os.execute("sed -i -e '$i \\        "..k.."="..tostring(value)..",' "..file_path)
+            end
         end
     end
 
