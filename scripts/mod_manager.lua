@@ -2,7 +2,7 @@
 -- arg[1]: $repo_root_dir       --> ~/DSTServerManager
 -- arg[2]: action               --> add / update
 
-package.path = package.path..';'..arg[1]..'/scripts/?.lua;' --..arg[1]..'/scripts/model/?.lua;'
+package.path = package.path..';'..arg[1]..'/scripts/?.lua;'
 require("utils")
 
 -- 使用lua配置前, 先通过shellscript来把modoverride.lua文件复制到 $repo_root_dir/.cache
@@ -12,6 +12,121 @@ TARGET_FILE_PATH = arg[1].."/.cache/modoverrides.lua"
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
+
+---------------------------------------
+-- 作用: 清除读取modinfo.lua文件后残留的变量
+---------------------------------------
+function reset_dofile_modinfo()
+    if name ~= nil then name = nil end
+    if description ~= nil then description = nil end
+    if author ~= nil then author = nil end
+    if version ~= nil then version = nil end
+    if forumthread ~= nil then forumthread = nil end
+    if api_version ~= nil then api_version = nil end
+
+    if client_only_mod ~= nil then client_only_mod = nil end
+    if all_clients_require_mod ~= nil then all_clients_require_mod = nil end
+    if configuration_options ~= nil then configuration_options = nil end
+    if server_filter_tags ~= nil then server_filter_tags = nil end
+
+    if dst_compatible ~= nil then dst_compatible = nil end
+    if dont_starve_compatible ~= nil then dont_starve_compatible = nil end
+    if reign_of_giants_compatible ~= nil then reign_of_giants_compatible = nil end
+    if shipwrecked_compatible ~= nil then shipwrecked_compatible = nil end
+    if hamlet_compatible ~= nil then hamlet_compatible = nil end
+    if porkland_compatible ~= nil then porkland_compatible = nil end
+end
+
+---------------------------------------
+-- 作用: 从.cache/modinfo文件夹里, 获得已下载ID列表
+-- 参数:
+--   .cache/modinfo文件夹的绝对路径
+-- 返回:
+--   模组ID的数组
+---------------------------------------
+function get_installed_mods_id(cache_dir)
+    local id_list_string = exec_linux_command_get_output("ls "..cache_dir.." | awk -F. '{print $1}'")
+    if #id_list_string == 0 then return {} end
+    return split(id_list_string, "\n")
+end
+
+---------------------------------------
+-- 作用: 从modoverrides.lua文件里, 获取ID列表
+-- 参数:
+--   modoverrides.lua文件的绝对路径
+--   已下载模组的中文名<-->ID对照表(由generate_installed_mods_table函数生成)
+-- 返回:
+--   模组ID的数组
+---------------------------------------
+function get_added_mods_id(configuration, installed_mods)
+    local added_mods = {}
+    for key, _ in pairs(configuration) do
+        local id = split(key, "-")[2]
+        added_mods[#added_mods+1] = installed_mods[id]
+    end
+    return added_mods
+end
+
+---------------------------------------
+-- 作用: 从.cache/modinfo文件夹里, 创建已下载模组的中文名<-->ID对照表
+-- 参数:
+--   .cache/modinfo文件夹的绝对路径
+-- 返回:
+--   已下载模组的中文名<-->ID对照表 (table)
+---------------------------------------
+function generate_installed_mods_table(cache_dir)
+    reset_dofile_modinfo()
+    local table = {}
+    local id_list = get_installed_mods_id(cache_dir)
+    table["id_array"] = id_list
+    table["name_array"] = {}
+
+    for index, id in ipairs(id_list) do
+        dofile(modinfo_cache_dir.."/"..id..".lua")
+        table["name_array"][index] = name
+        table[id] = name
+        table[name] = id
+    end
+    return table
+end
+
+---------------------------------------
+-- 作用: 确认该模组是否可以更改设置
+-- 参数:
+--   模组ID
+-- 返回:
+--   true / false
+---------------------------------------
+function is_mod_configurable(mod_id)
+    reset_dofile_modinfo()
+    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    if configuration_options ~= nil then
+        return true
+    end
+    return false
+end
+
+function save_configuration_to_file(configuration, file_path)
+    os.execute("echo '' > "..file_path)
+    os.execute("sed -i -e '$i return {' "..file_path)
+
+    for key, setting_table in pairs(configuration) do
+        os.execute("sed -i -e '$i \\    [\""..key.."\"]={' "..file_path)
+        local enabled = setting_table["enabled"]
+        os.execute("sed -i -e '$i \\        enabled="..tostring(enabled)..",' "..file_path)
+        os.execute("sed -i -e '$i \\        configuration_options={' "..file_path)
+        local options = setting_table["configuration_options"]
+        for k, v in pairs(options) do
+            local value = v
+            if type(value) == "string" then value = "\""..value.."\"" end
+            os.execute("sed -i -e '$i \\            [\""..k.."\"]="..tostring(value)..",' "..file_path)
+        end
+        os.execute("sed -i -e '$i \\        }' "..file_path)
+        os.execute("sed -i -e '$i \\    },' "..file_path)
+    end
+
+    os.execute("sed -i -e '$i }' "..file_path)
+end
 
 function show_settings(mod_id, current_mod_settings, show_description)
     reset_dofile_modinfo()
