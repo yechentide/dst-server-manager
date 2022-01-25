@@ -7,15 +7,15 @@ require("utils")
 
 -- 使用lua配置前, 先通过shellscript来把modoverride.lua文件复制到 $repo_root_dir/.cache
 -- 配置完毕以后, 同步到存档里的各个世界
-modinfo_cache_dir = arg[1].."/.cache/modinfo"
-target_file_path = arg[1].."/.cache/modoverrides.lua"
+MODINFO_CACHE_DIR = arg[1].."/.cache/modinfo"
+TARGET_FILE_PATH = arg[1].."/.cache/modoverrides.lua"
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
 
 function show_settings(mod_id, current_mod_settings, show_description)
     reset_dofile_modinfo()
-    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
     print("是否启用 = "..tostring(current_mod_settings["enabled"]))
     if show_description then
         color_print(242, "    调成false的话就可以禁用该mod", true)
@@ -37,7 +37,7 @@ end
 
 function get_mod_setting_options(mod_id)
     reset_dofile_modinfo()
-    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
     local options_array = {"是否启用"}
     for _, option in ipairs(configuration_options) do
         if option["label"] ~= nil then
@@ -62,7 +62,7 @@ function get_new_setting(mod_id, option, option_index, show_description)
         new_value = select_one({false, true}, "info", "请选择一个值")
     else
         reset_dofile_modinfo()
-        dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+        dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
         --local option_name = configuration_options[option_index]["name"]
         local options = configuration_options[option_index]["options"]
         local values_list = {}
@@ -84,7 +84,7 @@ end
 
 function get_option_name_from_label(mod_id, label)
     reset_dofile_modinfo()
-    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
     for _, option in ipairs(configuration_options) do
         if option["label"] ~= nil and option["label"] == label then
             return option["name"]
@@ -128,31 +128,31 @@ end
 
 function add_new_mods(target_file)
     -- 从 .cache/modinfo 获得列表（ID + Name）
-    local _installed_mods = generate_installed_mods_table(modinfo_cache_dir)
+    local installed_mods = generate_installed_mods_table(MODINFO_CACHE_DIR)
 
     -- 用户选择mod
-    local _selected_mods = multi_select(_installed_mods["name_array"], "info", "(多选用空格隔开)请选择要添加的Mod")
+    local selected_mods = multi_select(installed_mods["name_array"], "info", "(多选用空格隔开)请选择要添加的Mod")
 
     -- 读取/更新model
     local configuration = dofile(target_file)
-    for _, index in ipairs(_selected_mods) do
-        local _id = _installed_mods["id_array"][index]
-        local _name = _installed_mods["name_array"][index]
-        if configuration["workshop-".._id] ~= nil then
-            color_print("warn", "模组 ".._name.." 已存在, 无需再次添加!", true)
+    for _, index in ipairs(selected_mods) do
+        local id = installed_mods["id_array"][index]
+        local name = installed_mods["name_array"][index]
+        if configuration["workshop-"..id] ~= nil then
+            color_print("warn", "模组 "..name.." 已存在, 无需再次添加!", true)
         else
-            color_print("success", "添加模组 ".._name, true)
+            color_print("success", "添加模组 "..name, true)
             reset_dofile_modinfo()
-            dofile(modinfo_cache_dir.."/".._id..".lua")
+            dofile(MODINFO_CACHE_DIR.."/"..id..".lua")
             -- 添加mod设置到model
-            configuration["workshop-".._id] = {}
-            configuration["workshop-".._id]["enabled"] = true
-            configuration["workshop-".._id]["configuration_options"] = {}
+            configuration["workshop-"..id] = {}
+            configuration["workshop-"..id]["enabled"] = true
+            configuration["workshop-"..id]["configuration_options"] = {}
             if configuration_options ~= nil then
                 for _, option in ipairs(configuration_options) do
-                    local _key = option["name"]
-                    local _value = option["default"]
-                    configuration["workshop-".._id]["configuration_options"][_key] = _value
+                    local key = option["name"]
+                    local value = option["default"]
+                    configuration["workshop-"..id]["configuration_options"][key] = value
                 end
             end
             -- 保存model
@@ -163,7 +163,7 @@ end
 
 function configure_modoverride(target_file)
     local configuration = dofile(target_file)
-    local installed_mods = generate_installed_mods_table(modinfo_cache_dir)
+    local installed_mods = generate_installed_mods_table(MODINFO_CACHE_DIR)
     local added_mods = get_added_mods_id(configuration, installed_mods)
 
     while true do
@@ -189,7 +189,7 @@ function configure_modoverride(target_file)
 end
 
 if arg[2] == 'add' then
-    add_new_mods(target_file_path)
+    add_new_mods(TARGET_FILE_PATH)
 elseif arg[2] == 'update' then
-    configure_modoverride(target_file_path)
+    configure_modoverride(TARGET_FILE_PATH)
 end
