@@ -70,15 +70,15 @@ function generate_worldgenoverride(file_path, model_generation, model_setting, i
 
     local model_list = {model_generation, model_setting}
     for i, model in ipairs(model_list) do
-        local type = "generations"
-        if i == 2 then type = "settings" end
-        os.execute("sed -i -e '$i \\        -- "..type.."' "..file_path)
+        local type_comment = "generations"
+        if i == 2 then type_comment = "settings" end
+        os.execute("sed -i -e '$i \\        -- "..type_comment.."' "..file_path)
         for _, group_name in pairs(model["array"]) do
             for _, option_name in ipairs(model[group_name]["array"]) do
                 local key = model[group_name][option_name]["en"]
                 local value = model[group_name][option_name]["value"]
                 if type(value) == "string" then value = "\""..value.."\"" end
-                os.execute("sed -i -e '$i \\        "..k.."="..tostring(value)..",' "..file_path)
+                os.execute("sed -i -e '$i \\        "..key.."="..tostring(value)..",' "..file_path)
             end
         end
     end
@@ -173,7 +173,7 @@ function generate_new(shard_dir_path, is_overground)
 
     -- 保存model
     local file_path = shard_dir_path.."/worldgenoverride.lua"
-    generate_worldgenoverride(file_path, model_gen, model_set, is_overground)
+    generate_worldgenoverride(file_path, model_gen, model_set, is_overground == "true")
 
     clear()
     color_print("success", "世界配置完成！", true)
