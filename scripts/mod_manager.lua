@@ -82,7 +82,7 @@ function generate_installed_mods_table(cache_dir)
     table["name_array"] = {}
 
     for index, id in ipairs(id_list) do
-        dofile(modinfo_cache_dir.."/"..id..".lua")
+        dofile(MODINFO_CACHE_DIR.."/"..id..".lua")
         table["name_array"][index] = name
         table[id] = name
         table[name] = id
@@ -99,7 +99,7 @@ end
 ---------------------------------------
 function is_mod_configurable(mod_id)
     reset_dofile_modinfo()
-    dofile(modinfo_cache_dir.."/"..mod_id..".lua")
+    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
     if configuration_options ~= nil then
         return true
     end
