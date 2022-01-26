@@ -2,32 +2,32 @@
 ----------------------------------------------------------------------------------------------
 -- 输出用的函数
 
-function color_print(color, str, need_new_line, no_prefix)
+function color_print(color_str, str, need_new_line, no_prefix)
     local esc = "\27"              -- 更改输出颜色用的前缀
     local reset = esc.."[0m"       -- 重置所有颜色，字体设定
     local prefix = ""
     local color = ""
 
-    if color == "info" then
+    if color_str == "info" then
         color = 33
         prefix = "[INFO] "
-    elseif color == "warn" then
+    elseif color_str == "warn" then
         color = 190
         prefix = "[WARN] "
-    elseif color == "success" then
+    elseif color_str == "success" then
         color = 46
         prefix = "[OK] "
-    elseif color == "error" then
+    elseif color_str == "error" then
         color = 196
         prefix = "[ERROR] "
-    elseif color == "tip" then
+    elseif color_str == "tip" then
         color = 215
         prefix = "[TIP] "
-    elseif color == "debug" then
+    elseif color_str == "debug" then
         color = 141
         prefix = "[DEBUG] "
     else
-        color = color
+        color = color_str
     end
 
     if no_prefix then prefix = "" end
