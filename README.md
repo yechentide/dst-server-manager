@@ -62,6 +62,7 @@ cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTSe
 ```shell
 ~/DSTManager.sh
 ```
+注: 第一次运行脚本并安装完依赖后, 重新登录主机即可输入`dst`并回车来执行脚本!
 
 ## 测试人员
 
