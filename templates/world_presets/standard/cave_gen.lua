@@ -27,7 +27,7 @@ return {
         monkey="default",
         mushroom="default",
         mushtree="default",
-        prefabswaps_start="default",
+        prefabswaps_start="classic",
         reeds="default",
         rock="default",
         rocky="default",

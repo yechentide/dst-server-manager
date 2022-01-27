@@ -44,7 +44,7 @@ return {
         ocean_wobsterden="default",
         pigs="default",
         ponds="default",
-        prefabswaps_start="default",
+        prefabswaps_start="classic",
         rabbits="default",
         reeds="default",
         rock="default",
