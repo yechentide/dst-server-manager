@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.2.3'
+declare -r SCRIPT_VERSION='v1.4.2.4'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -598,7 +598,10 @@ function main_panel_header() {
     color_print 22  ' Github仓库: https://github.com/yechentide/DSTServerManager'
     color_print 22  ' Gitee仓库: https://gitee.com/yechentide/DSTServerManager'
     color_print 22  ' 全部代码上传到以上仓库里了, 有兴趣的伙伴可以来一起改善功能！'
+    print_divider '-' | color_print 208
 
+    color_print tip '如果服务器列表里不显示服务器, 请检查端口和防火墙&云服的安全组设置!'
+    color_print tip '如果你启动游戏时看到有更新的话, 服务端这边也需要更新! 服务端管理界面可以更新服务端。'
     print_divider '-' | color_print 208
 
     if [[ -e $REPO_ROOT_DIR/.need_update ]]; then
