@@ -61,7 +61,7 @@ function add_mods_to_setting_file() {
 }
 
 function update_mod() {
-    if ls $UGC_DIR | grep -sq .acf$; then rm $UGC_DIR/*.acf; fi
+    #if ls $UGC_DIR | grep -sq .acf$; then rm $UGC_DIR/*.acf; fi
 
     declare -r session_name='update_mods'
     tmux new -d -s "$session_name" "cd $DST_ROOT_DIR/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -only_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $REPO_ROOT_DIR/.cache/.klei -conf_dir xxxxxx -cluster tmp -shard master"
@@ -73,6 +73,7 @@ function update_mod() {
         sleep 1
         #if tmux capture-pane -t "$session_name" -p -S - | grep -sq 'FinishDownloadingServerMods Complete'; then
         if ! tmux ls 2>&1 | grep -sq $session_name; then
+            copy_all_modinfo
             color_print success 'Mod下载/更新完成!'
             return 0
         fi
@@ -115,6 +116,7 @@ function download_new_mods() {
     if add_mods_to_setting_file; then
         update_mod
         copy_all_modinfo
+        color_print warn '大的Mod可能一次下载不完, 如果添加Mod时没出现的话, 请尝试使用几次更新Mod功能'
     fi
 }
 
@@ -123,13 +125,17 @@ function download_new_mods() {
 function configure_mods_in_cluster() {
     if ! ls $REPO_ROOT_DIR/.cache/modinfo | grep -sq '.lua'; then color_print warn '未找到任何mod! 请先下载...'; return; fi
     array=$(generate_list_from_dir -c)
-    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
 
     select_one info '请选择要配置Mod的存档'
     declare -a mod_file_list=($(find $KLEI_ROOT_DIR/$WORLDS_DIR/$answer -type f -name modoverrides.lua))
-    if [[ ${#mod_file_list[@]} == 0 ]]; then color_print error '未找到modoverrides.lua!'; continue; fi
+    if [[ ${#mod_file_list[@]} == 0 ]]; then color_print error '未找到modoverrides.lua!'; return; fi
 
     declare -r tmp_path="$REPO_ROOT_DIR/.cache/modoverrides.lua"
+    if ! cat mod_file_list[0] | grep -sq "[\"workshop-"; then
+        color_print warn '请先给该存档添加Mod!'
+        return
+    fi
     cp ${mod_file_list[0]} $tmp_path
     lua $REPO_ROOT_DIR/scripts/mod_manager.lua $REPO_ROOT_DIR $1
 
