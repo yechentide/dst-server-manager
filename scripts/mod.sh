@@ -132,7 +132,7 @@ function configure_mods_in_cluster() {
     if [[ ${#mod_file_list[@]} == 0 ]]; then color_print error '未找到modoverrides.lua!'; return; fi
 
     declare -r tmp_path="$REPO_ROOT_DIR/.cache/modoverrides.lua"
-    if ! cat ${mod_file_list[0]} | grep -sq "\[\"workshop-"; then
+    if [[ $1 == 'update' ]] && ! cat ${mod_file_list[0]} | grep -sq "\[\"workshop-"; then
         color_print warn '请先给该存档添加Mod!'
         return
     fi
