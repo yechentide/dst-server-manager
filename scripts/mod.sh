@@ -20,7 +20,7 @@ function is_dst_mod() {
 #######################################
 function get_mods_id_from_input() {
     declare -a result=()
-    color_print info '请输入Mod的ID, 多个ID请用空格隔开'
+    color_print info '请输入想要下载的模组ID, 多个ID请用空格隔开'
     while true; do
         read -p '> ' answer
         declare item=''
@@ -42,6 +42,14 @@ function get_mods_id_from_input() {
 function add_mods_to_setting_file() {
     declare flag=1
     declare -a list=$(generate_mod_id_list_from_setting_file)
+    declare id=''
+    # show installed mods' name
+    color_print info '以下是已经下载的模组:'
+    for id in ${list[@]}; do
+        echo -n "ID: $id      "
+        get_mod_name_from_modinfo "$REPO_ROOT_DIR/.cache/modinfo/$id.lua"
+    done
+
     get_mods_id_from_input
     for id in ${array[@]}; do
         if echo "${list[@]}" | grep -sq $id; then
