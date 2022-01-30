@@ -139,10 +139,15 @@ function update_server() {
         return 0
     fi
 
+    # To Fix: 升级服务端会导致dedicated_server_mods_setup.lua被清空, 然后Mod会无效
+    mv $V1_MOD_DIR/dedicated_server_mods_setup.lua $V1_MOD_DIR/dedicated_server_mods_setup.lua.bak
+
     stop_all_shard
     color_print info "开始升级服务端..."
     color_print -n info '根据网络状况，更新可能会很耗时间，更新完成为止请勿息屏 '; count_down 3
     ~/Steam/steamcmd.sh +force_install_dir $DST_ROOT_DIR +login anonymous +app_update 343050 validate +quit
+
+    mv $V1_MOD_DIR/dedicated_server_mods_setup.lua.bak $V1_MOD_DIR/dedicated_server_mods_setup.lua
 
     if [[ $? ]]; then
         color_print success '饥荒服务端更新完成!';
