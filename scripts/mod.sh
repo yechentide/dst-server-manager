@@ -154,17 +154,53 @@ function configure_mods_in_cluster() {
     rm $tmp_path
 }
 
-#Mod删除:
-#    从所有存档里删除这个mod
-#    从dedicated_server_mods_setup.lua删除这个mod
-#    从.cache/modinfo删除modinfo文件
-#    从ugc_mods删除该mod
+function delete_mods() {
+    #    从dedicated_server_mods_setup.lua删除这个mod
+    array=($(generate_mod_id_list_from_setting_file))
+    color_print info '以下是已经下载的模组:'
+    declare id=''
+    for id in ${array[@]}; do
+        echo -n "ID: $id      "
+        get_mod_name_from_modinfo "$REPO_ROOT_DIR/.cache/modinfo/$id.lua"
+    done
+
+    multi_select info '请选择要删除的模组ID'
+    declare -a delete_mods_list=(${array[@]})
+    declare -r file_path="$V1_MOD_DIR/dedicated_server_mods_setup.lua"
+    declare target_mod_id=''
+    for target_mod_id in ${delete_mods_list[@]}; do
+        sed -i "/^ServerModSetup(\"$target_mod_id\")/d" $file_path
+    done
+
+    # 删除mod文件夹, 并重新复制modinfo.lua
+    synchronize_modinfo
+
+    #    从所有存档里删除这个mod
+    array=()
+    array=$(generate_list_from_dir -c)
+    if [[ ${#array} == 0 ]]; then return; fi
+
+    declare -r tmp_path="$REPO_ROOT_DIR/.cache/modoverrides.lua"
+    declare cluster
+    declare path
+    for cluster in ${array[@]}; do
+        declare -a mod_file_list=($(find $KLEI_ROOT_DIR/$WORLDS_DIR/$answer -type f -name modoverrides.lua))
+        if [[ ${#mod_file_list[@]} == 0 ]]; then continue; fi                       # 存档里没有mod配置文件的话跳过
+        if ! cat ${mod_file_list[0]} | grep -sq "\[\"workshop-"; then continue; fi  # mod配置文件里没有配置的话跳过
+
+        cp ${mod_file_list[0]} $tmp_path
+        lua $REPO_ROOT_DIR/scripts/mod_manager.lua $REPO_ROOT_DIR delete "${delete_mods_list[@]}"
+        for path in ${mod_file_list[@]}; do
+            cp $tmp_path $path
+        done
+        rm $tmp_path
+    done
+}
 
 ##############################################################################################
 
 function mod_panel() {
-    declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '返回')
-    # 删除Mod
+    declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod' '返回')
 
     while true; do
         echo ''
@@ -189,6 +225,9 @@ function mod_panel() {
             ;;
         '更新Mod')
             update_mod
+            ;;
+        '删除Mod')
+            delete_mods
             ;;
         '返回')
             color_print -n info '即将返回主面板 '; count_down 3

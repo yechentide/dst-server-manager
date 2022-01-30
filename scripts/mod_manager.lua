@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- arg[1]: $repo_root_dir       --> ~/DSTServerManager
--- arg[2]: action               --> add / update
+-- arg[2]: action               --> add / update / delete
 
 package.path = package.path..';'..arg[1]..'/scripts/?.lua;'
 require("utils")
@@ -304,8 +304,32 @@ function configure_modoverride(target_file)
     save_configuration_to_file(configuration, target_file)
 end
 
+function delete_mods(target_file, delete_mod_ids_array)
+    local configuration = dofile(target_file)
+    local should_save = false
+    for _, id in ipairs(delete_mod_ids_array) do
+        local key = "workshop-"..id
+        print("key: "..key)
+        if configuration[key] ~= nil then
+            configuration[key] = nil
+            should_save = true
+        end
+    end
+    if should_save then
+        save_configuration_to_file(configuration, target_file)
+    end
+end
+
 if arg[2] == 'add' then
     add_new_mods(TARGET_FILE_PATH)
 elseif arg[2] == 'update' then
     configure_modoverride(TARGET_FILE_PATH)
+elseif arg[2] == 'delete' then
+    local delete_mod_ids_array = {}
+    for i=3, #arg do
+        print(arg[i])
+        delete_mod_ids_array[#delete_mod_ids_array+1] = arg[i]
+    end
+    color_print("info", "即将删除"..#delete_mod_ids_array.."个mod", true)
+    delete_mods(TARGET_FILE_PATH, delete_mod_ids_array)
 end
