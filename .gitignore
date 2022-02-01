@@ -1,2 +1,7 @@
 test/*
 .cache
+
+templates/world_presets/*
+!templates/world_presets/standard
+!templates/world_presets/terraria
+!templates/world_presets/empty
