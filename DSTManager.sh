@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.3.1'
+declare -r SCRIPT_VERSION='v1.4.3.2'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -109,6 +109,7 @@ function color_print() {
 #######################################
 # 作用: 包装color_print(), 为一行输出上多种颜色
 # 参数:
+#   -p: 上色模式。不指定时为模式1
 #   $1: 主颜色
 #   $2: 强调色
 #   $3: message
@@ -525,9 +526,6 @@ function check_lua() {
 }
 
 function process_old_dot_file() {
-    if [[ ! -e $REPO_ROOT_DIR ]]; then
-        mkdir -p $REPO_ROOT_DIR/.cache
-    fi
     if [[ -e $REPO_ROOT_DIR/.skip_requirements_check ]]; then
         mv $REPO_ROOT_DIR/.skip_requirements_check $REPO_ROOT_DIR/.cache/.skip_requirements_check
     fi
@@ -546,7 +544,7 @@ function make_directories() {
 
 function check_environment() {
     check_os
-    if [[ $ARCHITECTURE == 32 ]]; then color_print error '暂不支持32位系统'; fi
+    if [[ $ARCHITECTURE == 32 ]]; then color_print error '暂不支持32位系统'; exit 1; fi
     check_user_is_root
     check_script_position
 
