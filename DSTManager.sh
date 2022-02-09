@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.3.2'
+declare -r SCRIPT_VERSION='v1.4.3.3'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -385,7 +385,7 @@ function get_dependencies() {
         # 32位: libgcc1 libstdc++6 libcurl4-gnutls-dev lua5.3 tmux wget git
     elif [[ $OS == 'CentOS' ]]; then
         # 可能不需要的:glibc.i686
-        array=(libstdc++.i686 lua.x86_64 tmux.x86_64 wget.x86_64 git.x86_64)
+        array=(libstdc++ lua tmux wget git which)
         # 32位: glibc libstdc++ glibc.i686 libcurl.so.4 libstdc++.so.6 tmux wget git
     fi
 }
@@ -420,13 +420,18 @@ function install_dependencies() {
 
     color_print -n info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 '; count_down 3
 
-    eval "sudo $manager update && sudo $manager upgrade -y"
+    if [[ $OS == 'Ubuntu' ]]; then
+        sudo apt update && sudo apt upgrade -y
+    elif [[ $OS == 'CentOS' ]]; then
+        sudo yum update -y
+    fi
+
     declare package
     for package in ${requires[@]}; do
         eval "sudo $manager install -y $package"
     done
 
-    if [[ $OS == 'CentOS' ]]; then
+    if [[ $OS == 'CentOS' ]] && [[ ! -e /usr/lib64/libcurl-gnutls.so.4 ]]; then
         # To fix: libcurl-gnutls.so.4: cannot open shared object file: No such file or directory
         sudo ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4
     fi
@@ -497,9 +502,15 @@ function install_dst() {
 }
 
 function add_alias() {
-    if ! cat ~/.bashrc | grep -sq "^alias dst="; then
-        echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> ~/.bashrc
-        echo '' >> ~/.bashrc
+    declare source_file_path="$HOME/.bashrc"
+    if echo $SHELL | grep -sq zsh; then
+        source_file_path="$HOME/.zshrc"
+    fi
+    if [[ ! -e $source_file_path ]]; then touch $source_file_path; fi
+
+    if ! cat $source_file_path | grep -sq "^alias dst="; then
+        echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> $source_file_path
+        echo '' >> $source_file_path
     fi
     # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
 }
@@ -586,7 +597,8 @@ function update_repo() {
         color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
         return
     fi
-    color_print success '脚本仓库更新完毕！'
+    color_print success '脚本仓库更新完毕!请重新执行脚本~'
+    exit 0
 }
 
 function main_panel_header() {
@@ -597,6 +609,10 @@ function main_panel_header() {
     color_print 22  ' Gitee仓库: https://gitee.com/yechentide/DSTServerManager'
     color_print 22  ' 全部代码上传到以上仓库里了, 有兴趣的伙伴可以来一起改善功能！'
     print_divider '-' | color_print 208
+
+    color_print -n info '最近更新: '
+    git -C $REPO_ROOT_DIR log --oneline | head -n 3 | sed -e 's/^[0-9a-z]* //g' | sed -z -e 's/\n/;    /g'
+    echo ''
 
     color_print tip '如果服务器列表里不显示服务器, 请检查端口和防火墙&云服的安全组设置!'
     color_print tip '如果你启动游戏时看到有更新的话, 服务端这边也需要更新! 服务端管理界面可以更新服务端。'
@@ -611,7 +627,7 @@ function main_panel_header() {
 ##############################################################################################
 
 function display_running_clusters() {
-    declare -r -a running_cluster_list=$(generate_list_from_tmux -s | tr '\n' ' ')
+    declare -a running_cluster_list=$(generate_list_from_tmux -s | tr '\n' ' ')
     color_print 30 "运行中的世界 ==> $running_cluster_list"
 }
 
