@@ -184,7 +184,7 @@ function delete_mods() {
     declare cluster
     declare path
     for cluster in ${array[@]}; do
-        declare -a mod_file_list=($(find $KLEI_ROOT_DIR/$WORLDS_DIR/$answer -type f -name modoverrides.lua))
+        declare -a mod_file_list=($(find $KLEI_ROOT_DIR/$WORLDS_DIR/$cluster -type f -name modoverrides.lua))
         if [[ ${#mod_file_list[@]} == 0 ]]; then continue; fi                       # 存档里没有mod配置文件的话跳过
         if ! cat ${mod_file_list[0]} | grep -sq "\[\"workshop-"; then continue; fi  # mod配置文件里没有配置的话跳过
 
