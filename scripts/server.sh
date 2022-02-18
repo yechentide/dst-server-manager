@@ -14,7 +14,7 @@ function send_command_to_session() {
 #   $1: tmux session名    例: c01-Main
 #######################################
 function shutdown_shard() {
-    tmux select-pane -t "$1:0.0"
+    tmux select-pane -t "$1:^.top"
     send_command_to_session $1 'c_shutdown(true)'
 }
 
@@ -84,7 +84,7 @@ function start_shard() {
     tmux -u new -d -s $1 -x- -y- -c $DST_ROOT_DIR/bin64 "./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
     tmux split-window -v -t $1
     tmux resize-pane -t $1 -y 8
-    tmux select-pane -t "$1:0.0"
+    tmux select-pane -t "$1:^.top"
 
     declare i
     for i in $(seq 1 $time_out); do
@@ -177,7 +177,7 @@ function update_server() {
 #######################################
 function console_manager() {
     #tmux set-window-option -t $1 synchronize-panes off
-    tmux select-pane -t "$1:0.1"
+    tmux select-pane -t "$1:^.bottom"
     tmux send-keys -t $1 C-c
     tmux send-keys -t $1 "/$REPO_ROOT_DIR/scripts/console $1" ENTER
     tmux a -t $1

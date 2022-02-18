@@ -6,6 +6,8 @@
 #   $1: 世界名      Cluster-shard
 #######################################
 
+declare -r target_pane="$1:^.top"
+
 while true; do
     clear
     echo "这是世界 $1 的控制台。请在这边输入命令。上面部分会显示输出。"
@@ -44,14 +46,14 @@ while true; do
         ;;
     'c06')
         echo '快捷指令: 踢出玩家'
-        tmux send-keys -t "$1:0.0" 'c_listallplayers()' ENTER
+        tmux send-keys -t $target_pane 'c_listallplayers()' ENTER
         echo '请从上方玩家列表里面查找需要踢出的玩家'
         read -p '然后输入该玩家ID> ' param
         cmd="TheNet:Kick($param)"
         ;;
     'c07')
         echo '快捷指令: 封禁玩家'
-        tmux send-keys -t "$1:0.0" 'c_listallplayers()' ENTER
+        tmux send-keys -t $target_pane 'c_listallplayers()' ENTER
         echo '请从上方玩家列表里面查找需要封禁的玩家'
         read -p '然后输入该玩家ID> ' param
         cmd="TheNet:Ban($param)"
@@ -61,6 +63,6 @@ while true; do
         ;;
     esac
 
-    tmux send-keys -t "$1:0.0" "$cmd" ENTER
+    tmux send-keys -t $target_pane "$cmd" ENTER
     sleep 2
 done
