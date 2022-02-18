@@ -14,6 +14,7 @@ function send_command_to_session() {
 #   $1: tmux session名    例: c01-Main
 #######################################
 function shutdown_shard() {
+    tmux select-pane -t "$1:0.0"
     send_command_to_session $1 'c_shutdown(true)'
 }
 
@@ -46,7 +47,8 @@ function stop_shard() {
     declare i
     for i in $(seq 1 30); do
         sleep 1
-        if [[ $(is_shard_running $1) == 'no' ]]; then
+        if [[ $(tmux list-window -t $1 | wc -l) -eq 1 ]]; then
+            tmux kill-session -t $1
             accent_color_print success $accent_color '成功关闭世界 ' $1 ' !'
             return 0
         fi
@@ -76,7 +78,13 @@ function start_shard() {
     color_print info "启动需要时间，请等待$time_out秒"
     color_print info '本脚本启动世界时禁止自动更新mod, 有需要请在Mod管理面板更新'
     color_print info '如果启动失败，可以再尝试一两次'
-    tmux new -d -s $1 "cd $DST_ROOT_DIR/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
+
+    # tmux -x- -y-      --->   为了修复resize-pane不正常的bug
+    # https://stackoverflow.com/questions/66179435/tmux-pane-resizing-not-working-when-detached
+    tmux -u new -d -s $1 -x- -y- -c $DST_ROOT_DIR/bin64 "./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
+    tmux split-window -v -t $1
+    tmux resize-pane -t $1 -y 8
+    tmux select-pane -t "$1:0.0"
 
     declare i
     for i in $(seq 1 $time_out); do
@@ -163,10 +171,22 @@ function update_server() {
     fi
 }
 
+#######################################
+# 参数:
+#   $1: 世界名      Cluster-shard
+#######################################
+function console_manager() {
+    #tmux set-window-option -t $1 synchronize-panes off
+    tmux select-pane -t "$1:0.1"
+    tmux send-keys -t $1 C-c
+    tmux send-keys -t $1 "/$REPO_ROOT_DIR/scripts/console $1" ENTER
+    tmux a -t $1
+}
+
 ##############################################################################################
 
 function server_panel() {
-    declare -r -a action_list=('启动服务端' '关闭服务端' '重启服务端' '更新服务端' '返回')
+    declare -r -a action_list=('启动服务端' '操作控制台' '关闭服务端' '重启服务端' '更新服务端' '返回')
 
     while true; do
         echo ''
@@ -204,6 +224,13 @@ function server_panel() {
                     start_shard "$answer-$shard"
                 fi
             done
+            ;;
+        '操作控制台')
+            array=$(generate_list_from_tmux -s)
+            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
+
+            select_one tip '请选择要操作哪个世界的控制台'
+            console_manager $answer
             ;;
         '关闭服务端')
             array=$(generate_list_from_tmux -cs)
