@@ -185,7 +185,7 @@ function server_panel() {
             if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
             color_print tip '请确保先启动主世界'
-            select_one tip '选择存档名则会启动该存档下的所有shard, 选择shard名则只会启动这个shard'
+            select_one tip '选择存档名则会启动该存档下的所有世界, 选择世界名则只会启动这个世界'
             # 选择了shard
             if echo $answer | grep -sq -; then
                 declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$(echo $answer | sed -e "s#-#/#g")"
@@ -207,9 +207,9 @@ function server_panel() {
             ;;
         '关闭服务端')
             array=$(generate_list_from_tmux -cs)
-            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的shard!'; continue; fi
+            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
 
-            select_one tip '选择存档名则会关闭该存档下的所有shard, 选择shard名则只会关闭这个shard'
+            select_one tip '选择存档名则会关闭该存档下的所有世界, 选择世界名则只会关闭这个世界'
             # 选择了shard
             if echo $answer | grep -sq -; then
                 stop_shard $answer
@@ -223,9 +223,9 @@ function server_panel() {
             ;;
         '重启服务端')
             array=$(generate_list_from_tmux -cs)
-            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的shard!'; continue; fi
+            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
 
-            select_one tip '选择存档名则会重启该存档下的所有shard, 选择shard名则只会重启这个shard'
+            select_one tip '选择存档名则会重启该存档下的所有世界, 选择世界名则只会重启这个世界'
             # 选择了shard
             if echo $answer | grep -sq -; then
                 restart_shard $answer
