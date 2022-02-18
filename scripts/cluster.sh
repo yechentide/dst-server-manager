@@ -220,7 +220,8 @@ function cluster_panel() {
             done
             ;;
         '返回')
-            color_print info '即将返回主面板 ' -n; count_down 3
+            color_print info '即将返回主面板'
+            sleep 1
             return 0
             ;;
         *)

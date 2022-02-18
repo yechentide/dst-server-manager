@@ -268,7 +268,8 @@ function server_panel() {
             update_server
             ;;
         '返回')
-            color_print -n info '即将返回主面板 '; count_down 3
+            color_print info '即将返回主面板'
+            sleep 1
             return 0
             ;;
         *)
