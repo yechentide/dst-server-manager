@@ -69,6 +69,7 @@ cd ~ && git clone https://gitee.com/yechentide/DSTServerManager && ln -s ~/DSTSe
 感谢以下人员帮忙测试脚本！mua！  
 - RITENU
 - Dr.Toby
+- Mephistopher
 
 ## 功能
 
@@ -84,7 +85,7 @@ shellscript和lua语言我写烦了, 剩下的看看有没有勇士出现hh...
     - [x] 单独启动存档内世界
     - [ ] 自动更新服务端
     - [x] 进入控制台
-    - [ ] 提供特定控制台命令的快捷选项
+    - [x] 提供特定控制台命令的快捷选项
     - [ ] 备份log
 - 存档管理
     - [x] 新建存档时可以灵活添加世界(参考了`dstserver.sh`)
@@ -95,6 +96,7 @@ shellscript和lua语言我写烦了, 剩下的看看有没有勇士出现hh...
     - [x] 更灵活的编辑worldgenoverride.lua
     - [x] 建好存档后修改worldgenoverride.lua
     - [x] 删除存档
+    - [x] 保存自定义世界模板
     - [ ] 撤销删除功能
     - [ ] 备份存档
     - [ ] 还原存档
