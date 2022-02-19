@@ -239,8 +239,12 @@ function file_exist(path)
     end
 end
 
-function copy_file(source_file_path, destination_path)
-    os.execute("cp " .. source_file_path .. " " .. destination_path)
+function copy_file(source_file_path, destination_path, is_dir)
+    if is_dir == true then
+        os.execute("cp -r " .. source_file_path .. " " .. destination_path)
+    else
+        os.execute("cp " .. source_file_path .. " " .. destination_path)
+    end
 end
 
 ----------------------------------------------------------------------------------------------

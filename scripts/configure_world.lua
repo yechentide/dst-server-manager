@@ -49,7 +49,7 @@ function apply_changes_to_file(table, file_path)
             local old_value = old_table[en]
             if old_value ~= nil and old_value ~= new_value then
                 --print(string.format("%s:\t\t\t%s ---> %s", en, old_value, new_value))
-                local command = "sed -i -e \"s/"..en.."=\\\""..old_value.."\\\"/"..en.."=\\\""..new_value.."\\\"/g\" "..file_path
+                local command = "sed -i -e \"s/ "..en.."=\\\""..old_value.."\\\"/ "..en.."=\\\""..new_value.."\\\"/g\" "..file_path
                 --print(command)
                 os.execute(command)
             end
@@ -144,36 +144,76 @@ function generate_new(shard_dir_path, is_overground)
     -- 读取model, 更新model
     local model_gen = {}
     local model_set = {}
+    local file_gen = ""
+    local file_set = ""
     color_print("tip", "standard是游戏里的默认配置, terraria是游戏里的泰拉瑞亚配置", true)
     color_print("tip", "这两个模板里的草蜥蜴和多枝树均已关闭", true)
     local preset_dir_path = select_preset()
 
-    color_print("tip", "如果要添加自己的模板文件的话, 请在 "..WORLD_PRESETS_DIR.." 里面新建文件夹。内容参考world_presets内的其他文件夹。", true)
     color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
     if is_overground == "true" then
         model_gen = forest_generations_table
         model_set = forest_settings_table
-        update_model_from_file(model_gen, preset_dir_path.."/forest_gen.lua")
-        update_model_from_file(model_set, preset_dir_path.."/forest_set.lua")
+        file_gen = "/forest_gen.lua"
+        file_set = "/forest_set.lua"
     else
         model_gen = cave_generations_table
         model_set = cave_settings_table
-        update_model_from_file(model_gen, preset_dir_path.."/cave_gen.lua")
-        update_model_from_file(model_set, preset_dir_path.."/cave_set.lua")
+        file_gen = "/cave_gen.lua"
+        file_set = "/cave_set.lua"
     end
+    update_model_from_file(model_gen, preset_dir_path..file_gen)
+    update_model_from_file(model_set, preset_dir_path..file_set)
 
     -- 展示model
+    local title_gen = ""
+    local title_set = ""
+    local answer = ""
     if is_overground == "true" then
-        configure_model(model_gen, "地上 - 生成 - ", true)
-        configure_model(model_set, "地上 - 选项 - ", false)
+        title_gen = "地上 - 生成 - "
+        title_set = "地上 - 选项 - "
     else
-        configure_model(model_gen, "洞穴 - 生成 - ", true)
-        configure_model(model_set, "洞穴 - 选项 - ", false)
+        title_gen = "洞穴 - 生成 - "
+        title_set = "洞穴 - 选项 - "
+    end
+    clear()
+    print_divider("-", 36)
+    if yes_or_no("info", "即将开始修改 \"世界生成\" 配置, 是否跳过?") == false then
+        configure_model(model_gen, title_gen, true)
+    end
+    clear()
+    print_divider("-", 36)
+    if yes_or_no("info", "即将开始修改 \"世界选项\" 配置, 是否跳过?") == false then
+        configure_model(model_set, title_set, false)
     end
 
     -- 保存model
     local file_path = shard_dir_path.."/worldgenoverride.lua"
     generate_worldgenoverride(file_path, model_gen, model_set, is_overground == "true")
+
+    -- 保存为新模板
+    clear()
+    print_divider("-", 36)
+    if yes_or_no("info", "是否要把当前设置保存为新的模板?") == true then
+        local default_presets = {standard = true, terraria = true, empty = true}
+        while true do
+            local name = readline(false, "info", "请输入新模板的名字")
+            if default_presets[name] ~= nil then
+                color_print("error", "该名字和默认模板同名!", true)
+            else
+                local new_preset_path = WORLD_PRESETS_DIR.."/"..name
+                if file_exist(new_preset_path) == false then
+                    copy_file(WORLD_PRESETS_DIR.."/standard", new_preset_path, true)
+                    color_print("tip", "新模板文件位于 "..WORLD_PRESETS_DIR, true)
+                    color_print("tip", "保存新模板时选择已有模板, 就可以更新模板。(默认模板无法修改)", true)
+                end
+                apply_changes_to_file(model_gen, new_preset_path..file_gen)
+                apply_changes_to_file(model_set, new_preset_path..file_set)
+                sleep(3)
+                break
+            end
+        end
+    end
 
     clear()
     color_print("success", "世界配置完成！", true)
