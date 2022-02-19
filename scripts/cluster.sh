@@ -34,11 +34,22 @@ function delete_cluster() {
 #######################################
 function get_token() {
     answer=''
+    declare -r token_file="$REPO_ROOT_DIR/.cache/token.txt"
+    declare token=''
+    if [[ -e $token_file ]]; then
+        token=$(cat $token_file)
+    fi
+
     while true; do
+        color_print info "上次输入的token: $token"
+        color_print tip '直接回车, 可以使用上次输入的token'
         read_line info '请输入token: '
         if [[ ${#answer} == 0 ]]; then
-            color_print error '你输入token了吗？？？'
-            continue
+            if [[ ${#token} == 0 ]]; then
+                color_print error '你输入token了吗???'
+                continue
+            fi
+            answer=$token
         fi
         # 格式: pds-g^KU_J9MSP3g1^xif7KC......
         if echo $answer | grep -sqv '^pds-g^KU'; then
@@ -82,17 +93,39 @@ function create_shard() {
     fi
 }
 
+#######################################
+# 参数:
+#   $1: 存档文件夹的绝对路径
+#   $2: 存档文件夹名
+#######################################
+function add_shard_to_cluster() {
+    while true; do
+        yes_or_no info '是否要添加地表/洞穴世界?'
+        if [[ $answer == 'no' ]]; then break; fi
+
+        color_print info '请为这个世界取个名字吧(文件夹名)'
+        color_print warn '注意: 必须要有一个主世界, 最多只能有一个主世界!'
+        read_line tip '地面世界的话推荐Forest, 洞穴世界的话推荐Cave, 主世界的话推荐Main'
+        if [[ -e $1/$answer ]]; then
+            color_print error "存档${2}里面已存在${$answer}!"
+            continue
+        fi
+        create_shard $1 $answer
+    done
+}
+
 function create_cluster() {
     color_print info '开始创建新的存档...'
 
     read_line info '请输入新存档的文件夹名字' warn '(这个名字不是显示在服务器列表的名字)'
     declare -r new_cluster=$answer
+    declare -r cluster_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
+
     if generate_list_from_dir -c | grep -sq $new_cluster; then
-        color_print error '该名字已经存在！'
-        color_print tip '请换个名字或者先去把旧的存档删了'
+        color_print error "已有同名存档: $new_cluster"
+        add_shard_to_cluster $cluster_path $new_cluster
         return 0
     fi
-    declare -r cluster_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
     color_print info "存档文件夹名字: $new_cluster"
 
     # 复制cluster模板过去
@@ -106,19 +139,7 @@ function create_cluster() {
     lua $REPO_ROOT_DIR/scripts/edit_cluster_ini.lua $REPO_ROOT_DIR "$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
 
     # 添加shard
-    while true; do
-        yes_or_no info '是否要添加地表/洞穴世界?'
-        if [[ $answer == 'no' ]]; then break; fi
-
-        color_print warn '注意: 必须要有一个主世界, 最多只能有一个主世界!'
-        color_print info '请为这个世界取个名字吧(文件夹名)'
-        read_line tip '地面世界的话推荐Forest, 洞穴世界的话推荐Cave, 主世界的话推荐Main'
-        if [[ -e $cluster_path/$answer ]]; then
-            color_print error "存档${new_cluster}里面已存在${$answer}!"
-            continue
-        fi
-        create_shard $cluster_path $answer
-    done
+    add_shard_to_cluster $cluster_path $new_cluster
 
     color_print success "新的存档$new_cluster创建完成～"
     color_print info "存档位置: $cluster_path"
