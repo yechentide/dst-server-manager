@@ -13,8 +13,8 @@ while true; do
     echo "这是世界 $1 的控制台。请在这边输入命令。上面部分会显示输出。"
     echo 'tmux按键没被修改的话, 按下Ctrl加b, 松开, 再按d退出。'
     echo '快捷指令列表:'
-    echo 'c01: 玩家列表;   c02: 重载;   c03: 回档;   c04: 存档;'
-    echo 'c05: 服内公告;   c06: 踢人;   c07: 封禁'
+    echo 'c01: 当前玩家;   c02: 全部玩家;   c03: 服内公告;   c04: 存　　档;'
+    echo 'c05: 重　　载;   c06: 回　　档;   c07: 踢出玩家;   c08: 封禁玩家'
 
     declare cmd=''
     declare param=''
@@ -24,35 +24,39 @@ while true; do
     case $cmd in
     'c01')
         echo '快捷指令: 显示当前玩家列表'
-        cmd='c_listallplayers()'
+        cmd='c_listplayers()'
         ;;
     'c02')
-        echo '快捷指令: 重载'
-        cmd='c_reset()'
+        echo '快捷指令: 显示全部玩家列表'
+        cmd='c_listallplayers()'
         ;;
     'c03')
-        echo '快捷指令: 回档'
-        echo '请输入回到多少次以前的存档(最低为1)'
-        read -p '> ' param
-        cmd="c_rollback($param)"
+        echo '快捷指令: 发送服务器公告'
+        read -p '请输入公告内容> ' param
+        cmd="c_announce(\"$param\")"
         ;;
     'c04')
         echo '快捷指令: 存档'
         cmd='c_save()'
         ;;
     'c05')
-        echo '快捷指令: 发送服务器公告'
-        read -p '请输入公告内容> ' param
-        cmd="c_announce(\"$param\")"
+        echo '快捷指令: 重载'
+        cmd='c_reset()'
         ;;
     'c06')
+        echo '快捷指令: 回档'
+        echo '请输入回到多少次以前的存档(最低为1)'
+        read -p '> ' param
+        cmd="c_rollback($param)"
+        ;;
+    'c07')
         echo '快捷指令: 踢出玩家'
         tmux send-keys -t $target_pane 'c_listallplayers()' ENTER
         echo '请从上方玩家列表里面查找需要踢出的玩家(玩家ID是KU开头的)'
         read -p '然后输入该玩家ID> ' param
         cmd="TheNet:Kick($param)"
         ;;
-    'c07')
+    'c08')
         echo '快捷指令: 封禁玩家'
         tmux send-keys -t $target_pane 'c_listallplayers()' ENTER
         echo '请从上方玩家列表里面查找需要封禁的玩家(玩家ID是KU开头的)'
