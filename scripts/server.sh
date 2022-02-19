@@ -14,7 +14,6 @@ function send_command_to_session() {
 #   $1: tmux session名    例: c01-Main
 #######################################
 function shutdown_shard() {
-    tmux select-pane -t "$1:^.top"
     send_command_to_session $1 'c_shutdown(true)'
 }
 
@@ -47,15 +46,14 @@ function stop_shard() {
     declare i
     for i in $(seq 1 30); do
         sleep 1
-        if [[ $(tmux list-window -t $1 | wc -l) -eq 1 ]]; then
-            tmux kill-session -t $1
+        if [[ $(is_shard_running $1) == 'no' ]]; then
             accent_color_print success $accent_color '成功关闭世界 ' $1 ' !'
             return 0
         fi
     done
     accent_color_print error $accent_color '世界 ' $1 ' 关闭失败！'
-    color_print -n error '请联系作者修bug'; count_down -d 3
-    exit 1
+    color_print -n error '6秒后将强制关闭, 中止强制关闭请按Ctrl加c'; count_down -d 6
+    tmux kill-session -t $1
 }
 
 #######################################
@@ -82,9 +80,6 @@ function start_shard() {
     # tmux -x- -y-      --->   为了修复resize-pane不正常的bug
     # https://stackoverflow.com/questions/66179435/tmux-pane-resizing-not-working-when-detached
     tmux -u new -d -s $1 -x- -y- -c $DST_ROOT_DIR/bin64 "./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
-    tmux split-window -v -t $1
-    tmux resize-pane -t $1 -y 8
-    tmux select-pane -t "$1:^.top"
 
     declare i
     for i in $(seq 1 $time_out); do
@@ -98,9 +93,14 @@ function start_shard() {
             break
         fi
     done
-    tmux kill-session -t $1
+
     accent_color_print error $accent_color '世界 ' $1 ' 启动失败！'
-    color_print tip '请确保先启动主世界'
+    color_print tip '请确保先启动主世界(不然副世界会一直尝试连接主世界)'
+    color_print -n info '即将进入后台, 请自己查看失败原因(截图或者复制)'; sleep 2
+    tmux display -t "$1:^.top" -d 0 '请自己查看失败原因(截图或者复制)'
+
+    tmux a -t $1
+    tmux kill-session -t $1
 }
 
 #######################################
@@ -176,11 +176,16 @@ function update_server() {
 #   $1: 世界名      Cluster-shard
 #######################################
 function console_manager() {
-    #tmux set-window-option -t $1 synchronize-panes off
-    tmux select-pane -t "$1:^.bottom"
-    tmux send-keys -t $1 C-c
-    tmux send-keys -t $1 "/$REPO_ROOT_DIR/scripts/console $1" ENTER
+    declare -r console_pane="$1:^.bottom"
+    tmux kill-pane -a -t "$1:^.top"
+    tmux split-window -v -l 8 -t $1
+
+    tmux select-pane -t $console_pane
+    tmux send-keys -t $console_pane "/$REPO_ROOT_DIR/scripts/console $1" ENTER
     tmux a -t $1
+
+    tmux send-keys -t $console_pane C-c
+    tmux kill-pane -t $console_pane
 }
 
 ##############################################################################################
