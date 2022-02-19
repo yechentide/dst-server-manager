@@ -117,12 +117,14 @@ function add_shard_to_cluster() {
 function create_cluster() {
     color_print info '开始创建新的存档...'
 
-    read_line info '请输入新存档的文件夹名字' warn '(这个名字不是显示在服务器列表的名字)'
+    color_print -n info '已有存档: '; generate_list_from_dir -c | tr '\n' ' '; echo ''
+    generate_list_from_dir -c
+    read_line info '请输入  新的 / 要添加世界的  存档文件夹名字' tip '(这个名字不是显示在服务器列表的名字)'
     declare -r new_cluster=$answer
     declare -r cluster_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
 
     if generate_list_from_dir -c | grep -sq $new_cluster; then
-        color_print error "已有同名存档: $new_cluster"
+        color_print warn "已有同名存档: $new_cluster"
         add_shard_to_cluster $cluster_path $new_cluster
         return 0
     fi
