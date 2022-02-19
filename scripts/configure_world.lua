@@ -144,6 +144,8 @@ function generate_new(shard_dir_path, is_overground)
     -- 读取model, 更新model
     local model_gen = {}
     local model_set = {}
+    local file_gen = ""
+    local file_set = ""
     color_print("tip", "standard是游戏里的默认配置, terraria是游戏里的泰拉瑞亚配置", true)
     color_print("tip", "这两个模板里的草蜥蜴和多枝树均已关闭", true)
     local preset_dir_path = select_preset()
@@ -153,14 +155,16 @@ function generate_new(shard_dir_path, is_overground)
     if is_overground == "true" then
         model_gen = forest_generations_table
         model_set = forest_settings_table
-        update_model_from_file(model_gen, preset_dir_path.."/forest_gen.lua")
-        update_model_from_file(model_set, preset_dir_path.."/forest_set.lua")
+        file_gen = "/forest_gen.lua"
+        file_set = "/forest_set.lua"
     else
         model_gen = cave_generations_table
         model_set = cave_settings_table
-        update_model_from_file(model_gen, preset_dir_path.."/cave_gen.lua")
-        update_model_from_file(model_set, preset_dir_path.."/cave_set.lua")
+        file_gen = "/cave_gen.lua"
+        file_set = "/cave_set.lua"
     end
+    update_model_from_file(model_gen, preset_dir_path..file_gen)
+    update_model_from_file(model_set, preset_dir_path..file_set)
 
     -- 展示model
     if is_overground == "true" then
@@ -174,6 +178,28 @@ function generate_new(shard_dir_path, is_overground)
     -- 保存model
     local file_path = shard_dir_path.."/worldgenoverride.lua"
     generate_worldgenoverride(file_path, model_gen, model_set, is_overground == "true")
+
+    -- 保存为新模板
+    local answer = yes_or_no("info", "是否要把当前设置保存为新的模板?")
+    if answer == true then
+        local default_presets = {standard = true, terraria = true, empty = true}
+        while true do
+            local name = readline(false, "info", "请输入新模板的名字")
+            if default_presets[name] ~= nil then
+                color_print("error", "该名字和默认模板同名!", true)
+            else
+                local new_preset_path = WORLD_PRESETS_DIR.."/"..name
+                if file_exist(new_preset_path) then
+                    apply_changes_to_file(model_gen, new_preset_path..file_gen)
+                    apply_changes_to_file(model_set, new_preset_path..file_set)
+                else
+                    copy_file(WORLD_PRESETS_DIR.."/standard", new_preset_path, true)
+                end
+
+                break
+            end
+        end
+    end
 
     clear()
     color_print("success", "世界配置完成！", true)
