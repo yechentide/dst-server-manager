@@ -43,7 +43,8 @@ function get_token() {
     while true; do
         color_print info "上次输入的token: $token"
         color_print tip '直接回车, 可以使用上次输入的token'
-        read_line info '请输入token: '
+        color_print -np info '请输入token: '
+        read answer
         if [[ ${#answer} == 0 ]]; then
             if [[ ${#token} == 0 ]]; then
                 color_print error '你输入token了吗???'
@@ -60,6 +61,8 @@ function get_token() {
         break
     done
     echo "token = $answer"
+    echo $answer > $token_file
+    sleep 2
 }
 
 ##############################################################################################
@@ -118,8 +121,7 @@ function create_cluster() {
     color_print info '开始创建新的存档...'
 
     color_print -n info '已有存档: '; generate_list_from_dir -c | tr '\n' ' '; echo ''
-    generate_list_from_dir -c
-    read_line info '请输入  新的 / 要添加世界的  存档文件夹名字' tip '(这个名字不是显示在服务器列表的名字)'
+    read_line info '请输入 新的存档文件夹名字 / 要添加世界的存档文件夹名字' tip '(这个名字不是显示在服务器列表的名字)'
     declare -r new_cluster=$answer
     declare -r cluster_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
 
