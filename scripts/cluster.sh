@@ -341,10 +341,22 @@ function import_local_save_data() {
     color_print success "存档$new_cluster导入完成～"
 }
 
+function backup_cluster() {
+    array=($(generate_list_from_dir -c))
+    if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
+    select_one info '请选择一个存档'
+    declare -r cluster=$answer
+
+    stop_shards_of_cluster $cluster
+    time=$(date '+%Y%m%d-%H%M%S')
+    cp -r "$KLEI_ROOT_DIR/$WORLDS_DIR/$cluster" "$BACKUP_DIR/$cluster-$time"
+    color_print success "存档 $cluster 已经备份到 $BACKUP_DIR/$cluster-$time"
+}
+
 ##############################################################################################
 
 function cluster_panel() {
-    declare -r -a action_list=('新建存档' '导入本地存档' '修改存档配置' '修改世界配置' '配置管理名单' '配置白名单' '配置黑名单' '删除存档' '返回')
+    declare -r -a action_list=('新建存档' '导入本地存档' '修改存档配置' '修改世界配置' '配置管理名单' '配置白名单' '配置黑名单' '备份存档' '删除存档' '返回')
     # ToDo: 导入存档 '备份存档' '还原存档'
 
     while true; do
@@ -381,6 +393,9 @@ function cluster_panel() {
             ;;
         '配置黑名单')
             edit_list black
+            ;;
+        '备份存档')
+            backup_cluster
             ;;
         '删除存档')
             array=($(generate_list_from_dir -c))
