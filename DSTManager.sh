@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.5.0'
+declare -r SCRIPT_VERSION='v1.4.6.0'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -24,6 +24,7 @@ declare -r V2_MOD_DIR="$UGC_DIR/content"
 declare -r KLEI_ROOT_DIR="$HOME/Klei"
 declare -r WORLDS_DIR='worlds'
 declare -r BACKUP_DIR="$KLEI_ROOT_DIR/backup"
+declare -r IMPORT_DIR="$KLEI_ROOT_DIR/import"
 # shard文件夹默认名字
 declare -r MAIN_SHARD_NAME='Main'
 declare -r FOREST_SHARD_NAME='Forest'
@@ -548,6 +549,7 @@ function process_old_dot_file() {
 function make_directories() {
     mkdir -p $KLEI_ROOT_DIR/$WORLDS_DIR
     mkdir -p $BACKUP_DIR
+    mkdir -p $IMPORT_DIR
     mkdir -p $V1_MOD_DIR
     mkdir -p $V2_MOD_DIR
     mkdir -p $REPO_ROOT_DIR/.cache/modinfo
