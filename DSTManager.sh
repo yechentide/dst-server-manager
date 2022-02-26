@@ -196,6 +196,7 @@ function print_divider() {
     else
         eval "printf '%.0s'$1 {1..$((  $(tput cols) / ${#1}  ))}"
     fi
+    echo ''
 }
 
 #######################################
