@@ -205,10 +205,65 @@ function update_ini_setting() {
     fi
 }
 
+#######################################
+# 作用: 管理各种名单(白名单/黑名单/管理员名单)
+# 参数:
+#   $1: op / white / black
+#######################################
+function edit_list() {
+    # KU_A1b2C3d4
+    declare list_type=''
+    declare file_name=''
+    if [[ $1 == 'op' ]]; then
+        list_type='管理员'
+        file_name='adminlist.txt'
+    elif [[ $1 == 'white' ]]; then
+        list_type='白'
+        file_name='whitelist.txt'
+    elif [[ $1 == 'black' ]]; then
+        list_type='黑'
+        file_name='blocklist.txt'
+    else
+        color_print error "edit_list() 错误参数: $1"
+    fi
+    color_print info "开始修改存档的${list_type}名单..."
+
+    array=$(generate_list_from_dir -c)
+    if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
+    select_one info '请选择一个存档'
+    declare -r cluster=$answer
+    declare -r list_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$cluster/$file_name"
+
+    array=('添加 删除')
+    select_one info '请选择'
+    color_print info "存档 $cluster 当前的$list_type名单:"
+    echo $list_path
+    if [[ $answer == '添加' ]]; then
+        read -p '请输入玩家ID, 多个ID之间用空格隔开> ' array
+        declare id
+        for id in ${array[@]}; do
+            if ! echo $list_path | grep -sq; then
+                echo $id >> $list_path
+            else
+                color_print warn "ID:${id}已存在于${list_type}名单"
+            fi
+        done
+    fi
+    if [[ $answer == '删除' ]]; then
+        array=$(cat $list_path)
+        multi_select info '请选择要删除的ID'
+        declare delete_id
+        for delete_id in ${array[@]}; do
+            sed -i -z -e "s/^${delete_id}\n//g" $list_path
+        done
+    fi
+    sed -i -z -e 's/\n\+/\n/g' $list_path
+}
+
 ##############################################################################################
 
 function cluster_panel() {
-    declare -r -a action_list=('新建存档' '修改存档配置' '修改世界配置' '删除存档' '返回')
+    declare -r -a action_list=('新建存档' '修改存档配置' '修改世界配置' '配置管理名单' '配置白名单' '配置黑名单' '删除存档' '返回')
     # ToDo: 导入存档 '备份存档' '还原存档'
 
     while true; do
@@ -233,6 +288,15 @@ function cluster_panel() {
             ;;
         '修改世界配置')
             update_world_setting
+            ;;
+        '配置管理名单')
+            edit_list op
+            ;;
+        '配置白名单')
+            edit_list white
+            ;;
+        '配置黑名单')
+            edit_list black
             ;;
         '删除存档')
             array=($(generate_list_from_dir -c))
