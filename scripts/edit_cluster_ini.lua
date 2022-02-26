@@ -1,6 +1,7 @@
 #!/usr/bin/env lua
 -- arg[1]: $repo_root_dir       --> ~/DSTServerManager
--- arg[2]: cluster dir path     --> ~/Klei/worlds/c01
+-- arg[2]: action               --> edit / convert
+-- arg[3]: cluster dir path     --> ~/Klei/worlds/c01
 
 package.path = package.path..';'..arg[1]..'/scripts/?.lua;'..arg[1]..'/scripts/model/?.lua;'
 require("utils")
@@ -102,16 +103,23 @@ end
 ----------------------------------------------------------------------------------------------
 -- 新建或者更改, 流程都是: 读取model, 更新model, 展示model, 保存model
 
-clear()
-print_divider("-", 36)
-color_print("info", "即将开始配置cluster.ini...", true)
+if arg[2] == 'edit' then
+    clear()
+    print_divider("-", 36)
+    color_print("info", "即将开始配置cluster.ini...", true)
 
--- 读取/更新model
-local file_path = arg[2].."/cluster.ini"
-local model = update_model_from_file(cluster_table, file_path)
-configure_model(model)
-apply_changes_to_file(model, file_path)
+    -- 读取/更新model
+    local file_path = arg[3].."/cluster.ini"
+    local model = update_model_from_file(cluster_table, file_path)
+    configure_model(model)
+    apply_changes_to_file(model, file_path)
 
-clear()
-color_print("success", "cluster.ini配置完成！", true)
-print_divider("-", 36)
+    clear()
+    color_print("success", "cluster.ini配置完成！", true)
+    print_divider("-", 36)
+elseif arg[2] == 'convert' then
+    -- arg[3]: old ini file
+    -- arg[4]: new ini file
+    local model = update_model_from_file(cluster_table, arg[3])
+    apply_changes_to_file(model, arg[4])
+end

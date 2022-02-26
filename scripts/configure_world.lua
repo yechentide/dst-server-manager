@@ -250,6 +250,22 @@ function change_options(shard_dir_path, is_overground)
     print_divider("-", 36)
 end
 
+function convert(old_file_path, new_file_path, is_overground)
+    local model_gen = {}
+    local model_set = {}
+    if is_overground == "true" then
+        model_gen = forest_generations_table
+        model_set = forest_settings_table
+    else
+        model_gen = cave_generations_table
+        model_set = cave_settings_table
+    end
+    update_model_from_file(model_gen, old_file_path)
+    update_model_from_file(model_set, old_file_path)
+
+    generate_worldgenoverride(new_file_path, model_gen, model_set, is_overground == "true")
+end
+
 if arg[2] == 'new' then
     -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $shard_path true
     generate_new(arg[3], arg[4])
@@ -257,6 +273,8 @@ elseif arg[2] == 'update' then
     -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager update $shard_path true
     change_options(arg[3], arg[4])
 elseif arg[2] == 'convert' then
-    color_print("error", "导入功能还没写emmm", true)
-    os.exit(1)
+    -- arg[3]: old worldgenoverride
+    -- arg[4]: new worldgenoverride
+    -- arg[5]: 'true' / 'false'
+    convert(arg[3], arg[4], arg[5])
 end
