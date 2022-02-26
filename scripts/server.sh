@@ -79,7 +79,7 @@ function start_shard() {
 
     # tmux -x- -y-      --->   为了修复resize-pane不正常的bug
     # https://stackoverflow.com/questions/66179435/tmux-pane-resizing-not-working-when-detached
-    tmux -u new -d -s $1 -x- -y- -c $DST_ROOT_DIR/bin64 "./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
+    tmux -u new -d -s $1 -c $DST_ROOT_DIR/bin64 "./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
 
     declare i
     for i in $(seq 1 $time_out); do

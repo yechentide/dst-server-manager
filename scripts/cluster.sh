@@ -140,7 +140,7 @@ function create_cluster() {
     echo $answer > $cluster_path/cluster_token.txt
 
     # 编辑cluster.ini
-    lua $REPO_ROOT_DIR/scripts/edit_cluster_ini.lua $REPO_ROOT_DIR "$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
+    lua $REPO_ROOT_DIR/scripts/edit_cluster_ini.lua $REPO_ROOT_DIR 'edit' "$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
 
     # 添加shard
     add_shard_to_cluster $cluster_path $new_cluster
@@ -153,7 +153,7 @@ function create_cluster() {
 function update_world_setting() {
     color_print info '修改世界的配置选项...'
 
-    array=$(generate_list_from_dir -s)
+    array=($(generate_list_from_dir -s))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     select_one info '请选择一个世界'
 
@@ -176,7 +176,7 @@ function update_world_setting() {
 function update_ini_setting() {
     color_print info '修改存档的配置选项...'
 
-    array=$(generate_list_from_dir -cs)
+    array=($(generate_list_from_dir -cs))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     color_print info '选择"存档名"来修改cluster.ini, 选择"存档名-世界名"来修改server.ini'
     select_one info '请选择一个存档'
@@ -205,10 +205,146 @@ function update_ini_setting() {
     fi
 }
 
+#######################################
+# 作用: 管理各种名单(白名单/黑名单/管理员名单)
+# 参数:
+#   $1: op / white / black
+#######################################
+function edit_list() {
+    # KU_A1b2C3d4
+    declare list_type=''
+    declare file_name=''
+    if [[ $1 == 'op' ]]; then
+        list_type='管理员'
+        file_name='adminlist.txt'
+    elif [[ $1 == 'white' ]]; then
+        list_type='白'
+        file_name='whitelist.txt'
+    elif [[ $1 == 'black' ]]; then
+        list_type='黑'
+        file_name='blocklist.txt'
+    else
+        color_print error "edit_list() 错误参数: $1"
+    fi
+    color_print info "开始修改存档的${list_type}名单..."
+
+    array=($(generate_list_from_dir -c))
+    if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
+    select_one info '请选择一个存档'
+    declare -r cluster=$answer
+    declare -r list_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$cluster/$file_name"
+
+    array=('添加 删除')
+    select_one info '请选择'
+    if [[ $answer == '添加' ]]; then
+        if [[ ! -e $list_path ]]; then echo '' > $list_path; fi
+        color_print info "存档 $cluster 当前的$list_type名单:"
+        cat $list_path
+        read -p '请输入玩家ID, 多个ID之间用空格隔开> ' array
+        declare id
+        for id in ${array[@]}; do
+            if cat $list_path | grep -sq $id; then
+                color_print warn "ID:${id}已存在于${list_type}名单"
+            else
+                echo $id >> $list_path
+            fi
+        done
+    fi
+    if [[ $answer == '删除' ]]; then
+        if [[ ! -e $list_path ]]; then color_print warn "存档 $cluster 里未找到$list_type名单!请先添加!"; return; fi
+
+        array=($(cat $list_path))
+        multi_select info "请选择要从${list_type}名单删除的ID"
+        declare delete_id
+        for delete_id in ${array[@]}; do
+            sed -i -e "s/^${delete_id}//g" $list_path
+        done
+    fi
+    #sed -i -z -e 's/\n\+/\n/g' $list_path
+    sed -i -e '/^$/d' $list_path
+
+    color_print info "存档 $cluster 当前的$list_type名单:"
+    cat $list_path
+}
+
+function import_local_save_data() {
+    color_print info "请先把要导入的本地存档, 上传到文件夹: ${IMPORT_DIR}"
+    yes_or_no info "是否已经上传到指定文件夹?"
+    if [[ $answer == 'no' ]]; then
+        color_print info '撤销导入操作'
+        return 0
+    fi
+
+    if ! array=$(find $IMPORT_DIR -maxdepth 1 -type d | sed -e "s#^$IMPORT_DIR##g" | sed -e "s#^/##g" | grep -v '^\s*$'); then
+        color_print warn '指定文件夹里面没有任何文件夹'
+        return 0
+    fi
+
+    select_one info '请选择要导入的存档'
+    declare -r old_cluster_path="$IMPORT_DIR/$answer"
+
+    color_print info '开始导入存档...'
+    while true; do
+        read_line info '请输入 新的存档文件夹名字 / 要添加世界的存档文件夹名字' tip '(这个名字不是显示在服务器列表的名字)'
+        if generate_list_from_dir -c | grep -sq $answer; then
+            color_print warn "已有同名存档: $answer"
+        else
+            break
+        fi
+    done
+    declare -r new_cluster=$answer
+    declare -r cluster_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$new_cluster"
+    color_print info "存档文件夹名字: $new_cluster"
+
+    # 移动本地存档
+    mv $old_cluster_path $cluster_path
+
+    # 输入token
+    get_token
+    echo $answer > $cluster_path/cluster_token.txt
+
+    # 更新cluster.ini
+    mv $cluster_path/cluster.ini $cluster_path/cluster.ini.old
+    cp $REPO_ROOT_DIR/templates/cluster/cluster.ini $cluster_path/cluster.ini
+    lua $REPO_ROOT_DIR/scripts/edit_cluster_ini.lua $REPO_ROOT_DIR 'convert' $cluster_path/cluster.ini.old $cluster_path/cluster.ini
+
+    # leveldataoverride.lua  --->  worldgenoverride.lua
+    if ! array=$(find $cluster_path -maxdepth 1 -type d | sed -e "s#^$cluster_path##g" | sed -e "s#^/##g" | grep -v '^\s*$'); then
+        return 0
+    fi
+
+    declare shard
+    for shard in ${array[@]}; do
+        declare is_forest='true'
+        declare ini_file="$cluster_path/$shard/server.ini"
+        declare old_override_file="$cluster_path/$shard/leveldataoverride.lua"
+        # server.ini
+        mv $ini_file "${ini_file}.old"
+        if cat $old_override_file | grep -sq 'location="forest"'; then
+            cp $REPO_ROOT_DIR/templates/shard_forest/server.ini $cluster_path/$shard
+        else
+            is_forest='false'
+            cp $REPO_ROOT_DIR/templates/shard_cave/server.ini $cluster_path/$shard
+        fi
+        lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR 'convert' "${ini_file}.old" $ini_file
+        rm "${ini_file}.old"
+
+        # worldgenoverride.lua
+        if [[ ! -e $old_override_file ]]; then continue; fi
+
+        declare override_file="$cluster_path/$shard/worldgenoverride.lua"
+        mv $old_override_file "${override_file}.old"
+        lua $REPO_ROOT_DIR/scripts/configure_world.lua $REPO_ROOT_DIR 'convert' "${override_file}.old" $override_file $is_forest
+        rm "${override_file}.old"
+    done
+
+    color_print success "存档$new_cluster导入完成～"
+}
+
 ##############################################################################################
 
 function cluster_panel() {
-    declare -r -a action_list=('新建存档' '修改存档配置' '修改世界配置' '删除存档' '返回')
+    declare -r -a action_list=('新建存档' '导入本地存档' '修改存档配置' '修改世界配置' '配置管理名单' '配置白名单' '配置黑名单' '删除存档' '返回')
     # ToDo: 导入存档 '备份存档' '还原存档'
 
     while true; do
@@ -228,11 +364,23 @@ function cluster_panel() {
         '新建存档')
             create_cluster
             ;;
+        '导入本地存档')
+            import_local_save_data
+            ;;
         '修改存档配置')
             update_ini_setting
             ;;
         '修改世界配置')
             update_world_setting
+            ;;
+        '配置管理名单')
+            edit_list op
+            ;;
+        '配置白名单')
+            edit_list white
+            ;;
+        '配置黑名单')
+            edit_list black
             ;;
         '删除存档')
             array=($(generate_list_from_dir -c))
