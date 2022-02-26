@@ -106,6 +106,6 @@ if arg[2] == 'edit' then
 elseif arg[2] == 'convert' then
     -- arg[3]: old ini file
     -- arg[4]: new ini file
-    local model = update_model_from_file(cluster_table, arg[3])
+    local model = update_model_from_file(shard_table, arg[3])
     apply_changes_to_file(model, arg[4])
 end

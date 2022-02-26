@@ -286,8 +286,8 @@ function import_local_save_data() {
     color_print info '开始导入存档...'
     while true; do
         read_line info '请输入 新的存档文件夹名字 / 要添加世界的存档文件夹名字' tip '(这个名字不是显示在服务器列表的名字)'
-        if generate_list_from_dir -c | grep -sq $new_cluster; then
-            color_print warn "已有同名存档: $new_cluster"
+        if generate_list_from_dir -c | grep -sq $answer; then
+            color_print warn "已有同名存档: $answer"
         else
             break
         fi
@@ -316,8 +316,9 @@ function import_local_save_data() {
     declare shard
     for shard in ${array[@]}; do
         declare is_forest='true'
+        declare ini_file="$cluster_path/$shard/server.ini"
+        declare old_override_file="$cluster_path/$shard/leveldataoverride.lua"
         # server.ini
-        declare -r ini_file="$cluster_path/$shard/server.ini"
         mv $ini_file "${ini_file}.old"
         if cat $old_override_file | grep -sq 'location="forest"'; then
             cp $REPO_ROOT_DIR/templates/shard_forest/server.ini $cluster_path/$shard
@@ -329,10 +330,9 @@ function import_local_save_data() {
         rm "${ini_file}.old"
 
         # worldgenoverride.lua
-        declare -r old_override_file="$cluster_path/$shard/leveldataoverride.lua"
         if [[ ! -e $old_override_file ]]; then continue; fi
 
-        declare -r override_file="$cluster_path/$shard/worldgenoverride.lua"
+        declare override_file="$cluster_path/$shard/worldgenoverride.lua"
         mv $old_override_file "${override_file}.old"
         lua $REPO_ROOT_DIR/scripts/configure_world.lua $REPO_ROOT_DIR 'convert' "${override_file}.old" $override_file $is_forest
         rm "${override_file}.old"
