@@ -153,7 +153,7 @@ function create_cluster() {
 function update_world_setting() {
     color_print info '修改世界的配置选项...'
 
-    array=$(generate_list_from_dir -s)
+    array=($(generate_list_from_dir -s))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     select_one info '请选择一个世界'
 
@@ -176,7 +176,7 @@ function update_world_setting() {
 function update_ini_setting() {
     color_print info '修改存档的配置选项...'
 
-    array=$(generate_list_from_dir -cs)
+    array=($(generate_list_from_dir -cs))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     color_print info '选择"存档名"来修改cluster.ini, 选择"存档名-世界名"来修改server.ini'
     select_one info '请选择一个存档'
@@ -228,7 +228,7 @@ function edit_list() {
     fi
     color_print info "开始修改存档的${list_type}名单..."
 
-    array=$(generate_list_from_dir -c)
+    array=($(generate_list_from_dir -c))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     select_one info '请选择一个存档'
     declare -r cluster=$answer
@@ -236,28 +236,35 @@ function edit_list() {
 
     array=('添加 删除')
     select_one info '请选择'
-    color_print info "存档 $cluster 当前的$list_type名单:"
-    echo $list_path
     if [[ $answer == '添加' ]]; then
+        if [[ ! -e $list_path ]]; then echo '' > $list_path; fi
+        color_print info "存档 $cluster 当前的$list_type名单:"
+        cat $list_path
         read -p '请输入玩家ID, 多个ID之间用空格隔开> ' array
         declare id
         for id in ${array[@]}; do
-            if ! echo $list_path | grep -sq; then
-                echo $id >> $list_path
-            else
+            if cat $list_path | grep -sq $id; then
                 color_print warn "ID:${id}已存在于${list_type}名单"
+            else
+                echo $id >> $list_path
             fi
         done
     fi
     if [[ $answer == '删除' ]]; then
-        array=$(cat $list_path)
-        multi_select info '请选择要删除的ID'
+        if [[ ! -e $list_path ]]; then color_print warn "存档 $cluster 里未找到$list_type名单!请先添加!"; return; fi
+
+        array=($(cat $list_path))
+        multi_select info "请选择要从${list_type}名单删除的ID"
         declare delete_id
         for delete_id in ${array[@]}; do
-            sed -i -z -e "s/^${delete_id}\n//g" $list_path
+            sed -i -e "s/^${delete_id}//g" $list_path
         done
     fi
-    sed -i -z -e 's/\n\+/\n/g' $list_path
+    #sed -i -z -e 's/\n\+/\n/g' $list_path
+    sed -i -e '/^$/d' $list_path
+
+    color_print info "存档 $cluster 当前的$list_type名单:"
+    cat $list_path
 }
 
 function import_local_save_data() {
