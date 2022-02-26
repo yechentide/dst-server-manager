@@ -310,15 +310,16 @@ function import_local_save_data() {
     for shard in ${array[@]}; do
         declare is_forest='true'
         # server.ini
-        mv $cluster_path/$shard/server.ini $cluster_path/$shard/server.ini.old
+        declare -r ini_file="$cluster_path/$shard/server.ini"
+        mv $ini_file "${ini_file}.old"
         if cat $old_override_file | grep -sq 'location="forest"'; then
             cp $REPO_ROOT_DIR/templates/shard_forest/server.ini $cluster_path/$shard
         else
             is_forest='false'
             cp $REPO_ROOT_DIR/templates/shard_cave/server.ini $cluster_path/$shard
         fi
-        lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR 'convert' $cluster_path/$shard/server.ini.old $cluster_path/$shard/server.ini
-        #rm $cluster_path/$shard/server.ini.old
+        lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR 'convert' "${ini_file}.old" $ini_file
+        rm "${ini_file}.old"
 
         # worldgenoverride.lua
         declare -r old_override_file="$cluster_path/$shard/leveldataoverride.lua"
@@ -327,6 +328,7 @@ function import_local_save_data() {
         declare -r override_file="$cluster_path/$shard/worldgenoverride.lua"
         mv $old_override_file "${override_file}.old"
         lua $REPO_ROOT_DIR/scripts/configure_world.lua $REPO_ROOT_DIR 'convert' "${override_file}.old" $override_file $is_forest
+        rm "${override_file}.old"
     done
 
     color_print success "存档$new_cluster导入完成～"
