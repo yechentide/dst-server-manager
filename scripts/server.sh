@@ -77,9 +77,9 @@ function start_shard() {
     color_print info '本脚本启动世界时禁止自动更新mod, 有需要请在Mod管理面板更新'
     color_print info '如果启动失败，可以再尝试一两次'
 
-    # tmux -x- -y-      --->   为了修复resize-pane不正常的bug
-    # https://stackoverflow.com/questions/66179435/tmux-pane-resizing-not-working-when-detached
-    tmux -u new -d -s $1 -c $DST_ROOT_DIR/bin64 "./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
+    # tmux -x- -y-      --->    某些终端里不可用(tmux版本问题?)
+    # tmux -c           --->    CentOS里yum下载的版本过低无法使用
+    tmux -u new -d -s $1 "cd $DST_ROOT_DIR/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -skip_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $KLEI_ROOT_DIR -conf_dir $WORLDS_DIR -cluster $cluster -shard $shard"
 
     declare i
     for i in $(seq 1 $time_out); do
