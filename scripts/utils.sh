@@ -213,8 +213,8 @@ function check_shard() {
     if [[ ! -e $1/server.ini ]]; then
         accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'; return 1
     fi
-    if [[ ! -e $1/modoverrides.lua ]]; then
-        accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'modoverrides.lua' '文件!'
+    if [[ ! -e $1/worldgenoverride.lua ]]; then
+        accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'worldgenoverride.lua' '文件!'
         if [[ -e $1/leveldataoverride.lua ]]; then
             accent_color_print -p 2 warn 36 '在 ' $1 ' 里发现 ' 'leveldataoverride.lua' '文件!'
             accent_color_print '用来开服的存档应该把这个文件改名为' 'worldgenoverride.lua' '!'
