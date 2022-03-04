@@ -86,7 +86,7 @@ function create_shard() {
 
     # 编辑server.ini
     color_print -n warn '如果本世界是主世界的话, 接下来请把"是否为主世界"选项改成true'; count_down -d 6
-    lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR $1/$2
+    lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR 'edit' $1/$2
 
     # 编辑worldgenoverride.lua
     if [[ $answer == '地上世界' ]]; then
@@ -191,7 +191,7 @@ function update_ini_setting() {
             return 0
         fi
 
-        lua $REPO_ROOT_DIR/scripts/edit_cluster_ini.lua $REPO_ROOT_DIR $cluster_path
+        lua $REPO_ROOT_DIR/scripts/edit_cluster_ini.lua $REPO_ROOT_DIR 'edit' $cluster_path
     else
         declare -r shard=$answer
         declare -r shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$(echo $shard | sed 's#-#/#g')"
@@ -201,7 +201,7 @@ function update_ini_setting() {
             return 0
         fi
 
-        lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR $shard_path
+        lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR 'edit' $shard_path
     fi
 }
 
