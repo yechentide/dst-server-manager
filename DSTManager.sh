@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.7.2'
+declare -r SCRIPT_VERSION='v1.4.7.3'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -620,7 +620,7 @@ function main_panel_header() {
     color_print tip '如果你启动游戏时看到有更新的话, 服务端这边也需要更新! 服务端管理界面可以更新服务端。'
     print_divider '-' | color_print 208
 
-    if [[ -e $REPO_ROOT_DIR/.need_update ]]; then
+    if [[ -e $REPO_ROOT_DIR/.cache/.need_update ]]; then
         color_print info '～～～检测到脚本有新版本～～～'
         print_divider '-' | color_print 208
     fi
