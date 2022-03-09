@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.8.0'
+declare -r SCRIPT_VERSION='v1.4.8.1'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -565,6 +565,11 @@ function check_environment() {
     make_directories
     process_old_dot_file
     if [[ ! -e $REPO_ROOT_DIR/.cache/.skip_requirements_check ]]; then
+        yes_or_no info '你之前有在本机器/云服上使用别的脚本开服吗?'
+        if [[ $answer == 'yes' ]]; then
+            color_print -n info '即将进入脚本迁移面板'; count_down -d 3
+            transfer_panel
+        fi
         add_alias
         install_dependencies
         color_print -n info '输入source ~/.bashrc 或者重新登录后, 即可使用dst来执行脚本～'; count_down -d 3
@@ -635,7 +640,7 @@ function display_running_clusters() {
 
 function main_panel() {
     check_script_update
-    declare -r -a action_list=('服务端管理' '存档管理' 'Mod管理' '脚本迁移' '更新脚本' '退出')
+    declare -r -a action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
 
     while true; do
         clear
@@ -660,9 +665,10 @@ function main_panel() {
         'Mod管理')
             mod_panel
             ;;
-        '脚本迁移')
-            transfer_panel
-            ;;
+        #'脚本迁移')
+        #    color_print info '如果你之前是用别的脚本开服的话, 可以使用这个功能来移动文件夹, 以使文件夹位置符合本脚本设置'
+        #    transfer_panel
+        #    ;;
         '更新脚本')
             update_repo
             ;;

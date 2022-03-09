@@ -15,22 +15,47 @@ function move_dir_add_symbolic_link() {
     if [[ -e $3 ]]; then color_print warn "未找到饥荒联机版的服务端文件夹"; exit 1; fi
     if [[ -e $4 ]]; then color_print warn "未找到存档文件夹"; exit 1; fi
 
-    mv "$3" "$DST_ROOT_DIR"
-    if [[ "$DST_ROOT_DIR" != "$3" ]]; then ln -s "$DST_ROOT_DIR" "$3"; fi
-
-    mv "$4/$5" "$4/$WORLDS_DIR"
-    mv "$4" "$KLEI_ROOT_DIR"
-    if [[ "$KLEI_ROOT_DIR" != "$4" ]]; then ln -s "$KLEI_ROOT_DIR" "$4"; fi
-    if [[ "$KLEI_ROOT_DIR/$WORLDS_DIR" != "$KLEI_ROOT_DIR/$5" ]]; then ln -s "$KLEI_ROOT_DIR/$WORLDS_DIR" "$KLEI_ROOT_DIR/$5"; fi
-
-    if [[ "$HOME/Steam" != "$2" ]]; then
-        mv "$2" "$HOME/Steam"
-        ln -s "$HOME/Steam" "$2"
+    # 饥荒服务端
+    if [[ ! -e "$DST_ROOT_DIR" ]]; then
+        mv "$3" "$DST_ROOT_DIR"
+        ln -s "$DST_ROOT_DIR" "$3"
+    else
+        rm -rf "$3"
     fi
 
-    mv "$1/*" "$HOME/Steam" && rm -rf "$1"
-    if [[ "$HOME/Steam" != "$1" ]]; then
+    # 存档
+    #mv "$KLEI_ROOT_DIR" "/tmp/old_klei_$(date '+%s')"
+    #if [[ "$KLEI_ROOT_DIR" != "$4" ]] && [[ -e "$KLEI_ROOT_DIR" ]]; then
+    #    mv "$KLEI_ROOT_DIR" "${KLEI_ROOT_DIR}_old"
+    #fi
+
+    if [[ "$KLEI_ROOT_DIR" == "$4" ]] && [[ "$WORLDS_DIR" != "$5" ]]; then
+        mv "$KLEI_ROOT_DIR/$5" "$KLEI_ROOT_DIR/$WORLDS_DIR"
+        ln -s "$KLEI_ROOT_DIR/$WORLDS_DIR" "$KLEI_ROOT_DIR/$5"
+    elif [[ "$KLEI_ROOT_DIR" != "$4" ]] && [[ "$WORLDS_DIR" == "$5" ]]; then
+        mv "$4" "$KLEI_ROOT_DIR"
+        ln -s "$KLEI_ROOT_DIR" "$4"
+    elif [[ "$KLEI_ROOT_DIR" != "$4" ]] && [[ "$WORLDS_DIR" != "$5" ]]; then
+        mv "$4/$5" "$4/$WORLDS_DIR"
+        mv "$4" "$KLEI_ROOT_DIR"
+        ln -s "$KLEI_ROOT_DIR" "$4"
+        ln -s "$KLEI_ROOT_DIR/$WORLDS_DIR" "$KLEI_ROOT_DIR/$5"
+    fi
+
+    # Steam本体
+    if [[ ! -e "$HOME/Steam" ]]; then
+        mv "$2" "$HOME/Steam"
+        ln -s "$HOME/Steam" "$2"
+    else
+        rm -rf "$2"
+    fi
+
+    # SteamCMD
+    if [[ ! -e "$HOME/Steam/steamcmd.sh" ]]; then
+        mv "$1/*" "$HOME/Steam" && rm -rf "$1"
         ln -s "$HOME/Steam" "$1"
+    else
+        rm -rf "$1"
     fi
 }
 
@@ -81,7 +106,10 @@ function transfer_panel() {
     declare -r has_sudo_perm=$answer
     declare -r error_exit_msg="请参考${REPO_ROOT_DIR}/docs/结构.md文件, 手动移动文件夹"
 
-    color_print info '如果你之前是用别的脚本开服的话, 可以使用这个功能来移动文件夹, 以使文件夹位置符合本脚本设置'
+    color_print warn '本功能未经测试!如果担心出问题的话, 请选择 "返回"'
+    color_print info '在这里本脚本会移动旧脚本管理的文件夹, 以使文件夹位置符合本脚本设置'
+    color_print -n info '如果你没在列表里看到自己用过的脚本名字, 请选择 "返回"'; count_down -d 3
+
     yes_or_no info '请问你是以root用户执行之前的脚本的吗?'
     if [[ $answer == 'yes' ]]; then
         if [[ $has_sudo_perm == 'no' ]]; then
