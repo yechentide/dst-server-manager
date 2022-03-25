@@ -3,7 +3,7 @@ world_value_types = {
         en = {"none", "default"},
         zh = {"无", "自动"}
     },
-    event02 = {
+    specificevent = {
         en = {"default", "enabled"},
         zh = {"默认", "总是"}
     },
@@ -19,7 +19,7 @@ world_value_types = {
         en = {"default", "winter", "spring", "summer", "autumnorspring", "winterorsummer", "random"},
         zh = {"秋", "冬", "春", "夏", "春或秋", "冬或夏", "随机"}
     },
-    biomemain = {
+    biomeforest = {
         en = {"default", "classic"},
         zh = {"联机版", "经典"}
     },
@@ -27,7 +27,7 @@ world_value_types = {
         en = {"cave_default"},
         zh = {"地下"}
     },
-    startlocationmain = {
+    startlocationforest = {
         en = {"plus", "darkness", "default"},
         zh = {"额外资源", "黑暗", "默认"}
     },
@@ -59,23 +59,23 @@ world_value_types = {
         en = {"classic", "default", "highly random"},
         zh = {"经典", "默认", "非常随机"}
     },
-    object01 = {
+    options5 = {
         en = {"never", "rare", "default", "often", "always"},
         zh = {"无", "很少", "默认", "较多", "大量"}
     },
-    object02 = {
+    options8 = {
         en = {"never", "rare", "uncommon", "default", "often", "mostly", "always", "insane"},
         zh = {"无", "很少", "较少", "默认", "较多", "很多", "大量", "疯狂"}
     },
-    objectocean = {
+    oceanoptions = {
         en = {"ocean_never", "ocean_rare", "ocean_uncommon", "ocean_default", "ocean_often", "ocean_mostly", "ocean_always", "ocean_insane"},
         zh = {"无", "很少", "较少", "默认", "较多", "很多", "大量", "疯狂"}
     },
-    spiderwarriors = {
+    defaultnever = {
         en = {"never", "default"},
         zh = {"无", "默认"}
     },
-    drop = {
+    defaultalways = {
         en = {"default", "always"},
         zh = {"默认", "所有"}
     },

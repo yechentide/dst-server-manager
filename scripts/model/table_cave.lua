@@ -35,7 +35,7 @@ cave_generations_table = {
         ["试金石"] = {
             en = "touchstone",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["洞穴光照"] = {
             en = "cavelight",
@@ -45,7 +45,7 @@ cave_generations_table = {
         ["失败的冒险家"] = {
             en = "boons",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["开始资源多样化"] = {
             en = "prefabswaps_start",
@@ -58,82 +58,82 @@ cave_generations_table = {
         ["草"] = {
             en = "grass",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["巨石"] = {
             en = "rock",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["树苗"] = {
             en = "sapling",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["池塘"] = {
             en = "cave_ponds",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["燧石"] = {
             en = "flint",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["芦苇"] = {
             en = "reeds",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["苔藓"] = {
             en = "lichen",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蘑菇"] = {
             en = "mushroom",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["尖灌木"] = {
             en = "marshbush",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["浆果丛"] = {
             en = "berrybush",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["荧光花"] = {
             en = "flower_cave",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蘑菇树"] = {
             en = "mushtree",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["发光浆果"] = {
             en = "wormlights",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["洞穴蕨类"] = {
             en = "fern",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["洞穴香蕉"] = {
             en = "banana",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["树(所有)"] = {
             en = "trees",
             value = "default",
-            type = "object02"
+            type = "options8"
         }
     },
     ["生物以及刷新点"] = {
@@ -141,27 +141,27 @@ cave_generations_table = {
         ["兔屋"] = {
             en = "bunnymen",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["石虾"] = {
             en = "rocky",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["缀食者"] = {
             en = "slurper",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["穴居猴桶"] = {
             en = "monkey",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蛞蝓龟窝"] = {
             en = "slurtles",
             value = "default",
-            type = "object02"
+            type = "options8"
         }
     },
     ["敌对生物以及刷新点"] = {
@@ -169,37 +169,37 @@ cave_generations_table = {
         ["蝙蝠"] = {
             en = "bats",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["触手"] = {
             en = "tentacles",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蛛网岩"] = {
             en = "cave_spiders",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蜘蛛巢"] = {
             en = "spiders",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["发条装置"] = {
             en = "chess",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["梦魇裂隙"] = {
             en = "fissure",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["洞穴蠕虫"] = {
             en = "worms",
             value = "default",
-            type = "object02"
+            type = "options8"
         }
     }
 }
@@ -211,22 +211,22 @@ cave_settings_table = {
         ["雨"] = {
             en = "weather",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["地震"] = {
             en = "earthquakes",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["远古大门"] = {
             en = "atriumgate",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["洞穴蠕虫攻击"] = {
             en = "wormattacks",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     },
     ["资源再生"] = {
@@ -262,57 +262,57 @@ cave_settings_table = {
         ["猪"] = {
             en = "pigs_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["兔人"] = {
             en = "bunnymen_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["尘蛾"] = {
             en = "dustmoths",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["石虾"] = {
             en = "rocky_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鼹鼠"] = {
             en = "moles_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["穴居猴"] = {
             en = "monkey_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蛞蝓龟"] = {
             en = "slurtles_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜗牛龟"] = {
             en = "snurtles",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["球状光虫"] = {
             en = "lightfliers",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蘑菇地精"] = {
             en = "mushgnome",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["草壁虎转化"] = {
             en = "grassgekkos",
             value = "never",
-            type = "object01"
+            type = "options5"
         }
     },
     ["敌对生物"] = {
@@ -320,47 +320,47 @@ cave_settings_table = {
         ["蜘蛛"] = {
             en = "spiders_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蝙蝠"] = {
             en = "bats_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鱼人"] = {
             en = "merms",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["喷射蜘蛛"] = {
             en = "spider_spitter",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["洞穴蜘蛛"] = {
             en = "spider_hider",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["穴居悬蛛"] = {
             en = "spider_dropper",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜘蛛战士"] = {
             en = "spider_warriors",
             value = "default",
-            type = "spiderwarriors"
+            type = "defaultnever"
         },
         ["遗迹梦魇"] = {
             en = "nightmarecreatures",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["裸鼹鼠蝙蝠"] = {
             en = "molebats",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     },
     ["巨兽"] = {
@@ -368,22 +368,22 @@ cave_settings_table = {
         ["果蝇王"] = {
             en = "fruitfly",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["树精守卫"] = {
             en = "liefs",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["毒菌蟾蜍"] = {
             en = "toadstool",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜘蛛女王"] = {
             en = "spiderqueen",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     }
 }

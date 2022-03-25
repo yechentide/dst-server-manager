@@ -18,12 +18,12 @@ forest_generations_table = {
         ["生物群落"] = {
             en = "task_set",
             value = "default",
-            type = "biomemain"
+            type = "biomeforest"
         },
         ["出生点"] = {
             en = "start_location",
             value = "default",
-            type = "startlocationmain"
+            type = "startlocationforest"
         },
         ["世界大小"] = {
             en = "world_size",
@@ -43,17 +43,17 @@ forest_generations_table = {
         ["道路"] = {
             en = "roads",
             value = "default",
-            type = "spiderwarriors"
+            type = "defaultnever"
         },
         ["试金石"] = {
             en = "touchstone",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["失败的冒险家"] = {
             en = "boons",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["开始资源多样化"] = {
             en = "prefabswaps_start",
@@ -63,12 +63,12 @@ forest_generations_table = {
         ["天体裂隙"] = {
             en = "moon_fissure",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["泰拉瑞亚"] = {
             en = "terrariumchest",
             value = "default",
-            type = "spiderwarriors"
+            type = "defaultnever"
         }
     },
     ["资源"] = {
@@ -76,127 +76,127 @@ forest_generations_table = {
         ["草"] = {
             en = "grass",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["巨石"] = {
             en = "rock",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["月树"] = {
             en = "moon_tree",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["树苗"] = {
             en = "sapling",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["池塘"] = {
             en = "ponds",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["浮堆"] = {
             en = "ocean_seastack",
             value = "ocean_default",
-            type = "objectocean"
+            type = "oceanoptions"
         },
         ["海星"] = {
             en = "moon_starfish",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["温泉"] = {
             en = "moon_hotspring",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["燧石"] = {
             en = "flint",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["芦苇"] = {
             en = "reeds",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蘑菇"] = {
             en = "mushroom",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["仙人掌"] = {
             en = "cactus",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["尖灌木"] = {
             en = "marshbush",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["月亮石"] = {
             en = "moon_rock",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["浆果丛"] = {
             en = "berrybush",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["胡萝卜"] = {
             en = "carrot",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["风滚草"] = {
             en = "tumbleweed",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["公牛海带"] = {
             en = "ocean_bullkelp",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["月亮树苗"] = {
             en = "moon_sapling",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["流星区域"] = {
             en = "meteorspawner",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["迷你冰川"] = {
             en = "rock_ice",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["树(所有)"] = {
             en = "trees",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["石果灌木丛"] = {
             en = "moon_berrybush",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["花，邪恶花"] = {
             en = "flowers",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["海岸公牛海带"] = {
             en = "moon_bullkelp",
             value = "default",
-            type = "object02"
+            type = "options8"
         }
     },
     ["生物以及刷新点"] = {
@@ -204,62 +204,62 @@ forest_generations_table = {
         ["兔洞"] = {
             en = "rabbits",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["猪屋"] = {
             en = "pigs",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["秃鹫"] = {
             en = "buzzard",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["鱼群"] = {
             en = "ocean_shoal",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["伏特羊"] = {
             en = "lightninggoat",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["鼹鼠洞"] = {
             en = "moles",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["龙虾窝"] = {
             en = "ocean_wobsterden",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["沙拉蝾螈"] = {
             en = "moon_fruitdragon",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["皮费娄牛"] = {
             en = "beefalo",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["空心树桩"] = {
             en = "catcoon",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["胡萝卜鼠"] = {
             en = "moon_carrot",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蜜蜂蜂窝"] = {
             en = "bees",
             value = "default",
-            type = "object02"
+            type = "options8"
         }
     },
     ["敌对生物以及刷新点"] = {
@@ -267,52 +267,52 @@ forest_generations_table = {
         ["海草"] = {
             en = "ocean_waterplant",
             value = "ocean_default",
-            type = "objectocean"
+            type = "oceanoptions"
         },
         ["触手"] = {
             en = "tentacles",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["猎犬丘"] = {
             en = "houndmound",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["蜘蛛巢"] = {
             en = "spiders",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["高脚鸟"] = {
             en = "tallbirds",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["发条装置"] = {
             en = "chess",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["海象营地"] = {
             en = "walrus",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["杀人蜂蜂窝"] = {
             en = "angrybees",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["漏雨的小屋"] = {
             en = "merm",
             value = "default",
-            type = "object02"
+            type = "options8"
         },
         ["破碎蜘蛛洞"] = {
             en = "moon_spiders",
             value = "default",
-            type = "object02"
+            type = "options8"
         }
     }
 }
@@ -354,12 +354,12 @@ forest_settings_table = {
         ["皮费娄牛交配频率"] = {
             en = "beefaloheat",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["坎普斯"] = {
             en = "krampus",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     },
     ["活动"] = {
@@ -367,47 +367,47 @@ forest_settings_table = {
         ["盛夏鸭年华"] = {
             en = "crow_carnival",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["万圣夜"] = {
             en = "hallowed_nights",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["冬季盛宴"] = {
             en = "winters_feast",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["火鸡之年"] = {
             en = "year_of_the_gobbler",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["座狼之年"] = {
             en = "year_of_the_varg",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["猪王之年"] = {
             en = "year_of_the_pig",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["胡萝卜鼠之年"] = {
             en = "year_of_the_carrat",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["皮弗娄牛之年"] = {
             en = "year_of_the_beefalo",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
         ["浣猫之年"] = {
             en = "year_of_the_catcoon",
             value = "default",
-            type = "event02"
+            type = "specificevent"
         },
     },
     ["冒险家"] = {
@@ -420,7 +420,7 @@ forest_settings_table = {
         ["季节起始物品"] = {
             en = "seasonalstartingitems",
             value = "default",
-            type = "spiderwarriors"
+            type = "defaultnever"
         },
         ["防骚扰出生保护"] = {
             en = "spawnprotection",
@@ -430,17 +430,17 @@ forest_settings_table = {
         ["离开游戏后物品掉落"] = {
             en = "dropeverythingondespawn",
             value = "default",
-            type = "drop"
+            type = "defaultalways"
         },
         ["启蒙怪兽"] = {
             en = "brightmarecreatures",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["理智怪兽"] = {
             en = "shadowcreatures",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     },
     ["世界"] = {
@@ -448,42 +448,42 @@ forest_settings_table = {
         ["猎犬袭击"] = {
             en = "hounds",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["冰猎犬群"] = {
             en = "winterhounds",
             value = "default",
-            type = "spiderwarriors"
+            type = "defaultnever"
         },
         ["火猎犬群"] = {
             en = "summerhounds",
             value = "default",
-            type = "spiderwarriors"
+            type = "defaultnever"
         },
         ["雨"] = {
             en = "weather",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["狩猎"] = {
             en = "hunt",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["野火"] = {
             en = "wildfires",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["闪电"] = {
             en = "lightning",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["青蛙雨"] = {
             en = "frograin",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["森林石化"] = {
             en = "petrification",
@@ -493,12 +493,12 @@ forest_settings_table = {
         ["流星频率"] = {
             en = "meteorshowers",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["追猎惊喜"] = {
             en = "alternatehunt",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     },
     ["资源再生"] = {
@@ -549,72 +549,72 @@ forest_settings_table = {
         ["猪"] = {
             en = "pigs_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鸟"] = {
             en = "birds",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["企鹅"] = {
             en = "penguins",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["兔人"] = {
             en = "bunnymen_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["兔子"] = {
             en = "rabbits_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["浣猫"] = {
             en = "catcoons",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["火鸡"] = {
             en = "perd",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜜蜂"] = {
             en = "bees_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蝴蝶"] = {
             en = "butterfly",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鱼群"] = {
             en = "fishschools",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鼹鼠"] = {
             en = "moles_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["龙虾"] = {
             en = "wobsters",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["一角鲸"] = {
             en = "gnarwail",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["草壁虎转化"] = {
             en = "grassgekkos",
             value = "never",
-            type = "object01"
+            type = "options5"
         }
     },
     ["敌对生物"] = {
@@ -622,82 +622,82 @@ forest_settings_table = {
         ["海象"] = {
             en = "walrus_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["猎犬"] = {
             en = "hound_mounds",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蚊子"] = {
             en = "mosquitos",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜘蛛"] = {
             en = "spiders_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蝙蝠"] = {
             en = "bats_setting",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["青蛙"] = {
             en = "frogs",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鱼人"] = {
             en = "merms",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鱿鱼"] = {
             en = "squid",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["鲨鱼"] = {
             en = "sharks",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["杀人蜂"] = {
             en = "wasps",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["食人花"] = {
             en = "lureplants",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["恐怖猎犬"] = {
             en = "mutated_hounds",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["月石企鹅"] = {
             en = "penguins_moon",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["破碎蜘蛛"] = {
             en = "moon_spider",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜘蛛战士"] = {
             en = "spider_warriors",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["饼干切割机"] = {
             en = "cookiecutters",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     },
     ["巨兽"] = {
@@ -705,72 +705,72 @@ forest_settings_table = {
         ["熊獾"] = {
             en = "bearger",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜂后"] = {
             en = "beequeen",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["龙蝇"] = {
             en = "dragonfly",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["克劳斯"] = {
             en = "klaus",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["帝王蟹"] = {
             en = "crabking",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["果蝇王"] = {
             en = "fruitfly",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["邪天翁"] = {
             en = "malbatross",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["麋鹿鹅"] = {
             en = "goosemoose",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["恐怖之眼"] = {
             en = "eyeofterror",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["树精守卫"] = {
             en = "liefs",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["毒桦栗树"] = {
             en = "deciduousmonster",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["独眼巨鹿"] = {
             en = "deerclops",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蚁狮"] = {
             en = "antliontribute",
             value = "default",
-            type = "object01"
+            type = "options5"
         },
         ["蜘蛛女王"] = {
             en = "spiderqueen",
             value = "default",
-            type = "object01"
+            type = "options5"
         }
     }
 }
