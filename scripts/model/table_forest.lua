@@ -14,7 +14,7 @@ forest_generations_table = {
         }
     },
     ["世界"] = {
-        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "道路", "试金石", "失败的冒险家", "开始资源多样化", "天体裂隙", "泰拉瑞亚"},
+        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "道路", "试金石", "失败的冒险家", "开始资源多样化", "天体裂隙", "盒中泰拉"},
         ["生物群落"] = {
             en = "task_set",
             value = "default",
@@ -65,7 +65,7 @@ forest_generations_table = {
             value = "default",
             type = "options8"
         },
-        ["泰拉瑞亚"] = {
+        ["盒中泰拉"] = {
             en = "terrariumchest",
             value = "default",
             type = "defaultnever"
@@ -677,12 +677,12 @@ forest_settings_table = {
         ["恐怖猎犬"] = {
             en = "mutated_hounds",
             value = "default",
-            type = "options5"
+            type = "defaultnever"
         },
         ["月石企鹅"] = {
             en = "penguins_moon",
             value = "default",
-            type = "options5"
+            type = "defaultnever"
         },
         ["破碎蜘蛛"] = {
             en = "moon_spider",
@@ -692,7 +692,7 @@ forest_settings_table = {
         ["蜘蛛战士"] = {
             en = "spider_warriors",
             value = "default",
-            type = "options5"
+            type = "defaultnever"
         },
         ["饼干切割机"] = {
             en = "cookiecutters",
