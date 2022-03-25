@@ -1,7 +1,11 @@
 world_value_types = {
     event = {
-        en = {"none", "default", "crow_carnival", "hallowed_nights", "winters_feast", "year_of_the_gobbler", "year_of_the_varg", "year_of_the_pig", "year_of_the_carrat", "year_of_the_beefalo", "year_of_the_catcoon"},
-        zh = {"无", "自动", "盛夏鸭年华", "万圣夜", "冬季盛宴", "火鸡之年", "座狼之年", "猪王之年", "胡萝卜鼠之年", "皮弗娄牛之年", "浣猫之年"}
+        en = {"none", "default"},
+        zh = {"无", "自动"}
+    },
+    event02 = {
+        en = {"default", "enabled"},
+        zh = {"默认", "总是"}
     },
     daytype = {
         en = {"default", "longday", "longdusk", "longnight", "noday", "nodusk", "nonight", "onlyday", "onlydusk", "onlynight"},

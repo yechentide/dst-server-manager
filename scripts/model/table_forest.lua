@@ -14,7 +14,7 @@ forest_generations_table = {
         }
     },
     ["世界"] = {
-        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "试金石", "失败的冒险家", "开始资源多样化", "天体裂隙", "泰拉瑞亚"},
+        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "道路", "试金石", "失败的冒险家", "开始资源多样化", "天体裂隙", "泰拉瑞亚"},
         ["生物群落"] = {
             en = "task_set",
             value = "default",
@@ -39,6 +39,11 @@ forest_generations_table = {
             en = "loop",
             value = "default",
             type = "loop"
+        },
+        ["道路"] = {
+            en = "roads",
+            value = "default",
+            type = "spiderwarriors"
         },
         ["试金石"] = {
             en = "touchstone",
@@ -313,7 +318,7 @@ forest_generations_table = {
 }
 
 forest_settings_table = {
-    array = {"全局", "冒险家", "世界", "资源再生", "生物", "敌对生物", "巨兽"},
+    array = {"全局", "活动", "冒险家", "世界", "资源再生", "生物", "敌对生物", "巨兽"},
     ["全局"] = {
         array = {"活动", "春", "夏", "秋", "冬", "昼夜选项", "皮费娄牛交配频率", "坎普斯"},
         ["活动"] = {
@@ -357,6 +362,54 @@ forest_settings_table = {
             type = "object01"
         }
     },
+    ["活动"] = {
+        array = {"盛夏鸭年华", "万圣夜", "冬季盛宴", "火鸡之年", "座狼之年", "猪王之年", "胡萝卜鼠之年", "皮弗娄牛之年", "浣猫之年"},
+        ["盛夏鸭年华"] = {
+            en = "crow_carnival",
+            value = "default",
+            type = "event02"
+        },
+        ["万圣夜"] = {
+            en = "hallowed_nights",
+            value = "default",
+            type = "event02"
+        },
+        ["冬季盛宴"] = {
+            en = "winters_feast",
+            value = "default",
+            type = "event02"
+        },
+        ["火鸡之年"] = {
+            en = "year_of_the_gobbler",
+            value = "default",
+            type = "event02"
+        },
+        ["座狼之年"] = {
+            en = "year_of_the_varg",
+            value = "default",
+            type = "event02"
+        },
+        ["猪王之年"] = {
+            en = "year_of_the_pig",
+            value = "default",
+            type = "event02"
+        },
+        ["胡萝卜鼠之年"] = {
+            en = "year_of_the_carrat",
+            value = "default",
+            type = "event02"
+        },
+        ["皮弗娄牛之年"] = {
+            en = "year_of_the_beefalo",
+            value = "default",
+            type = "event02"
+        },
+        ["浣猫之年"] = {
+            en = "year_of_the_catcoon",
+            value = "default",
+            type = "event02"
+        },
+    },
     ["冒险家"] = {
         array = {"额外起始资源", "季节起始物品", "防骚扰出生保护", "离开游戏后物品掉落", "启蒙怪兽", "理智怪兽"},
         ["额外起始资源"] = {
@@ -391,7 +444,22 @@ forest_settings_table = {
         }
     },
     ["世界"] = {
-        array = {"雨", "狩猎", "野火", "闪电", "青蛙雨", "森林石化", "流星频率", "猎犬袭击", "追猎惊喜"},
+        array = {"猎犬袭击", "冰猎犬群", "火猎犬群", "雨", "狩猎", "野火", "闪电", "青蛙雨", "森林石化", "流星频率", "追猎惊喜"},
+        ["猎犬袭击"] = {
+            en = "hounds",
+            value = "default",
+            type = "object01"
+        },
+        ["冰猎犬群"] = {
+            en = "winterhounds",
+            value = "default",
+            type = "spiderwarriors"
+        },
+        ["火猎犬群"] = {
+            en = "summerhounds",
+            value = "default",
+            type = "spiderwarriors"
+        },
         ["雨"] = {
             en = "weather",
             value = "default",
@@ -424,11 +492,6 @@ forest_settings_table = {
         },
         ["流星频率"] = {
             en = "meteorshowers",
-            value = "default",
-            type = "object01"
-        },
-        ["猎犬袭击"] = {
-            en = "hounds",
             value = "default",
             type = "object01"
         },
