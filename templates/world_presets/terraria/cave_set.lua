@@ -1,10 +1,11 @@
 return {
     baseid="TERRARIA_CAVE",
-    desc="洞穴设置(泰拉瑞亚)",
+    desc="泰拉瑞亚洞穴-世界选项",
     worldgen_preset = "DST_CAVE",
     settings_preset = "DST_CAVE",
     override_enabled = true,
     overrides={
+        -- settings
         atriumgate="default",
         bats_setting="often",
         bunnymen_setting="default",
@@ -12,7 +13,7 @@ return {
         earthquakes="default",
         flower_cave_regrowth="fast",
         fruitfly="default",
-        grassgekkos="never",
+        grassgekkos="default",
         liefs="default",
         lightflier_flower_regrowth="default",
         lightfliers="default",
@@ -37,6 +38,6 @@ return {
         spiders_setting="default",
         toadstool="default",
         weather="often",
-        wormattacks="often" 
+        wormattacks="often"
     }
 }

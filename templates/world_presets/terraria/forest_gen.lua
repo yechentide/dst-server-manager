@@ -1,8 +1,9 @@
 return {
     baseid="TERRARIA",
-    desc="地表生成(泰拉瑞亚)",
+    desc="泰拉瑞亚森林-世界生成",
     override_enabled = true,
     overrides={
+        -- generations
         angrybees="always",
         beefalo="default",
         bees="never",
@@ -46,6 +47,7 @@ return {
         prefabswaps_start="default",
         rabbits="default",
         reeds="default",
+        roads="default",
         rock="default",
         rock_ice="rare",
         sapling="default",
@@ -60,6 +62,6 @@ return {
         trees="default",
         tumbleweed="default",
         walrus="default",
-        world_size="default" 
+        world_size="default"
     }
 }

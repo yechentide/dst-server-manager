@@ -1,6 +1,6 @@
 return {
     baseid="SURVIVAL_TOGETHER",
-    desc="地表生成(默认)",
+    desc="标准森林-世界生成",
     override_enabled = true,
     overrides={
         -- generations
@@ -44,9 +44,10 @@ return {
         ocean_wobsterden="default",
         pigs="default",
         ponds="default",
-        prefabswaps_start="classic",
+        prefabswaps_start="default",
         rabbits="default",
         reeds="default",
+        roads="default",
         rock="default",
         rock_ice="default",
         sapling="default",

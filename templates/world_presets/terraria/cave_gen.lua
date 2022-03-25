@@ -1,10 +1,11 @@
 return {
     baseid="TERRARIA_CAVE",
-    desc="洞穴生成(泰拉瑞亚)",
+    desc="泰拉瑞亚洞穴-世界生成",
     worldgen_preset = "DST_CAVE",
     settings_preset = "DST_CAVE",
     override_enabled = true,
     overrides={
+        -- generations
         banana="default",
         bats="default",
         berrybush="default",
@@ -41,6 +42,6 @@ return {
         trees="default",
         world_size="default",
         wormlights="default",
-        worms="default" 
+        worms="default"
     }
 }

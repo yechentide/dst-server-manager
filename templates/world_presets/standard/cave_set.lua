@@ -1,6 +1,6 @@
 return {
     baseid="DST_CAVE",
-    desc="洞穴设置(默认)",
+    desc="标准洞穴-世界选项",
     worldgen_preset = "DST_CAVE",
     settings_preset = "DST_CAVE",
     override_enabled = true,
@@ -13,7 +13,7 @@ return {
         earthquakes="default",
         flower_cave_regrowth="default",
         fruitfly="default",
-        grassgekkos="never",
+        grassgekkos="default",
         liefs="default",
         lightflier_flower_regrowth="default",
         lightfliers="default",

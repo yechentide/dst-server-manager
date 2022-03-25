@@ -1,6 +1,6 @@
 return {
     baseid="DST_CAVE",
-    desc="洞穴生成(默认)",
+    desc="标准洞穴-世界生成",
     worldgen_preset = "DST_CAVE",
     settings_preset = "DST_CAVE",
     override_enabled = true,
@@ -27,7 +27,7 @@ return {
         monkey="default",
         mushroom="default",
         mushtree="default",
-        prefabswaps_start="classic",
+        prefabswaps_start="default",
         reeds="default",
         rock="default",
         rocky="default",

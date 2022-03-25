@@ -1,12 +1,12 @@
 return {
     baseid="DST_CAVE",
-    desc="洞穴设置(空洞世界)",
+    desc="空洞世界洞穴-世界选项",
     worldgen_preset = "DST_CAVE",
     settings_preset = "DST_CAVE",
     override_enabled = true,
     overrides={
         -- settings
-        atriumgate="veryslow",
+        atriumgate="default",
         bats_setting="never",
         bunnymen_setting="never",
         dustmoths="never",
@@ -37,7 +37,7 @@ return {
         spiderqueen="never",
         spiders_setting="never",
         toadstool="never",
-        weather="never",
+        weather="default",
         wormattacks="never"
     }
 }

@@ -1,6 +1,6 @@
 return {
     baseid="SURVIVAL_TOGETHER",
-    desc="地表设置(默认)",
+    desc="标准森林-世界选项",
     override_enabled = true,
     overrides={
         -- settings
@@ -20,6 +20,7 @@ return {
         catcoons="default",
         cookiecutters="default",
         crabking="default",
+        crow_carnival="default",
         day="default",
         deciduousmonster="default",
         deciduoustree_regrowth="default",
@@ -37,6 +38,7 @@ return {
         gnarwail="default",
         goosemoose="default",
         grassgekkos="never",
+        hallowed_nights="default",
         hound_mounds="default",
         hounds="default",
         hunt="default",
@@ -72,12 +74,21 @@ return {
         spring="default",
         squid="default",
         summer="default",
+        summerhounds="default",
         twiggytrees_regrowth="never",
         walrus_setting="default",
         wasps="default",
         weather="default",
         wildfires="default",
         winter="default",
-        wobsters="default"
+        winterhounds="default",
+        winters_feast="default",
+        wobsters="default",
+        year_of_the_beefalo="default",
+        year_of_the_carrat="default",
+        year_of_the_catcoon="default",
+        year_of_the_gobbler="default",
+        year_of_the_pig="default",
+        year_of_the_varg="default"
     }
 }
