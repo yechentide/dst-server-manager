@@ -240,7 +240,7 @@ function get_mods_from_dir() {
 #######################################
 function get_mod_name_from_modinfo() {
     # echo "$(cat $1 | grep ^name | awk -F= '{print $2}' | awk -F\" '{print $2}')"
-    declare -r name=$(lua -e "locale = \"zh\"; dofile(\"$1\") print(name)")
+    declare -r name=$(lua -e "locale = \"zh\"; folder_name = \"\"; dofile(\"$1\") print(name)")
     echo $name     # 通过echo来去除头尾的空白
 }
 
