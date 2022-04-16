@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.9.2'
+declare -r SCRIPT_VERSION='v1.4.9.3'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -594,8 +594,8 @@ function check_script_update() {
 
 function update_repo() {
     color_print info '开始更新脚本仓库...'
-    if [[ -e $REPO_ROOT_DIR/.need_update ]]; then
-        rm $REPO_ROOT_DIR/.need_update
+    if [[ -e $REPO_ROOT_DIR/.cache/.need_update ]]; then
+        rm $REPO_ROOT_DIR/.cache/.need_update
     fi
     git -C $REPO_ROOT_DIR checkout .
     git -C $REPO_ROOT_DIR pull
