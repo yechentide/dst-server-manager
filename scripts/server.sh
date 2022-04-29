@@ -97,7 +97,7 @@ function start_shard() {
     accent_color_print error $accent_color '世界 ' $1 ' 启动失败！'
     color_print tip '请确保先启动主世界(不然副世界会一直尝试连接主世界)'
     color_print -n info '即将进入后台, 请自己查看失败原因(截图或者复制)'; sleep 2
-    tmux display -t "$1:^.top" -d 0 '请自己查看失败原因(截图或者复制)'
+    tmux display -t "$1:^.top" '请自己查看失败原因(截图或者复制)'
     tmux send-keys -t "$1:^.top" ENTER ENTER
     tmux send-keys -t "$1:^.top" '请查看服务器输出的日志, 按需求复制或者截图, 向他人询问解决方法'
     tmux send-keys -t "$1:^.top" '[提示]tmux按键没被修改的话, 按下Ctrl加b, 松开, 再按d退出。'
