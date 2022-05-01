@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+
+#######################################
+# 作用: 包装color_print(), 为一行输出上多种颜色
+# 参数:
+#   -p: 上色模式。不指定时为模式1
+#   $1: 主颜色
+#   $2: 强调色
+#   $3: message
+#   .....
+# 输出:
+#   带颜色的字符串
+#######################################
+
+declare accent_pattern=1
+declare option
+while getopts :p: option; do
+    case $option in
+        p) accent_pattern=$OPTARG ;;
+        *) echo 'error in function accent_color_print'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+case $accent_pattern in
+1)      #   --- * ---
+    color_print -n $1 "$3"
+    color_print -np $2 "$4"
+    color_print -p $1 "$5"
+    ;;
+2)      #   --- * --- * ---
+    color_print -n $1 "$3"
+    color_print -np $2 "$4"
+    color_print -np $1 "$5"
+    color_print -np $2 "$6"
+    color_print -p $1 "$7"
+    ;;
+*)
+    color_print error 'accent_color_print()参数错误:'
+    color_print error "$@"
+    exit 1
+    ;;
+esac

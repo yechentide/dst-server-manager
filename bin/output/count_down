@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+
+
+#######################################
+# 作用: 倒计时(默认是数字)
+# 参数:
+#   -n: 输出数字来倒计时
+#   $1: 秒数
+# 输出:
+#   3 2 1 0  或者  ....
+#######################################
+
+declare use_number='false'
+declare option
+while getopts :n option; do
+    case $option in
+        n) use_number='true' ;;
+        *) echo 'error in function count_down'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+declare i
+if [[ $use_number == 'true' ]]; then
+    for i in $(seq $1 -1 1); do
+        echo -n "$i " | color_print -n 102
+        sleep 1
+    done
+    color_print 102 '0'
+else
+    for i in $(seq $1 -1 1); do
+        color_print -n 102 '.'
+        sleep 1
+    done
+    echo ''
+fi

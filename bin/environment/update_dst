@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$BIN_DIR/interaction:$PATH"
+declare -r answer_path="$bin_dir/../.cache/answer"
+
+#######################################
+# 参数:
+#   -b: 测试版的字符串
+#   $1: DST服务端下载位置
+#######################################
+
+declare beta=''
+declare option
+while getopts :b option; do
+    case $option in
+        b) beta=$OPTARG ;;
+        *) echo 'error in function color_print'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [[ -e $1/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
+    $print success '饥荒服务端已经下载好啦～'
+    exit 0
+fi
+
+echo ''
+$print warn "路径$1 未找到饥荒服务端，即将开始下载..."
+$print -n info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 '
+$count_down 3
+
+function install_dst() {
+    if [[ ${#beta} == 0 ]]; then
+        # 正式版
+        ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 validate +quit
+    else
+        # 测试版
+        exit 1
+        ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
+        ~/Steam/steamcmd.sh +force_install_dir /home/ubuntu/Server +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
+    fi
+}
+
+install_dst
+
+if [[ $? ]]; then
+    $print success '饥荒服务端下载安装完成!'
+    $print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
+    $print info '不用担心, 这个不影响下载/更新DST'
+    $print -n info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ '
+    $count_down -n 6
+else
+    $print error '似乎出现了什么错误...'
+    $confirm info '重新下载？'
+    if [[ $(cat ANSWER_PATH) == 'yes' ]]; then
+        rm -rf $1 > /dev/null 2>&1
+        install_dst
+    fi
+fi

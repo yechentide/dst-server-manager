@@ -35,6 +35,14 @@ world_value_types = {
         en = {"caves"},
         zh = {"洞穴"}
     },
+    startlocationmod = {
+        en = {"islandadventures", "VolcanoDoor"},
+        zh = {"海难", "火山"}
+    },
+    --taskset = {
+    --    en = {"default", "volcanoset"},
+    --    zh = {"默认", "火山"}
+    --}
     worldsize = {
         en = {"small", "medium", "default", "huge"},
         zh = {"小", "中", "大", "巨大"}

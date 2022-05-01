@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+declare -r answer_path="$bin_dir/../.cache/answer"
+declare -r array_path="$bin_dir/../.cache/array"
+
+#######################################
+# 作用: 选择
+# 参数:
+#   -c: 允许返回
+#   -m: 允许多选
+#   $1: 颜色代码(0~255) or 特定的字符串
+#   $2: 提示用户的信息
+# 返回:
+#   用户选择的
+#######################################
+
+declare allow_cancel='false'
+declare allow_multi_select='false'
+declare option
+while getopts :cm option; do
+    case $option in
+        c) allow_cancel='true' ;;
+        m) allow_multi_select='true' ;;
+        *) echo 'error in function count_down'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [[ ! -e ARRAY_PATH ]]; then
+    color_print error '未找到文件array'
+    exit 1
+fi
+declare -a array=($(cat ARRAY_PATH))
+if [[ $allow_cancel == 'true' ]]; then array+=("取消选择"); fi
+declare -a selected=()
+
+if [[ $allow_multi_select == 'true' ]]; then
+    PS3='(多选请用空格隔开)请输入选项数字> '
+else
+    PS3='请输入选项数字> '
+fi
+
+color_print $1 "$2"
+
+while true; do
+    declare answer=''
+    declare item=''
+    select answer in ${array[@]}; do break; done
+    for item in ${REPLY[@]}; do
+        if [[ ! $item =~ ^[0-9]+$ ]] || [[ $item -le 0 ]] || [[ $item -gt ${#array[@]} ]]; then
+            color_print warn "请输入正确数字。错误输入将被无视: $item"
+            continue
+        fi
+        declare index=$(( $item - 1 ))
+        selected+=(${array[index]})
+        if [[ $allow_multi_select == 'false' ]]; then break; fi
+    done
+    if [[ ${#selected[@]} -gt 0 ]]; then break; fi
+done
+#array=(${result[@]})
+if [[ ${selected[0]} == '取消选择' ]]; then
+    color_print info "取消选择, 返回上一级"
+else
+    color_print info "你选择的: ${selected[*]}"
+fi
+
+if [[ -e ANSWER_PATH ]]; then rm ANSWER_PATH; fi
+for item in ${selected[@]}; do
+    echo "$item" >> ANSWER_PATH
+done
+
+sleep 1

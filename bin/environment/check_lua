@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+
+#######################################
+# 参数:
+#   $1: OS
+#######################################
+
+if which lua > /dev/null 2>&1; then return 0; fi
+
+if [[ $1 == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
+    if [[ -e /usr/bin/lua5.3 ]]; then
+        sudo ln -s /usr/bin/lua5.3 /usr/bin/lua
+    elif [[ -e /usr/bin/lua5.2 ]]; then
+        sudo ln -s /usr/bin/lua5.2 /usr/bin/lua
+    elif [[ -e /usr/bin/lua5.1 ]]; then
+        sudo ln -s /usr/bin/lua5.1 /usr/bin/lua
+    else
+        $print -n error '未能找到Lua命令 '; count_down -d 3
+        exit 1
+    fi
+    $print -n info '添加新的symbolic link /usr/bin/lua '; count_down -d 3
+    exit 0
+fi
+$print -n error '未能找到Lua命令 '; count_down -d 3
+exit 1

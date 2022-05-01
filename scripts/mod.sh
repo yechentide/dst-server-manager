@@ -1,94 +1,9 @@
-#######################################
-# 作用: 确认是不是DST的模组。国内会被墙导致卡住
-# 参数:
-#   $1: mod id
-# 输出:
-#   'yes' / 'no'
-#######################################
-function is_dst_mod() {
-    if wget -O - "https://steamcommunity.com/sharedfiles/filedetails/?id=$1" 2>&1 | grep -sq "Don't Starve Together"; then
-        echo 'yes'
-    else
-        echo 'no'
-    fi
-}
-
-#######################################
-# 作用: 让用户输入要下载的模组ID
-# 返回:
-#   ID的数组   储存在全局变量array
-#######################################
-function get_mods_id_from_input() {
-    declare -a result=()
-    color_print info '请输入想要下载的模组ID, 多个ID请用空格隔开'
-    while true; do
-        read -p '> ' answer
-        declare item=''
-        for item in ${answer[@]}; do
-            if [[ ! $item =~ ^[0-9]+$ ]] || [[ $item -le 0 ]]; then
-                color_print warn "请输入正确数字。错误输入将被无视: $item"
-                continue
-            fi
-            result+=($item)
-        done
-        if [[ ${#result[@]} -gt 0 ]]; then break; fi
-    done
-    array=(${result[@]})
-    #color_print info "输入的ID: ${result[*]}"
-}
 
 ##############################################################################################
 
-function add_mods_to_setting_file() {
-    declare flag=1
-    declare -a list=$(generate_mod_id_list_from_setting_file)
-    declare id=''
-    # show installed mods' name
-    color_print info '以下是已经下载的模组:'
-    for id in ${list[@]}; do
-        echo -n "ID: $id      "
-        get_mod_name_from_modinfo "$REPO_ROOT_DIR/.cache/modinfo/$id.lua"
-    done
 
-    get_mods_id_from_input
-    for id in ${array[@]}; do
-        if echo "${list[@]}" | grep -sq $id; then
-            color_print warn "ID $id 已存在!"
-            continue
-        fi
-        # 国内会被墙...
-        #if [[ $(is_dst_mod $id) == 'no' ]]; then
-        #    color_print error "ID $id 不是饥荒联机版的Mod"
-        #    continue
-        #fi
-        color_print info "添加Mod: $id"
-        echo "ServerModSetup(\"${id}\")" >> "$V1_MOD_DIR/dedicated_server_mods_setup.lua"
-        flag=0
-    done
-    if [[ $flag == 0 ]]; then return 0; else return 1; fi
-}
 
-function update_mod() {
-    #if ls $UGC_DIR | grep -sq .acf$; then rm $UGC_DIR/*.acf; fi
 
-    declare -r session_name='update_mods'
-    tmux new -d -s "$session_name" "cd $DST_ROOT_DIR/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -only_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $REPO_ROOT_DIR/.cache/.klei -conf_dir xxxxxx -cluster tmp -shard master"
-    declare -r time_out=360
-    color_print info '正在下载/更新Mod...'
-    color_print info "一次性指定的Mod越多, 下载越耗时间, 请等待$time_out秒"
-    declare i
-    for i in $(seq 1 $time_out); do
-        sleep 1
-        #if tmux capture-pane -t "$session_name" -p -S - | grep -sq 'FinishDownloadingServerMods Complete'; then
-        if ! tmux ls 2>&1 | grep -sq $session_name; then
-            copy_all_modinfo
-            color_print success 'Mod下载/更新完成!'
-            return 0
-        fi
-    done
-    #tmux kill-session -t "$session_name"
-    color_print error 'Mod下载/更新失败...'
-}
 
 function copy_all_modinfo() {
     if ls $REPO_ROOT_DIR/.cache/modinfo | grep -sq '.lua'; then

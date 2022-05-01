@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+declare -r ANSWER_PATH="$bin_dir/../.cache/answer"
+
+#######################################
+# 作用: 对用户进行确认
+# 参数:
+#   $1: 颜色代码(0~255) or 特定的字符串
+#   $2: 提示用户的信息
+# 返回:
+#   `yes` / `no`
+#######################################
+
+declare answer=''
+
+PS3='请输入选项数字> '
+while true; do
+    color_print $1 "$2"
+    select answer in yes no; do break; done
+    if [[ ${#answer} == 0 ]]; then
+        color_print error '请输入正确的数字！'
+        continue
+    fi
+    echo $answer > $ANSWER_PATH
+    exit 0
+done
