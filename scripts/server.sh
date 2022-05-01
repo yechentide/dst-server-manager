@@ -221,7 +221,7 @@ function start_server() {
 
 function shard_console() {
     array=$(generate_list_from_tmux -s)
-    if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
+    if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; sleep 1; return; fi
 
     select_one tip '请选择要操作哪个世界的控制台'
     console_manager $answer

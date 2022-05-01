@@ -12,7 +12,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.4.9.5'
+declare -r SCRIPT_VERSION='v1.4.9.6'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -647,7 +647,7 @@ function display_running_clusters() {
 
 function main_panel() {
     check_script_update
-    declare -r -a action_list=('启动服务端' '操作控制台' '更新服务端' '其他服务端操作' '存档管理' 'Mod管理' '更新脚本' '退出')
+    declare -r -a action_list=('启动服务端' '操作控制台' '其他服务端操作' '存档管理' 'Mod管理' '更新脚本' 'About' '退出')
 
     while true; do
         clear
@@ -669,10 +669,7 @@ function main_panel() {
         '操作控制台')
             shard_console
             ;;
-        '更新服务端')
-            update_server
-            ;;
-        '服务端管理')
+        '其他服务端操作')
             server_panel
             ;;
         '存档管理')
