@@ -612,9 +612,6 @@ function main_panel_header() {
     print_divider '=' | color_print 208
 
     color_print 208 " DST Dedicated Server Manager $SCRIPT_VERSION"
-    color_print 22  ' Github仓库: https://github.com/yechentide/DSTServerManager'
-    color_print 22  ' Gitee仓库: https://gitee.com/yechentide/DSTServerManager'
-    color_print 22  ' 全部代码上传到以上仓库里了, 有兴趣的伙伴可以来一起改善功能！'
     print_divider '-' | color_print 208
 
     color_print -n info '最近更新: '
@@ -623,12 +620,22 @@ function main_panel_header() {
 
     color_print tip '如果服务器列表里不显示服务器, 请检查端口和防火墙&云服的安全组设置!'
     color_print tip '如果你启动游戏时看到有更新的话, 服务端这边也需要更新! 服务端管理界面可以更新服务端。'
-    print_divider '-' | color_print 208
 
     if [[ -e $REPO_ROOT_DIR/.cache/.need_update ]]; then
-        color_print info '～～～检测到脚本有新版本～～～'
         print_divider '-' | color_print 208
+        color_print info '～～～检测到脚本有新版本～～～'
     fi
+    print_divider '=' | color_print 208
+}
+
+function script_info() {
+    echo '脚本作者: yechentide      贴吧ID: 夜尘tide'
+    echo '本脚本主要使用Github和Git来管理, 为了方便国内用户使用, 每次更新将会同步到Gitee(码云)'
+    echo 'Github: https://github.com/yechentide/DSTServerManager'
+    echo 'Gitee:  https://gitee.com/yechentide/DSTServerManager'
+    color_print -p error '欢迎会 shellscript / lua 的伙伴来一起写开服脚本!'
+    color_print -p info '也欢迎去帮忙顶帖～'
+    echo '贴子链接: http://tieba.baidu.com/p/7704412590?&share=9105&fr=sharewise&is_video=false&unique=9FDE498B2D8D86A6834B53EF005735BD&st=1651372052&client_type=1&client_version=12.23.5.0&sfc=copy&share_from=post&source=12_16_sharecard_a'
 }
 
 ##############################################################################################
@@ -640,7 +647,7 @@ function display_running_clusters() {
 
 function main_panel() {
     check_script_update
-    declare -r -a action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '退出')
+    declare -r -a action_list=('启动服务端' '操作控制台' '更新服务端' '其他服务端操作' '存档管理' 'Mod管理' '更新脚本' '退出')
 
     while true; do
         clear
@@ -656,6 +663,15 @@ function main_panel() {
         declare action=$answer
 
         case $action in
+        '启动服务端')
+            start_server
+            ;;
+        '操作控制台')
+            shard_console
+            ;;
+        '更新服务端')
+            update_server
+            ;;
         '服务端管理')
             server_panel
             ;;
@@ -665,12 +681,11 @@ function main_panel() {
         'Mod管理')
             mod_panel
             ;;
-        #'脚本迁移')
-        #    color_print info '如果你之前是用别的脚本开服的话, 可以使用这个功能来移动文件夹, 以使文件夹位置符合本脚本设置'
-        #    transfer_panel
-        #    ;;
         '更新脚本')
             update_repo
+            ;;
+        'About')
+            script_info
             ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'

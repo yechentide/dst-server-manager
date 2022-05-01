@@ -193,6 +193,40 @@ function console_manager() {
 
 ##############################################################################################
 
+function start_server() {
+    array=$(generate_list_from_dir -cs)
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
+
+    color_print tip '请确保先启动主世界'
+    select_one tip '选择存档名则会启动该存档下的所有世界, 选择世界名则只会启动这个世界'
+    # 选择了shard
+    if echo $answer | grep -sq -; then
+        declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$(echo $answer | sed -e "s#-#/#g")"
+        if check_shard $shard_path; then
+            start_shard $answer
+        fi
+        continue
+    fi
+    # 选择了cluster
+    color_print info "将启动存档 $answer 里所有的世界!"
+    if ! check_cluster "$KLEI_ROOT_DIR/$WORLDS_DIR/$answer"; then continue; fi
+    declare shard=''
+    for shard in $(generate_list_from_cluster $answer); do
+        declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$answer/$shard"
+        if check_shard $shard_path; then
+            start_shard "$answer-$shard"
+        fi
+    done
+}
+
+function shard_console() {
+    array=$(generate_list_from_tmux -s)
+    if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
+
+    select_one tip '请选择要操作哪个世界的控制台'
+    console_manager $answer
+}
+
 function server_panel() {
     declare -r -a action_list=('启动服务端' '操作控制台' '关闭服务端' '重启服务端' '更新服务端' '返回')
 
@@ -209,36 +243,10 @@ function server_panel() {
 
         case $action in
         '启动服务端')
-            array=$(generate_list_from_dir -cs)
-            if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
-
-            color_print tip '请确保先启动主世界'
-            select_one tip '选择存档名则会启动该存档下的所有世界, 选择世界名则只会启动这个世界'
-            # 选择了shard
-            if echo $answer | grep -sq -; then
-                declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$(echo $answer | sed -e "s#-#/#g")"
-                if check_shard $shard_path; then
-                    start_shard $answer
-                fi
-                continue
-            fi
-            # 选择了cluster
-            color_print info "将启动存档 $answer 里所有的世界!"
-            if ! check_cluster "$KLEI_ROOT_DIR/$WORLDS_DIR/$answer"; then continue; fi
-            declare shard=''
-            for shard in $(generate_list_from_cluster $answer); do
-                declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$answer/$shard"
-                if check_shard $shard_path; then
-                    start_shard "$answer-$shard"
-                fi
-            done
+            start_server
             ;;
         '操作控制台')
-            array=$(generate_list_from_tmux -s)
-            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
-
-            select_one tip '请选择要操作哪个世界的控制台'
-            console_manager $answer
+            shard_console
             ;;
         '关闭服务端')
             array=$(generate_list_from_tmux -cs)
