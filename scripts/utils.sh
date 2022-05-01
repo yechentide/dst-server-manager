@@ -203,25 +203,12 @@ function check_cluster() {
 #   0 / 1
 #######################################
 function check_shard() {
-    # 导入世界功能做好了再加上这个检测
-    #if [[ ! -e $1/.dstsm ]]; then
-    #    accent_color_print warn 36 '世界 ' $1 ' 不符合本脚本要求!'
-    #    accent_color_print -p 2 warn 36 '在 ' $1 ' 里未能找到 ' '.dstsm' ' 文件!'
-    #    color_print tip '.dstsm文件的作用是, 判断世界是否是由本脚本生成的'
-    #    return 1
-    #fi
     if [[ ! -e $1/server.ini ]]; then
         accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'server.ini' '文件!'; return 1
     fi
-    if [[ ! -e $1/worldgenoverride.lua ]]; then
-        accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'worldgenoverride.lua' '文件!'
-        if [[ -e $1/leveldataoverride.lua ]]; then
-            accent_color_print -p 2 warn 36 '在 ' $1 ' 里发现 ' 'leveldataoverride.lua' '文件!'
-            accent_color_print '用来开服的存档应该把这个文件改名为' 'worldgenoverride.lua' '!'
-            color_print warn 'worldgenoverride.lua的格式和leveldataoverride.lua也稍微有点不同'
-            accent_color_print -c 2 tip 36 '具体格式请参考 ' "$REPO_ROOT_DIR/templates" ' 里的 ' 'shard_main/shard_cave' ' 文件夹里的worldgenoverride.lua'
-        fi
-        return 1
+    if [[ ! -e $1/worldgenoverride.lua ]] && [[ ! -e $1/leveldataoverride.lua ]]; then
+        color_print error "在 $1 里面未能找到世界配置文件!"
+        accent_color_print error 36 '在 ' $1 ' 里未能找到世界配置文件!'
     fi
     return 0
 }
