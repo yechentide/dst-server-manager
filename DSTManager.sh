@@ -24,6 +24,7 @@ declare -r KLEI_ROOT_DIR="$HOME/Klei"
 declare -r WORLDS_DIR_NAME='worlds'
 declare -r BACKUP_DIR="$KLEI_ROOT_DIR/backup"
 declare -r IMPORT_DIR="$KLEI_ROOT_DIR/import"
+
 # shard文件夹默认名字() ### 不强制命名
 #declare -r MAIN_SHARD_NAME='Main'
 #declare -r FOREST_SHARD_NAME='Forest'
@@ -37,8 +38,8 @@ declare -r REPO_URL_CN='https://gitee.com/yechentide/DSTServerManager'
 declare -r REPO_URL_GITHUB='https://github.com/yechentide/DSTServerManager'
 # 用来传递值的文件位置
 declare -r CACHE_DIR="$REPO_ROOT_DIR/.cache"
-declare -r ARRAY_PATH="$CHCHE_DIR/array"
-declare -r ANSWER_PATH="$CHCHE_DIR/answer"
+declare -r ARRAY_PATH="$CACHE_DIR/array"
+declare -r ANSWER_PATH="$CACHE_DIR/answer"
 # 可执行命令
 export PATH="$REPO_ROOT_DIR/bin:$REPO_ROOT_DIR/bin/output:$REPO_ROOT_DIR/bin/interaction:$REPO_ROOT_DIR/bin/environment:$PATH"
 
@@ -148,7 +149,7 @@ function check_environment() {
     fi
 
     install_steamcmd
-    update_dst
+    update_dst $DST_ROOT_DIR
 
     declare file=''
     source $REPO_ROOT_DIR/lib/utils.sh
@@ -247,7 +248,7 @@ function main_panel() {
             echo 'other'
             ;;
         '脚本简介')
-            echo 'hello'
+            script_info
             ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'

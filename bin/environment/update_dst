@@ -3,7 +3,7 @@ set -eu
 
 declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
 export PATH="$BIN_DIR/output:$BIN_DIR/interaction:$PATH"
-declare -r answer_path="$bin_dir/../.cache/answer"
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
 
 #######################################
 # 参数:
@@ -22,14 +22,14 @@ done
 shift $((OPTIND - 1))
 
 if [[ -e $1/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
-    $print success '饥荒服务端已经下载好啦～'
+    color_print success '饥荒服务端已经下载好啦～'
     exit 0
 fi
 
 echo ''
-$print warn "路径$1 未找到饥荒服务端，即将开始下载..."
-$print -n info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 '
-$count_down 3
+color_print warn "路径$1 未找到饥荒服务端，即将开始下载..."
+color_print -n info '根据网络状况，下载可能会很耗时间，下载完成为止请勿息屏 '
+count_down 3
 
 function install_dst() {
     if [[ ${#beta} == 0 ]]; then
@@ -43,19 +43,19 @@ function install_dst() {
     fi
 }
 
-install_dst
+install_dst $1
 
 if [[ $? ]]; then
-    $print success '饥荒服务端下载安装完成!'
-    $print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
-    $print info '不用担心, 这个不影响下载/更新DST'
-    $print -n info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ '
-    $count_down -n 6
+    color_print success '饥荒服务端下载安装完成!'
+    color_print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
+    color_print info '不用担心, 这个不影响下载/更新DST'
+    color_print -n info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ '
+    count_down -n 6
 else
-    $print error '似乎出现了什么错误...'
+    color_print error '似乎出现了什么错误...'
     $confirm info '重新下载？'
     if [[ $(cat ANSWER_PATH) == 'yes' ]]; then
         rm -rf $1 > /dev/null 2>&1
-        install_dst
+        install_dst $1
     fi
 fi

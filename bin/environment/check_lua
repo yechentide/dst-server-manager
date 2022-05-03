@@ -19,11 +19,11 @@ if [[ $1 == 'Ubuntu' && ! -e /usr/bin/lua ]]; then
     elif [[ -e /usr/bin/lua5.1 ]]; then
         sudo ln -s /usr/bin/lua5.1 /usr/bin/lua
     else
-        $print -n error '未能找到Lua命令 '; count_down -d 3
+        color_print -n error '未能找到Lua命令 '; count_down -d 3
         exit 1
     fi
-    $print -n info '添加新的symbolic link /usr/bin/lua '; count_down -d 3
+    color_print -n info '添加新的symbolic link /usr/bin/lua '; count_down -d 3
     exit 0
 fi
-$print -n error '未能找到Lua命令 '; count_down -d 3
+color_print -n error '未能找到Lua命令 '; count_down -d 3
 exit 1

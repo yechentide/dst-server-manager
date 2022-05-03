@@ -7,13 +7,13 @@ export PATH="$BIN_DIR/output:$PATH"
 # https://developer.valvesoftware.com/wiki/SteamCMD#Linux
 if [[ ! -e ~/Steam ]]; then mkdir ~/Steam; fi
 if [[ -e ~/Steam/steamcmd.sh ]]; then
-    $print success 'steamcmd.sh已存在～'
+    color_print success 'steamcmd.sh已存在～'
     exit 0
 fi
 
 echo ''
-$print -n warn '未在~/Steam 发现steamcmd.sh，开始下载'
-$count_down 3
+color_print -n warn '未在~/Steam 发现steamcmd.sh，开始下载'
+count_down 3
 
 # 该用哪个网站？
 # wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
@@ -21,9 +21,9 @@ $count_down 3
 wget --output-document ~/Steam/steamcmd_linux.tar.gz 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' && tar -xvzf ~/Steam/steamcmd_linux.tar.gz --directory ~/Steam
 
 if [[ $? ]]; then
-    $print success 'steamcmd.sh脚本下载完成！'
+    color_print success 'steamcmd.sh脚本下载完成！'
     rm -f ~/Steam/steamcmd_linux.tar.gz > /dev/null 2>&1
 else
-    $print error '似乎出现了什么错误...请联系作者修复'
+    color_print error '似乎出现了什么错误...请联系作者修复'
     exit 1
 fi

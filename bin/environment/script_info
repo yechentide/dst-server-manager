@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+
+echo ''
+color_print info '关于本脚本...'
+echo ''
+
+count_down 3

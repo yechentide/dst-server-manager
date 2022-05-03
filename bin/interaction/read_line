@@ -3,7 +3,7 @@ set -eu
 
 declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
 export PATH="$BIN_DIR/output:$PATH"
-declare -r ANSWER_PATH="$bin_dir/../.cache/answer"
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
 
 #######################################
 # 作用: 包装read命令, 用color_print()添加引导
