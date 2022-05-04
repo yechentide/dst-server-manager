@@ -34,7 +34,7 @@ function stop_shard() {
 #######################################
 function stop_shards_of_cluster() {
     declare shard=''
-    for shard in $(generate_list_from_cluster $1); do
+    for shard in $(generate_list_from_cluster $KLEI_ROOT_DIR $WORLDS_DIR_NAME $1); do
         if [[ $(is_shard_running "$1-$shard") == 'yes' ]]; then
             stop_shard "$1-$shard"
         fi
@@ -43,7 +43,7 @@ function stop_shards_of_cluster() {
 
 function stop_all_shard() {
     declare shard
-    declare -a shard_list=$(generate_list_from_tmux -s)
+    declare -a shard_list=$(generate_server_list -s)
     if [[ ${#shard_list} -gt 0 ]]; then
         for shard in ${shard_list[@]}; do
             stop_shard $shard

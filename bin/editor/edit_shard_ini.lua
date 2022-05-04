@@ -3,10 +3,10 @@
 -- arg[2]: action               --> edit / convert
 -- arg[3]: shard dir path       --> ~/Klei/worlds/c01/Cave
 
-package.path = package.path..';'..arg[1]..'/scripts/?.lua;'..arg[1]..'/scripts/model/?.lua;'
+package.path = package.path..';'..arg[1]..'/lib/?.lua;'..arg[1]..'/lib/models/?.lua;'
 require("utils")
 require("value_types_ini")
-require("table__shard")
+require("table_shard")
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
@@ -15,9 +15,9 @@ require("table__shard")
 function update_model_from_file(old_model, new_file_path)
     local option_array = old_model["array"]
     for i, option_name in pairs(option_array) do
-        local en = old_model[option_name]["en"]
+        local key = old_model[option_name]["key"]
         local old_value = old_model[option_name]["value"]
-        local new_value = exec_linux_command_get_output("cat "..new_file_path.." | grep ^"..en.." | awk -F ' = ' '{print $2}'")
+        local new_value = exec_linux_command_get_output("cat "..new_file_path.." | grep ^"..key.." | awk -F ' = ' '{print $2}'")
         if new_value ~= nil and new_value ~= old_value then
             old_model[option_name]["value"] = new_value
         end
@@ -28,11 +28,11 @@ end
 function apply_changes_to_file(table, file_path)
     local option_array = table["array"]
     for i, option_name in pairs(option_array) do
-        local en = table[option_name]["en"]
+        local key = table[option_name]["key"]
         local new_value = table[option_name]["value"]
-        local old_value = exec_linux_command_get_output("cat "..file_path.." | grep ^"..en.." | awk -F ' = ' '{print $2}'")
+        local old_value = exec_linux_command_get_output("cat "..file_path.." | grep ^"..key.." | awk -F ' = ' '{print $2}'")
         if old_value ~= nil and old_value ~= new_value then
-            local command = "sed -i -e \"s/"..en.." = "..old_value.."/"..en.." = "..new_value.."/g\" "..file_path
+            local command = "sed -i -e \"s/"..key.." = "..old_value.."/"..key.." = "..new_value.."/g\" "..file_path
             os.execute(command)
         end
     end
@@ -54,7 +54,7 @@ function show_settings(table, show_description)
 end
 
 function configure_model(table)
-    local show_description = yes_or_no("info", "是否显示各个设置的说明？")
+    local show_description = confirm("info", "是否显示各个设置的说明？")
     while true do
         clear()
         print_divider("-", 36)
@@ -63,7 +63,7 @@ function configure_model(table)
 
         show_settings(table, show_description)
 
-        local answer = yes_or_no("info", "是否有需要修改的？")
+        local answer = confirm("info", "是否有需要修改的？")
         if answer == false then break end
 
         local option_array = table["array"]

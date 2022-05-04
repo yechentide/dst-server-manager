@@ -5,7 +5,7 @@
 #   token   保存在全局变量answer
 #######################################
 function get_token() {
-    answer=''
+    declare answer=''
     declare -r token_file="$REPO_ROOT_DIR/.cache/token.txt"
     declare token=''
     if [[ -e $token_file ]]; then
@@ -34,5 +34,6 @@ function get_token() {
     done
     echo "token = $answer"
     echo $answer > $token_file
+    echo $answer > $ANSWER_PATH
     sleep 2
 }

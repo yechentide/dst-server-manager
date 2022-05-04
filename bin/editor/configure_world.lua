@@ -2,15 +2,21 @@
 -- arg[1]: $repo_root_dir       --> ~/DSTServerManager
 -- arg[2]: action               --> new / update / convert
 -- arg[3]: shard dir path       --> ~/Klei/worlds/c01/Main
--- arg[4]: 地上世界?              --> true / false
+-- arg[4]: world type           --> forest / cave / shipwrecked / volcano
+-- arg[5]: setting file         --> 默认worldgenoverride, 或者传递leveldataoverride
 
-package.path = package.path..';'..arg[1]..'/scripts/?.lua;'..arg[1]..'/scripts/model/?.lua;'
-require("utils")
-require("value_types_world")
-require("table_forest")
-require("table_cave")
+package.path = package.path..';'..arg[1]..'/lib/?.lua;'..arg[1]..'/lib/models/?.lua;'
 
 WORLD_PRESETS_DIR = arg[1].."/templates/world_presets"
+shipwrecked = false
+if arg[4] == "shipwrecked" or arg[4] == "volcano" then shipwrecked = true end
+setting_file = "worldgenoverride.lua"
+if arg[5] == "leveldataoverride.lua" then setting_file = "leveldataoverride.lua" end
+
+require("utils")
+require("table_forest")
+require("table_cave")
+require("value_types_world")
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
@@ -24,11 +30,11 @@ function update_model_from_file(old_model, new_file_path)
     for _, group_name in ipairs(group_array) do
         local option_array = old_model[group_name]["array"]
         for _, option_name in ipairs(option_array) do
-            local en = old_model[group_name][option_name]["en"]
+            local key = old_model[group_name][option_name]["key"]
             local old_value = old_model[group_name][option_name]["value"]
-            local new_value = new_table[en]
+            local new_value = new_table[key]
             if new_value ~= nil and new_value ~= old_value then
-                --print(string.format("%s: %s --> %s", en, old_value, new_value))
+                --print(string.format("%s: %s --> %s", key, old_value, new_value))
                 old_model[group_name][option_name]["value"] = new_value
             end
         end
@@ -44,12 +50,12 @@ function apply_changes_to_file(table, file_path)
     for _, group_name in ipairs(group_array) do
         local option_array = table[group_name]["array"]
         for _, option_name in ipairs(option_array) do
-            local en = table[group_name][option_name]["en"]
+            local key = table[group_name][option_name]["key"]
             local new_value = table[group_name][option_name]["value"]
-            local old_value = old_table[en]
+            local old_value = old_table[key]
             if old_value ~= nil and old_value ~= new_value then
                 --print(string.format("%s:\t\t\t%s ---> %s", en, old_value, new_value))
-                local command = "sed -i -e \"s/ "..en.."=\\\""..old_value.."\\\"/ "..en.."=\\\""..new_value.."\\\"/g\" "..file_path
+                local command = "sed -i -e \"s/ "..key.."=\\\""..old_value.."\\\"/ "..key.."=\\\""..new_value.."\\\"/g\" "..file_path
                 --print(command)
                 os.execute(command)
             end
@@ -75,7 +81,7 @@ function generate_worldgenoverride(file_path, model_generation, model_setting, i
         os.execute("sed -i -e '$i \\        -- "..type_comment.."' "..file_path)
         for _, group_name in pairs(model["array"]) do
             for _, option_name in ipairs(model[group_name]["array"]) do
-                local key = model[group_name][option_name]["en"]
+                local key = model[group_name][option_name]["key"]
                 local value = model[group_name][option_name]["value"]
                 if type(value) == "string" then value = "\""..value.."\"" end
                 os.execute("sed -i -e '$i \\        "..key.."="..tostring(value)..",' "..file_path)
@@ -105,19 +111,19 @@ function configure_model(table, prefix, is_generation)
             for _, option_name in ipairs(option_array) do
                 local value_type = table[group_name][option_name]["type"]
                 local current_value_en = table[group_name][option_name]["value"]
-                local current_value_zh = value_en2zh(world_value_types, value_type, current_value_en)
+                local current_value_zh = translate_2zh(world_value_types, value_type, current_value_en)
                 --sleepms(0.1)
                 print(string.format("    %s = %s", option_name, current_value_zh))
             end
 
-            local answer = yes_or_no("info", "是否有需要修改的？")
+            local answer = confirm("info", "是否有需要修改的？")
             if answer == false then break end
 
             local target = select_one(option_array, "info", "请选一个选项")
             local value_type = table[group_name][target]["type"]
             local value_options = world_value_types[value_type]["zh"]
             local new_value = select_one(value_options, "info", "请选一个选项")
-            table[group_name][target]["value"] = value_zh2en(world_value_types, value_type, new_value)
+            table[group_name][target]["value"] = translate_2key(world_value_types, value_type, new_value)
         end
     end
 end
@@ -151,7 +157,7 @@ function generate_new(shard_dir_path, is_overground)
     local preset_dir_path = select_preset()
 
     color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
-    if is_overground == "true" then
+    if is_overground then
         model_gen = forest_generations_table
         model_set = forest_settings_table
         file_gen = "/forest_gen.lua"
@@ -169,7 +175,7 @@ function generate_new(shard_dir_path, is_overground)
     local title_gen = ""
     local title_set = ""
     local answer = ""
-    if is_overground == "true" then
+    if is_overground then
         title_gen = "地上 - 生成 - "
         title_set = "地上 - 选项 - "
     else
@@ -178,23 +184,23 @@ function generate_new(shard_dir_path, is_overground)
     end
     clear()
     print_divider("-", 36)
-    if yes_or_no("info", "即将开始修改 \"世界生成\" 配置, 是否跳过?") == false then
+    if confirm("info", "即将开始修改 \"世界生成\" 配置, 是否跳过?") == false then
         configure_model(model_gen, title_gen, true)
     end
     clear()
     print_divider("-", 36)
-    if yes_or_no("info", "即将开始修改 \"世界选项\" 配置, 是否跳过?") == false then
+    if confirm("info", "即将开始修改 \"世界选项\" 配置, 是否跳过?") == false then
         configure_model(model_set, title_set, false)
     end
 
     -- 保存model
-    local file_path = shard_dir_path.."/worldgenoverride.lua"
-    generate_worldgenoverride(file_path, model_gen, model_set, is_overground == "true")
+    local file_path = shard_dir_path.."/"..setting_file
+    generate_worldgenoverride(file_path, model_gen, model_set, is_overground)
 
     -- 保存为新模板
     clear()
     print_divider("-", 36)
-    if yes_or_no("info", "是否要把当前设置保存为新的模板?") == true then
+    if confirm("info", "是否要把当前设置保存为新的模板?") == true then
         local default_presets = {standard = true, terraria = true, empty = true}
         while true do
             local name = readline(false, "info", "请输入新模板的名字")
@@ -228,22 +234,22 @@ function change_options(shard_dir_path, is_overground)
 
     -- 读取model, 更新model
     local model_set = {}
-    if is_overground == "true" then
+    if is_overground then
         model_set = forest_settings_table
     else
         model_set = cave_settings_table
     end
-    update_model_from_file(model_set, shard_dir_path.."/worldgenoverride.lua")
+    update_model_from_file(model_set, shard_dir_path.."/"..setting_file)
 
     -- 展示model
-    if is_overground == "true" then
+    if is_overground then
         configure_model(model_set, "地上 - 选项 - ", false)
     else
         configure_model(model_set, "洞穴 - 选项 - ", false)
     end
 
     -- 保存model
-    apply_changes_to_file(model_set, shard_dir_path.."/worldgenoverride.lua")
+    apply_changes_to_file(model_set, shard_dir_path.."/"..setting_file)
 
     clear()
     color_print("success", "世界配置完成！", true)
@@ -267,11 +273,15 @@ function convert(old_file_path, new_file_path, is_overground)
 end
 
 if arg[2] == 'new' then
-    -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $shard_path true
-    generate_new(arg[3], arg[4])
+    -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager new $shard_path 'forest'
+    local is_forest = true
+    if arg[4] ~= "forest" then is_forest = false end
+    generate_new(arg[3], is_forest)
 elseif arg[2] == 'update' then
-    -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager update $shard_path true
-    change_options(arg[3], arg[4])
+    -- 命令行指令例子:  lua ./configure_world.lua /home/tide/DSTServerManager update $shard_path 'forest'
+    local is_forest = true
+    if arg[4] ~= "forest" then is_forest = false end
+    change_options(arg[3], is_forest)
 elseif arg[2] == 'convert' then
     -- arg[3]: old worldgenoverride
     -- arg[4]: new worldgenoverride

@@ -39,7 +39,7 @@ if [[ ! -e $ARRAY_PATH ]]; then
     exit 1
 fi
 declare -a array=($(cat $ARRAY_PATH))
-if [[ $allow_cancel == 'true' ]]; then array+=("返回"); fi
+if [[ $allow_cancel == 'true' ]]; then array+=('返回'); fi
 declare -a selected=()
 
 if [[ $allow_multi_select == 'true' ]]; then
@@ -68,7 +68,7 @@ done
 #array=(${result[@]})
 if [[ $quiet_mode == 'false' ]]; then
     if [[ ${selected[0]} == '返回' ]]; then
-        color_print info "中止操作, 返回上一级"
+        color_print info '中止操作, 返回上一级'
     else
         color_print info "你选择的: ${selected[*]}"
     fi

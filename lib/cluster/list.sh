@@ -21,14 +21,26 @@ function edit_list() {
     fi
     color_print info "开始修改存档的${list_type}名单..."
 
-    array=($(generate_list_from_dir -c))
+    declare -a array=($(generate_cluster_list -c $KLEI_ROOT_DIR $WORLDS_DIR_NAME))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
-    select_one info '请选择一个存档'
-    declare -r cluster=$answer
-    declare -r list_path="$KLEI_ROOT_DIR/$WORLDS_DIR/$cluster/$file_name"
+    
+    declare cluster=''
+    rm $ARRAY_PATH
+    for cluster in ${array[@]}; do echo $cluster >> $ARRAY_PATH; done
+    selector -cq info '请选择一个存档'
+    cluster=$(cat $ANSWER_PATH)
+    if [[ $cluster == '返回' ]]; then return 0; fi
+
+    declare -r list_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$cluster/$file_name"
 
     array=('添加 删除')
-    select_one info '请选择'
+    declare answer=''
+    rm $ARRAY_PATH
+    for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
+    selector -cq info '请选择'
+    answer=$(cat $ANSWER_PATH)
+    if [[ $answer == '返回' ]]; then return 0; fi
+
     if [[ $answer == '添加' ]]; then
         if [[ ! -e $list_path ]]; then echo '' > $list_path; fi
         color_print info "存档 $cluster 当前的$list_type名单:"
@@ -45,15 +57,27 @@ function edit_list() {
     fi
     if [[ $answer == '删除' ]]; then
         if [[ ! -e $list_path ]]; then color_print warn "存档 $cluster 里未找到$list_type名单!请先添加!"; return; fi
+        sed -i -e '/^$/d' $list_path
+        if [[ ! -s $list_path ]]; then
+            color_print warn "$list_type名单为空!"
+            return 0
+        fi
 
-        array=($(cat $list_path))
-        multi_select info "请选择要从${list_type}名单删除的ID"
+        unset array
+        declare -a array=($(cat $list_path))
         declare delete_id
+        rm $ARRAY_PATH
+        for delete_id in ${array[@]}; do echo $delete_id >> $ARRAY_PATH; done
+
+        selector -cmq info "请选择要从${list_type}名单删除的ID"
+        unset array
+        declare -a array=$(cat $ANSWER_PATH)
+        if echo $array | grep -sq '返回'; then return 0; fi
+
         for delete_id in ${array[@]}; do
             sed -i -e "s/^${delete_id}//g" $list_path
         done
     fi
-    #sed -i -z -e 's/\n\+/\n/g' $list_path
     sed -i -e '/^$/d' $list_path
 
     color_print info "存档 $cluster 当前的$list_type名单:"
