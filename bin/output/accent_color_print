@@ -5,16 +5,6 @@ declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
 export PATH="$BIN_DIR/output:$PATH"
 
 #######################################
-# 作用: 包装color_print(), 为一行输出上多种颜色
-# 参数:
-#   -p: 上色模式。不指定时为模式1
-#   $1: 主颜色
-#   $2: 强调色
-#   $3: message
-#   .....
-# 输出:
-#   带颜色的字符串
-#######################################
 
 declare accent_pattern=1
 declare option
@@ -25,6 +15,18 @@ while getopts :p: option; do
     esac
 done
 shift $((OPTIND - 1))
+
+#######################################
+# 作用: 包装color_print(), 为一行输出上多种颜色
+# 参数:
+#   -p: 上色模式。不指定时为模式1
+#   $1: 主颜色
+#   $2: 强调色
+#   $3: message
+#   .....
+# 输出:
+#   带颜色的字符串
+#######################################
 
 case $accent_pattern in
 1)      #   --- * ---

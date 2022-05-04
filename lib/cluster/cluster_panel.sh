@@ -56,7 +56,7 @@ function cluster_panel() {
             return 0
             ;;
         *)
-            color_print error "${action}功能暂未写好" -n; count_down -d 3
+            color_print error "${action}功能暂未写好" -n; count_down 3
             ;;
         esac
     done

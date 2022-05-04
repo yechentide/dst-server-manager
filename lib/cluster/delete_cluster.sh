@@ -10,7 +10,7 @@ function delete_cluster() {
 
     yes_or_no warn "确定要删除存档$1?"
     if [[ $answer == 'no' ]]; then
-        color_print info '取消删除 ' -n; count_down -d 3
+        color_print info '取消删除 ' -n; count_down 3
         return 0
     fi
 
@@ -20,7 +20,7 @@ function delete_cluster() {
 
     if [[ $? ]]; then
         accent_color_print -p 2 success $accent_color '存档 ' $1 ' 已经移动到 ' $new_path '，主机关机时会自动删除!'
-        color_print info '要是后悔了，主机关机之前还来得及哦～ ' -n; count_down -d 3
+        color_print info '要是后悔了，主机关机之前还来得及哦～ ' -n; count_down 3
     else
         color_print error '似乎出现了什么错误...'
     fi

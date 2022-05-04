@@ -16,7 +16,7 @@ function create_shard() {
     fi
 
     # 编辑server.ini
-    color_print -n warn '如果本世界是主世界的话, 接下来请把"是否为主世界"选项改成true'; count_down -d 6
+    color_print -n warn '如果本世界是主世界的话, 接下来请把"是否为主世界"选项改成true'; count_down 6
     lua $REPO_ROOT_DIR/scripts/edit_shard_ini.lua $REPO_ROOT_DIR 'edit' $1/$2
 
     # 编辑worldgenoverride.lua

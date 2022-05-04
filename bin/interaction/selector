@@ -7,34 +7,39 @@ declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
 declare -r ARRAY_PATH="$BIN_DIR/../.cache/array"
 
 #######################################
+
+declare allow_cancel='false'
+declare allow_multi_select='false'
+declare quiet_mode='false'
+declare option
+while getopts :cmq option; do
+    case $option in
+        c) allow_cancel='true' ;;
+        m) allow_multi_select='true' ;;
+        q) quiet_mode='true' ;;
+        *) echo 'error in function count_down'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+#######################################
 # 作用: 选择
 # 参数:
 #   -c: 允许返回
 #   -m: 允许多选
+#   -q: 屏蔽确认信息
 #   $1: 颜色代码(0~255) or 特定的字符串
 #   $2: 提示用户的信息
 # 返回:
 #   用户选择的
 #######################################
 
-declare allow_cancel='false'
-declare allow_multi_select='false'
-declare option
-while getopts :cm option; do
-    case $option in
-        c) allow_cancel='true' ;;
-        m) allow_multi_select='true' ;;
-        *) echo 'error in function count_down'; exit 1; ;;
-    esac
-done
-shift $((OPTIND - 1))
-
 if [[ ! -e $ARRAY_PATH ]]; then
     color_print error '未找到文件array'
     exit 1
 fi
 declare -a array=($(cat $ARRAY_PATH))
-if [[ $allow_cancel == 'true' ]]; then array+=("取消选择"); fi
+if [[ $allow_cancel == 'true' ]]; then array+=("返回"); fi
 declare -a selected=()
 
 if [[ $allow_multi_select == 'true' ]]; then
@@ -61,10 +66,12 @@ while true; do
     if [[ ${#selected[@]} -gt 0 ]]; then break; fi
 done
 #array=(${result[@]})
-if [[ ${selected[0]} == '取消选择' ]]; then
-    color_print info "取消选择, 返回上一级"
-else
-    color_print info "你选择的: ${selected[*]}"
+if [[ $quiet_mode == 'false' ]]; then
+    if [[ ${selected[0]} == '返回' ]]; then
+        color_print info "中止操作, 返回上一级"
+    else
+        color_print info "你选择的: ${selected[*]}"
+    fi
 fi
 
 if [[ -e $ANSWER_PATH ]]; then rm $ANSWER_PATH; fi
@@ -72,4 +79,6 @@ for item in ${selected[@]}; do
     echo "$item" >> $ANSWER_PATH
 done
 
-sleep 1
+if [[ $quiet_mode == 'false' ]]; then
+    sleep 1
+fi

@@ -41,7 +41,7 @@ declare -r CACHE_DIR="$REPO_ROOT_DIR/.cache"
 declare -r ARRAY_PATH="$CACHE_DIR/array"
 declare -r ANSWER_PATH="$CACHE_DIR/answer"
 # 可执行命令
-export PATH="$REPO_ROOT_DIR/bin:$REPO_ROOT_DIR/bin/output:$REPO_ROOT_DIR/bin/interaction:$REPO_ROOT_DIR/bin/environment:$PATH"
+export PATH="$REPO_ROOT_DIR/bin:$REPO_ROOT_DIR/bin/output:$REPO_ROOT_DIR/bin/interaction:$REPO_ROOT_DIR/bin/environment:$REPO_ROOT_DIR/bin/utils:$PATH"
 
 ##############################################################################################
 
@@ -133,12 +133,12 @@ function check_environment() {
     make_directories
 
     if [[ ! -e $CACHE_DIR/.skip_requirements_check ]]; then
-        confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
-        if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
-            color_print -n info '即将进入脚本迁移面板'
-            count_down -n 3
-            transfer_panel
-        fi
+        #confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
+        #if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+        #    color_print -n info '即将进入脚本迁移面板'
+        #    count_down -n 3
+        #    transfer_panel
+        #fi
         add_alias
         install_dependencies $OS
         color_print -n info '输入source ~/.bashrc 或者重新登录后, 即可使用dst来执行脚本～'
@@ -152,7 +152,6 @@ function check_environment() {
     update_dst $DST_ROOT_DIR
 
     declare file=''
-    source $REPO_ROOT_DIR/lib/utils.sh
     source $REPO_ROOT_DIR/lib/transfer_panel.sh
     for file in $(ls $REPO_ROOT_DIR/lib/server/*.sh); do source $file; done
     for file in $(ls $REPO_ROOT_DIR/lib/cluster/*.sh); do source $file; done
@@ -205,9 +204,7 @@ function main_panel_header() {
 }
 
 function display_running_clusters() {
-    exit 1
-    !!!FIXME
-    declare -a running_cluster_list=$(generate_list_from_tmux -s | tr '\n' ' ')
+    declare -a running_cluster_list=$(generate_server_list -s | tr '\n' ' ')
     color_print 30 "运行中的世界 ==> $running_cluster_list"
 }
 
@@ -222,13 +219,13 @@ function main_panel() {
         main_panel_header
         echo ''
         color_print 208 '>>>>>> >>>>>> 主面板 <<<<<< <<<<<<'
-        #display_running_clusters
+        display_running_clusters
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
 
         declare action=''
         rm $ARRAY_PATH
         for action in ${action_list[@]}; do echo $action >> $ARRAY_PATH; done
-        selector info '请从下面选一个'
+        selector -q info '请从下面选一个'
         action=$(cat $ANSWER_PATH)
 
         case $action in

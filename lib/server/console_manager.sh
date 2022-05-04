@@ -8,7 +8,7 @@ function console_manager() {
     tmux split-window -v -l 8 -t $1
 
     tmux select-pane -t $console_pane
-    tmux send-keys -t $console_pane "/$REPO_ROOT_DIR/scripts/console $1" ENTER
+    tmux send-keys -t $console_pane "/$REPO_ROOT_DIR/bin/console $1" ENTER
     tmux a -t $1
 
     tmux send-keys -t $console_pane C-c

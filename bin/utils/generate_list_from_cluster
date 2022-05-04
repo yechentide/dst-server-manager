@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+export PATH="$BIN_DIR/output:$PATH"
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
+declare -r ARRAY_PATH="$BIN_DIR/../.cache/array"
+
+#######################################
+
+declare add_cluster='false'
+
+declare option
+while getopts :c option; do
+    case $option in
+        c)  add_cluster='true'; ;;
+        *)  echo 'error in function generate_list_from_cluster'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+#######################################
+# 作用: 输出存档里的世界文件夹名
+# 参数:
+#   -c: 存档名也输出
+#   $1: KLEI_ROOT_DIR
+#   $2: WORLDS_DIR_NAME
+#   $3: 存档文件夹名
+# 输出:
+#   存档1 Main Cave
+#######################################
+
+declare -r worlds_dir_path="$1/$2"
+declare -r cluster_dir_path="$worlds_dir_path/$3"
+if [[ $add_cluster == 'true' ]]; then
+    find $cluster_dir_path -maxdepth 1 -type d | sed -e "s#$worlds_dir_path/##g" | grep -v /
+fi
+find $cluster_dir_path -maxdepth 1 -type d | sed -e "s#$cluster_dir_path##g" | sed -e "s#^/##g" | grep -v '^\s*$' | sort -r

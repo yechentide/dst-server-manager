@@ -22,7 +22,8 @@ function stop_shard() {
         fi
     done
     accent_color_print error $accent_color '世界 ' $1 ' 关闭失败！'
-    color_print -n error '6秒后将强制关闭, 中止强制关闭请按Ctrl加c'; count_down -d 6
+    color_print -n error '6秒后将强制关闭, 中止强制关闭请按Ctrl加c'
+    count_down 6
     tmux kill-session -t $1
 }
 

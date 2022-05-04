@@ -108,7 +108,7 @@ function transfer_panel() {
 
     color_print warn '本功能未经测试!如果担心出问题的话, 请选择 "返回"'
     color_print info '在这里本脚本会移动旧脚本管理的文件夹, 以使文件夹位置符合本脚本设置'
-    color_print -n info '如果你没在列表里看到自己用过的脚本名字, 请选择 "返回"'; count_down -d 3
+    color_print -n info '如果你没在列表里看到自己用过的脚本名字, 请选择 "返回"'; count_down 3
 
     yes_or_no info '请问你是以root用户执行之前的脚本的吗?'
     if [[ $answer == 'yes' ]]; then
@@ -146,7 +146,7 @@ function transfer_panel() {
             return 0
             ;;
         *)
-            color_print -n error "暂不支持自动从${script}迁移, ${error_exit_msg}"; count_down -d 3
+            color_print -n error "暂不支持自动从${script}迁移, ${error_exit_msg}"; count_down 3
             ;;
         esac
     done
