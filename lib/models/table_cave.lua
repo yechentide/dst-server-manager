@@ -8,47 +8,47 @@ cave_generations_table = {
     ["世界"] = {
         array = {"生物群落", "出生点", "世界大小", "分支", "环形", "试金石", "洞穴光照", "失败的冒险家", "开始资源多样化"},
         ["生物群落"] = {
-            en = "task_set",
+            key = "task_set",
             value = "cave_default",
             type = "biomecave"
         },
         ["出生点"] = {
-            en = "start_location",
+            key = "start_location",
             value = "caves",
             type = "startlocationcave"
         },
         ["世界大小"] = {
-            en = "world_size",
+            key = "world_size",
             value = "default",
             type = "worldsize"
         },
         ["分支"] = {
-            en = "branching",
+            key = "branching",
             value = "default",
             type = "branch"
         },
         ["环形"] = {
-            en = "loop",
+            key = "loop",
             value = "default",
             type = "loop"
         },
         ["试金石"] = {
-            en = "touchstone",
+            key = "touchstone",
             value = "default",
             type = "options8"
         },
         ["洞穴光照"] = {
-            en = "cavelight",
+            key = "cavelight",
             value = "default",
             type = "regrowthspeed"
         },
         ["失败的冒险家"] = {
-            en = "boons",
+            key = "boons",
             value = "default",
             type = "options8"
         },
         ["开始资源多样化"] = {
-            en = "prefabswaps_start",
+            key = "prefabswaps_start",
             value = "default",
             type = "prefabswapsstart"
         }
@@ -56,82 +56,82 @@ cave_generations_table = {
     ["资源"] = {
         array = {"草", "巨石", "树苗", "池塘", "燧石", "芦苇", "苔藓", "蘑菇", "尖灌木", "浆果丛", "荧光花", "蘑菇树", "发光浆果", "洞穴蕨类", "洞穴香蕉", "树(所有)"},
         ["草"] = {
-            en = "grass",
+            key = "grass",
             value = "default",
             type = "options8"
         },
         ["巨石"] = {
-            en = "rock",
+            key = "rock",
             value = "default",
             type = "options8"
         },
         ["树苗"] = {
-            en = "sapling",
+            key = "sapling",
             value = "default",
             type = "options8"
         },
         ["池塘"] = {
-            en = "cave_ponds",
+            key = "cave_ponds",
             value = "default",
             type = "options8"
         },
         ["燧石"] = {
-            en = "flint",
+            key = "flint",
             value = "default",
             type = "options8"
         },
         ["芦苇"] = {
-            en = "reeds",
+            key = "reeds",
             value = "default",
             type = "options8"
         },
         ["苔藓"] = {
-            en = "lichen",
+            key = "lichen",
             value = "default",
             type = "options8"
         },
         ["蘑菇"] = {
-            en = "mushroom",
+            key = "mushroom",
             value = "default",
             type = "options8"
         },
         ["尖灌木"] = {
-            en = "marshbush",
+            key = "marshbush",
             value = "default",
             type = "options8"
         },
         ["浆果丛"] = {
-            en = "berrybush",
+            key = "berrybush",
             value = "default",
             type = "options8"
         },
         ["荧光花"] = {
-            en = "flower_cave",
+            key = "flower_cave",
             value = "default",
             type = "options8"
         },
         ["蘑菇树"] = {
-            en = "mushtree",
+            key = "mushtree",
             value = "default",
             type = "options8"
         },
         ["发光浆果"] = {
-            en = "wormlights",
+            key = "wormlights",
             value = "default",
             type = "options8"
         },
         ["洞穴蕨类"] = {
-            en = "fern",
+            key = "fern",
             value = "default",
             type = "options8"
         },
         ["洞穴香蕉"] = {
-            en = "banana",
+            key = "banana",
             value = "default",
             type = "options8"
         },
         ["树(所有)"] = {
-            en = "trees",
+            key = "trees",
             value = "default",
             type = "options8"
         }
@@ -139,27 +139,27 @@ cave_generations_table = {
     ["生物以及刷新点"] = {
         array = {"兔屋", "石虾", "缀食者", "穴居猴桶", "蛞蝓龟窝"},
         ["兔屋"] = {
-            en = "bunnymen",
+            key = "bunnymen",
             value = "default",
             type = "options8"
         },
         ["石虾"] = {
-            en = "rocky",
+            key = "rocky",
             value = "default",
             type = "options8"
         },
         ["缀食者"] = {
-            en = "slurper",
+            key = "slurper",
             value = "default",
             type = "options8"
         },
         ["穴居猴桶"] = {
-            en = "monkey",
+            key = "monkey",
             value = "default",
             type = "options8"
         },
         ["蛞蝓龟窝"] = {
-            en = "slurtles",
+            key = "slurtles",
             value = "default",
             type = "options8"
         }
@@ -167,37 +167,37 @@ cave_generations_table = {
     ["敌对生物以及刷新点"] = {
         array = {"蝙蝠", "触手", "蛛网岩", "蜘蛛巢", "发条装置", "梦魇裂隙", "洞穴蠕虫"},
         ["蝙蝠"] = {
-            en = "bats",
+            key = "bats",
             value = "default",
             type = "options8"
         },
         ["触手"] = {
-            en = "tentacles",
+            key = "tentacles",
             value = "default",
             type = "options8"
         },
         ["蛛网岩"] = {
-            en = "cave_spiders",
+            key = "cave_spiders",
             value = "default",
             type = "options8"
         },
         ["蜘蛛巢"] = {
-            en = "spiders",
+            key = "spiders",
             value = "default",
             type = "options8"
         },
         ["发条装置"] = {
-            en = "chess",
+            key = "chess",
             value = "default",
             type = "options8"
         },
         ["梦魇裂隙"] = {
-            en = "fissure",
+            key = "fissure",
             value = "default",
             type = "options8"
         },
         ["洞穴蠕虫"] = {
-            en = "worms",
+            key = "worms",
             value = "default",
             type = "options8"
         }
@@ -209,22 +209,22 @@ cave_settings_table = {
     ["世界"] = {
         array = {"雨", "地震", "远古大门", "洞穴蠕虫攻击"},
         ["雨"] = {
-            en = "weather",
+            key = "weather",
             value = "default",
             type = "options5"
         },
         ["地震"] = {
-            en = "earthquakes",
+            key = "earthquakes",
             value = "default",
             type = "options5"
         },
         ["远古大门"] = {
-            en = "atriumgate",
+            key = "atriumgate",
             value = "default",
             type = "options5"
         },
         ["洞穴蠕虫攻击"] = {
-            en = "wormattacks",
+            key = "wormattacks",
             value = "default",
             type = "options5"
         }
@@ -232,27 +232,27 @@ cave_settings_table = {
     ["资源再生"] = {
         array = {"重生速度", "荧光花", "蘑菇树", "月亮蘑菇树", "球状光虫花"},
         ["重生速度"] = {
-            en = "regrowth",
+            key = "regrowth",
             value = "default",
             type = "regrowthspeed"
         },
         ["荧光花"] = {
-            en = "flower_cave_regrowth",
+            key = "flower_cave_regrowth",
             value = "default",
             type = "regrowthspeed"
         },
         ["蘑菇树"] = {
-            en = "mushtree_regrowth",
+            key = "mushtree_regrowth",
             value = "default",
             type = "regrowthspeed"
         },
         ["月亮蘑菇树"] = {
-            en = "mushtree_moon_regrowth",
+            key = "mushtree_moon_regrowth",
             value = "default",
             type = "regrowthspeed"
         },
         ["球状光虫花"] = {
-            en = "lightflier_flower_regrowth",
+            key = "lightflier_flower_regrowth",
             value = "default",
             type = "regrowthspeed"
         }
@@ -260,57 +260,57 @@ cave_settings_table = {
     ["生物"] = {
         array = {"猪", "兔人", "尘蛾", "石虾", "鼹鼠", "穴居猴", "蛞蝓龟", "蜗牛龟", "球状光虫", "蘑菇地精", "草壁虎转化"},
         ["猪"] = {
-            en = "pigs_setting",
+            key = "pigs_setting",
             value = "default",
             type = "options5"
         },
         ["兔人"] = {
-            en = "bunnymen_setting",
+            key = "bunnymen_setting",
             value = "default",
             type = "options5"
         },
         ["尘蛾"] = {
-            en = "dustmoths",
+            key = "dustmoths",
             value = "default",
             type = "options5"
         },
         ["石虾"] = {
-            en = "rocky_setting",
+            key = "rocky_setting",
             value = "default",
             type = "options5"
         },
         ["鼹鼠"] = {
-            en = "moles_setting",
+            key = "moles_setting",
             value = "default",
             type = "options5"
         },
         ["穴居猴"] = {
-            en = "monkey_setting",
+            key = "monkey_setting",
             value = "default",
             type = "options5"
         },
         ["蛞蝓龟"] = {
-            en = "slurtles_setting",
+            key = "slurtles_setting",
             value = "default",
             type = "options5"
         },
         ["蜗牛龟"] = {
-            en = "snurtles",
+            key = "snurtles",
             value = "default",
             type = "options5"
         },
         ["球状光虫"] = {
-            en = "lightfliers",
+            key = "lightfliers",
             value = "default",
             type = "options5"
         },
         ["蘑菇地精"] = {
-            en = "mushgnome",
+            key = "mushgnome",
             value = "default",
             type = "options5"
         },
         ["草壁虎转化"] = {
-            en = "grassgekkos",
+            key = "grassgekkos",
             value = "never",
             type = "options5"
         }
@@ -318,47 +318,47 @@ cave_settings_table = {
     ["敌对生物"] = {
         array = {"蜘蛛", "蝙蝠", "鱼人", "喷射蜘蛛", "洞穴蜘蛛", "穴居悬蛛", "蜘蛛战士", "遗迹梦魇", "裸鼹鼠蝙蝠"},
         ["蜘蛛"] = {
-            en = "spiders_setting",
+            key = "spiders_setting",
             value = "default",
             type = "options5"
         },
         ["蝙蝠"] = {
-            en = "bats_setting",
+            key = "bats_setting",
             value = "default",
             type = "options5"
         },
         ["鱼人"] = {
-            en = "merms",
+            key = "merms",
             value = "default",
             type = "options5"
         },
         ["喷射蜘蛛"] = {
-            en = "spider_spitter",
+            key = "spider_spitter",
             value = "default",
             type = "options5"
         },
         ["洞穴蜘蛛"] = {
-            en = "spider_hider",
+            key = "spider_hider",
             value = "default",
             type = "options5"
         },
         ["穴居悬蛛"] = {
-            en = "spider_dropper",
+            key = "spider_dropper",
             value = "default",
             type = "options5"
         },
         ["蜘蛛战士"] = {
-            en = "spider_warriors",
+            key = "spider_warriors",
             value = "default",
             type = "defaultnever"
         },
         ["遗迹梦魇"] = {
-            en = "nightmarecreatures",
+            key = "nightmarecreatures",
             value = "default",
             type = "options5"
         },
         ["裸鼹鼠蝙蝠"] = {
-            en = "molebats",
+            key = "molebats",
             value = "default",
             type = "options5"
         }
@@ -366,22 +366,22 @@ cave_settings_table = {
     ["巨兽"] = {
         array = {"果蝇王", "树精守卫", "毒菌蟾蜍", "蜘蛛女王"},
         ["果蝇王"] = {
-            en = "fruitfly",
+            key = "fruitfly",
             value = "default",
             type = "options5"
         },
         ["树精守卫"] = {
-            en = "liefs",
+            key = "liefs",
             value = "default",
             type = "options5"
         },
         ["毒菌蟾蜍"] = {
-            en = "toadstool",
+            key = "toadstool",
             value = "default",
             type = "options5"
         },
         ["蜘蛛女王"] = {
-            en = "spiderqueen",
+            key = "spiderqueen",
             value = "default",
             type = "options5"
         }
