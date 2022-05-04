@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
-export PATH="$BIN_DIR/output:$PATH"
-
 # https://developer.valvesoftware.com/wiki/SteamCMD#Linux
 if [[ ! -e ~/Steam ]]; then mkdir ~/Steam; fi
 if [[ -e ~/Steam/steamcmd.sh ]]; then

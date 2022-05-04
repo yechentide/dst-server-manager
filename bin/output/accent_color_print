@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
-export PATH="$BIN_DIR/output:$PATH"
-
 #######################################
 
 declare accent_pattern=1
