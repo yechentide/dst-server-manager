@@ -2,7 +2,15 @@
 set -eu
 
 echo ''
-color_print info '关于本脚本...'
+color_print -p info '====== 关于本脚本 ======'
+echo '作者: yechentide'
+echo '贴吧@夜尘tide'
+echo ''
+echo '主要使用Github保存代码, 上传Gitee只是单纯为了方便国内VPS下载...'
+echo 'Github地址: https://github.com/yechentide/DSTServerManager'
+echo 'Gitee 地址: https://gitee.com/yechentide/DSTServerManager'
+color_print -p error '欢迎会 shellscript / lua 的伙伴来一起写开服脚本！'
 echo ''
 
-count_down 3
+declare tmp
+read -p '输入回车继续...' tmp
