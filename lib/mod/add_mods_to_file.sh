@@ -1,10 +1,10 @@
 #######################################
 # 作用: 让用户输入要下载的模组ID
 # 返回:
-#   ID的数组   储存在全局变量array
+#   ID的数组   储存在answer文件里
 #######################################
 function get_mods_id_from_input() {
-    declare -a result=()
+    if [[ -e $ANSWER_PATH ]]; then rm $ANSWER_PATH; fi
     color_print info '请输入想要下载的模组ID, 多个ID请用空格隔开'
     while true; do
         read -p '> ' answer
@@ -14,26 +14,24 @@ function get_mods_id_from_input() {
                 color_print warn "请输入正确数字。错误输入将被无视: $item"
                 continue
             fi
-            result+=($item)
+            echo $item >> $ANSWER_PATH
         done
-        if [[ ${#result[@]} -gt 0 ]]; then break; fi
+        if [[ -e $ANSWER_PATH ]]; then
+            sed -i -e '/^$/d' $ANSWER_PATH
+            if [[ -s $ANSWER_PATH ]]; then break; fi
+        fi
     done
-    array=(${result[@]})
-    #color_print info "输入的ID: ${result[*]}"
 }
 
-function add_mods_to_setting_file() {
+function add_mods_to_file() {
     declare flag=1
-    declare -a list=$(generate_mod_id_list_from_setting_file)
     declare id=''
-    # show installed mods' name
-    color_print info '以下是已经下载的模组:'
-    for id in ${list[@]}; do
-        echo -n "ID: $id      "
-        get_mod_name_from_modinfo "$REPO_ROOT_DIR/.cache/modinfo/$id.lua"
-    done
+    declare -a list=$(generate_installed_mod_list $V1_MOD_DIR)
+
+    show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
 
     get_mods_id_from_input
+    declare -a array=$(cat $ANSWER_PATH)
     for id in ${array[@]}; do
         if echo "${list[@]}" | grep -sq $id; then
             color_print warn "ID $id 已存在!"

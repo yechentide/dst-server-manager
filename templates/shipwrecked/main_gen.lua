@@ -92,13 +92,13 @@ return {
         ---------- ----------    海难    ---------- ----------
         ---------- ---------- ---------- ---------- ----------
         -- generations - Island世界 9
-        primaryworldtype="islandsonly",     -- default, merged, islandsonly
+        primaryworldtype="islandsonly",     -- (shipwreckedworldtype)
         islandquantity="small",             -- (worldsize)
         volcano="default",                  -- (defaultnever)
         dragoonegg="default",               -- (options5)
         tides="default",                    -- (defaultnever)
         floods="default",                   -- (options5)
-        oceanwaves="default",               -- never, rare, veryrare, default, often, always
+        oceanwaves="default",               -- (oceanwaves)
         poison="default",                   -- (defaultnever)
         bermudatriangle="default",          -- (options5)
         -- generations - Island食物 3

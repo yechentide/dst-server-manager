@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+# 作用: 从modinfo.lua文件里面提取模组名字
+# 参数:
+#   $1: modinfo.lua文件的绝对路径
+# 输出:
+#   mod名字
+#######################################
+# echo "$(cat $1 | grep ^name | awk -F= '{print $2}' | awk -F\" '{print $2}')"
+declare -r name=$(lua -e "locale = \"zh\"; folder_name = \"\"; dofile(\"$1\") print(name)")
+echo $name     # 通过echo来去除头尾的空白

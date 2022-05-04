@@ -303,3 +303,80 @@ function translate_2key(value_types, target_type, value_zh)
     local index = indexof(value_types[target_type]["zh"], value_zh)
     return value_types[target_type]["key"][index]
 end
+
+function get_all_installed_modinfo_path(repo_root, v1dir, v2dir)
+    local result = exec_linux_command_get_output(repo_root.."/bin/utils/get_all_modinfo_path "..v1dir.." "..v2dir)
+    local array = split(result, "\n")
+    return array
+end
+
+function get_modinfo_path(repo_root, v1dir, v2dir, id)
+    local result = exec_linux_command_get_output(repo_root.."/bin/utils/get_all_modinfo_path "..v1dir.." "..v2dir.." | grep -s "..id)
+    return result
+end
+
+---------------------------------------
+-- 作用: 清除读取modinfo.lua文件后残留的变量
+---------------------------------------
+function reset_dofile_modinfo()
+    if name ~= nil then name = nil end
+    if description ~= nil then description = nil end
+    if author ~= nil then author = nil end
+    if version ~= nil then version = nil end
+    if forumthread ~= nil then forumthread = nil end
+    if api_version ~= nil then api_version = nil end
+
+    if client_only_mod ~= nil then client_only_mod = nil end
+    if all_clients_require_mod ~= nil then all_clients_require_mod = nil end
+    if configuration_options ~= nil then configuration_options = nil end
+    if server_filter_tags ~= nil then server_filter_tags = nil end
+
+    if dst_compatible ~= nil then dst_compatible = nil end
+    if dont_starve_compatible ~= nil then dont_starve_compatible = nil end
+    if reign_of_giants_compatible ~= nil then reign_of_giants_compatible = nil end
+    if shipwrecked_compatible ~= nil then shipwrecked_compatible = nil end
+    if hamlet_compatible ~= nil then hamlet_compatible = nil end
+    if porkland_compatible ~= nil then porkland_compatible = nil end
+end
+
+function get_info_from_modinfo(modinfo_path, property)
+    local command = property.."=$(lua -e \"locale = \\\"zh\\\"; folder_name = \\\"\\\"; dofile(\\\""..modinfo_path.."\\\"); print("..property..")\"); echo $"..property
+    return exec_linux_command_get_output(command)
+end
+
+function generate_installed_mods_table(repo_root, v1dir, v2dir)
+    reset_dofile_modinfo()
+    local result = exec_linux_command_get_output(repo_root.."/bin/utils/get_all_modinfo_path "..v1dir.." "..v2dir)
+    local all_modinfo = split(result, "\n")
+
+    local dic = {}
+    dic["id_array"] = {}
+    dic["name_array"] = {}
+    dic["path_array"] = {}
+    -- mods_dic = {
+    --     ["id_array"] = {},
+    --     ["name_array"] = {},
+    --     ["path_array"] = {
+    --         ["111"] = "/.../.../.../modinfo.lua"
+    --     },
+    --     ["1111"] = "名前1",
+    --     ["2222"] = "名前2",
+    --     ["3333"] = "名前3",
+    --     ...
+    -- }
+    
+    for index, path in ipairs(all_modinfo) do
+        local name = get_info_from_modinfo(path, "name")
+        local id = exec_linux_command_get_output("echo "..path.." | awk -F/ '{print $(NF-1)}'")
+        if string.find(id, "workshop") then
+            id = string.sub(id, 9)
+        end
+        table.insert(dic["id_array"], id)
+        table.insert(dic["name_array"], name)
+        dic["path_array"][id] = path
+        dic[id] = name
+        dic[name] = id
+    end
+    
+    return dic
+end

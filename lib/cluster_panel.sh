@@ -20,10 +20,6 @@ function cluster_panel() {
         '新建存档')
             create_cluster
             ;;
-        #'导入本地存档')
-        #    exit 1
-        #    import_local_save_data
-        #    ;;
         '修改存档配置')
             update_ini_setting
             ;;
@@ -44,7 +40,7 @@ function cluster_panel() {
             ;;
         '删除存档')
             declare -a array=$(generate_cluster_list -c $KLEI_ROOT_DIR $WORLDS_DIR_NAME)
-            if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; continue; fi
+            if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
 
             declare item=''
             rm $ARRAY_PATH

@@ -11,7 +11,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v2.0.0'
+declare -r SCRIPT_VERSION='v1.5.0'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -133,12 +133,12 @@ function check_environment() {
     make_directories
 
     if [[ ! -e $CACHE_DIR/.skip_requirements_check ]]; then
-        #confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
-        #if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
-        #    color_print -n info '即将进入脚本迁移面板'
-        #    count_down -n 3
-        #    transfer_panel
-        #fi
+        confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
+        if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+            color_print -n info '即将进入脚本迁移面板'
+            count_down -n 3
+            transfer_panel
+        fi
         add_alias
         install_dependencies $OS
         color_print -n info '输入source ~/.bashrc 或者重新登录后, 即可使用dst来执行脚本～'
@@ -152,7 +152,7 @@ function check_environment() {
     update_dst $DST_ROOT_DIR
 
     declare file=''
-    source $REPO_ROOT_DIR/lib/transfer_panel.sh
+    for file in $(ls $REPO_ROOT_DIR/lib/*.sh); do source $file; done
     for file in $(ls $REPO_ROOT_DIR/lib/server/*.sh); do source $file; done
     for file in $(ls $REPO_ROOT_DIR/lib/cluster/*.sh); do source $file; done
     for file in $(ls $REPO_ROOT_DIR/lib/mod/*.sh); do source $file; done
@@ -236,14 +236,14 @@ function main_panel() {
             cluster_panel
             ;;
         'Mod管理')
-            echo mod_panel
+            mod_panel
             ;;
         '更新脚本')
             update_repo
             ;;
-        '其他功能')
-            echo 'other'
-            ;;
+        #'其他功能')
+        #    echo 'other'
+        #    ;;
         '脚本简介')
             script_info
             ;;

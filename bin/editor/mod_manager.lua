@@ -1,14 +1,18 @@
 #!/usr/bin/env lua
 -- arg[1]: $repo_root_dir       --> ~/DSTServerManager
 -- arg[2]: action               --> add / update / delete
+-- arg[3]: V1_MOD_DIR
+-- arg[4]: V2_MOD_DIR
 
-package.path = package.path..';'..arg[1]..'/scripts/?.lua;'
+package.path = package.path..';'..arg[1]..'/lib/?.lua;'
 require("utils")
 
 -- 使用lua配置前, 先通过shellscript来把modoverride.lua文件复制到 $repo_root_dir/.cache
 -- 配置完毕以后, 同步到存档里的各个世界
-MODINFO_CACHE_DIR = arg[1].."/.cache/modinfo"
 TARGET_FILE_PATH = arg[1].."/.cache/modoverrides.lua"
+if arg[2] ~= 'delete' then
+    installed_mods = generate_installed_mods_table(arg[1], arg[3], arg[4])
+end
 locale = "zh"
 folder_name = ""
 
@@ -16,80 +20,19 @@ folder_name = ""
 ----------------------------------------------------------------------------------------------
 
 ---------------------------------------
--- 作用: 清除读取modinfo.lua文件后残留的变量
----------------------------------------
-function reset_dofile_modinfo()
-    if name ~= nil then name = nil end
-    if description ~= nil then description = nil end
-    if author ~= nil then author = nil end
-    if version ~= nil then version = nil end
-    if forumthread ~= nil then forumthread = nil end
-    if api_version ~= nil then api_version = nil end
-
-    if client_only_mod ~= nil then client_only_mod = nil end
-    if all_clients_require_mod ~= nil then all_clients_require_mod = nil end
-    if configuration_options ~= nil then configuration_options = nil end
-    if server_filter_tags ~= nil then server_filter_tags = nil end
-
-    if dst_compatible ~= nil then dst_compatible = nil end
-    if dont_starve_compatible ~= nil then dont_starve_compatible = nil end
-    if reign_of_giants_compatible ~= nil then reign_of_giants_compatible = nil end
-    if shipwrecked_compatible ~= nil then shipwrecked_compatible = nil end
-    if hamlet_compatible ~= nil then hamlet_compatible = nil end
-    if porkland_compatible ~= nil then porkland_compatible = nil end
-end
-
----------------------------------------
--- 作用: 从.cache/modinfo文件夹里, 获得已下载ID列表
--- 参数:
---   .cache/modinfo文件夹的绝对路径
--- 返回:
---   模组ID的数组
----------------------------------------
-function get_installed_mods_id(cache_dir)
-    local id_list_string = exec_linux_command_get_output("ls "..cache_dir.." | awk -F. '{print $1}'")
-    if #id_list_string == 0 then return {} end
-    return split(id_list_string, "\n")
-end
-
----------------------------------------
 -- 作用: 从modoverrides.lua文件里, 获取ID列表
 -- 参数:
---   modoverrides.lua文件的绝对路径
---   已下载模组的中文名<-->ID对照表(由generate_installed_mods_table函数生成)
+--   modoverrides里的配置
 -- 返回:
 --   模组ID的数组
 ---------------------------------------
-function get_added_mods_id(configuration, installed_mods)
+function get_added_mods_id(configuration)
     local added_mods = {}
     for key, _ in pairs(configuration) do
         local id = split(key, "-")[2]
         added_mods[#added_mods+1] = installed_mods[id]
     end
     return added_mods
-end
-
----------------------------------------
--- 作用: 从.cache/modinfo文件夹里, 创建已下载模组的中文名<-->ID对照表
--- 参数:
---   .cache/modinfo文件夹的绝对路径
--- 返回:
---   已下载模组的中文名<-->ID对照表 (table)
----------------------------------------
-function generate_installed_mods_table(cache_dir)
-    reset_dofile_modinfo()
-    local table = {}
-    local id_list = get_installed_mods_id(cache_dir)
-    table["id_array"] = id_list
-    table["name_array"] = {}
-
-    for index, id in ipairs(id_list) do
-        dofile(MODINFO_CACHE_DIR.."/"..id..".lua")
-        table["name_array"][index] = name
-        table[id] = name
-        table[name] = id
-    end
-    return table
 end
 
 ---------------------------------------
@@ -101,7 +44,7 @@ end
 ---------------------------------------
 function is_mod_configurable(mod_id)
     reset_dofile_modinfo()
-    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
+    dofile(installed_mods["path_array"][mod_id])
     if configuration_options ~= nil then
         return true
     end
@@ -132,7 +75,7 @@ end
 
 function show_settings(mod_id, current_mod_settings, show_description)
     reset_dofile_modinfo()
-    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
+    dofile(installed_mods["path_array"][mod_id])
     print("是否启用 = "..tostring(current_mod_settings["enabled"]))
     if show_description then
         color_print(242, "    调成false的话就可以禁用该mod", true)
@@ -154,7 +97,7 @@ end
 
 function get_mod_setting_options(mod_id)
     reset_dofile_modinfo()
-    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
+    dofile(installed_mods["path_array"][mod_id])
     local options_array = {"是否启用"}
     for _, option in ipairs(configuration_options) do
         if option["label"] ~= nil then
@@ -179,7 +122,7 @@ function get_new_setting(mod_id, option, option_index, show_description)
         new_value = select_one({false, true}, "info", "请选择一个值")
     else
         reset_dofile_modinfo()
-        dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
+        dofile(installed_mods["path_array"][mod_id])
         --local option_name = configuration_options[option_index]["name"]
         local options = configuration_options[option_index]["options"]
         local values_list = {}
@@ -201,7 +144,7 @@ end
 
 function get_option_name_from_label(mod_id, label)
     reset_dofile_modinfo()
-    dofile(MODINFO_CACHE_DIR.."/"..mod_id..".lua")
+    dofile(installed_mods["path_array"][mod_id])
     for _, option in ipairs(configuration_options) do
         if option["label"] ~= nil and option["label"] == label then
             return option["name"]
@@ -213,7 +156,7 @@ function get_option_name_from_label(mod_id, label)
 end
 
 function configure_mod(mod_id, mod_name, configuration)
-    local show_description = yes_or_no("info", "是否显示各个设置的说明？")
+    local show_description = confirm("info", "是否显示各个设置的说明？")
     while true do
         clear()
         print_divider("-", 36)
@@ -224,7 +167,7 @@ function configure_mod(mod_id, mod_name, configuration)
         local current_mod_settings = configuration["workshop-"..mod_id]
         show_settings(mod_id, current_mod_settings, show_description)
 
-        local answer = yes_or_no("info", "是否有需要修改的？")
+        local answer = confirm("info", "是否有需要修改的？")
         if answer == false then break end
 
         local options_array = get_mod_setting_options(mod_id)
@@ -244,9 +187,6 @@ end
 ----------------------------------------------------------------------------------------------
 
 function add_new_mods(target_file)
-    -- 从 .cache/modinfo 获得列表（ID + Name）
-    local installed_mods = generate_installed_mods_table(MODINFO_CACHE_DIR)
-
     -- 用户选择mod
     local selected_mods = multi_select(installed_mods["name_array"], "info", "(多选用空格隔开)请选择要添加的Mod")
 
@@ -260,7 +200,7 @@ function add_new_mods(target_file)
         else
             color_print("success", "添加模组 "..name, true)
             reset_dofile_modinfo()
-            dofile(MODINFO_CACHE_DIR.."/"..id..".lua")
+            dofile(installed_mods["path_array"][id])
             -- 添加mod设置到model
             configuration["workshop-"..id] = {}
             configuration["workshop-"..id]["enabled"] = true
@@ -280,8 +220,7 @@ end
 
 function configure_modoverride(target_file)
     local configuration = dofile(target_file)
-    local installed_mods = generate_installed_mods_table(MODINFO_CACHE_DIR)
-    local added_mods = get_added_mods_id(configuration, installed_mods)
+    local added_mods = get_added_mods_id(configuration)
 
     while true do
         clear()
@@ -299,7 +238,7 @@ function configure_modoverride(target_file)
             color_print("warn", "模组 "..mod_name.." 没有可设置的选项!", true)
         end
 
-        local answer = yes_or_no("info", "是否继续修改其他Mod？")
+        local answer = confirm("info", "是否继续修改其他Mod？")
         if answer == false then break end
     end
     save_configuration_to_file(configuration, target_file)

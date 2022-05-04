@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+# 作用: 从dedicated_server_mods_setup.lua提取mod id列表
+# 参数:
+#   $1: V1_MOD_DIR
+# 输出:
+#   123456 123456 123456
+#######################################
+declare -r file_path="$1/dedicated_server_mods_setup.lua"
+cat $file_path | grep '^ServerModSetup' | awk -F\" '{print $2}'
