@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+# 参数:
+#   $1: REPO_ROOT_DIR
+#######################################
+
+clear
+echo ''
+
+cat $1/docs/结构.md | head -n 66 | tail -n 61 > /tmp/struct.txt
+
+while read line; do
+  echo "$line"
+  sleep 0.1   
+done < /tmp/struct.txt
+
+echo ''
+
+declare tmp
+read -p '输入回车继续...' tmp

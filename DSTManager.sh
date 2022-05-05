@@ -163,22 +163,6 @@ function check_environment() {
     sleep 1
 }
 
-function update_repo() {
-    color_print info '开始更新脚本仓库...'
-    if [[ -e $CACHE_DIR/.need_update ]]; then
-        rm $CACHE_DIR/.need_update
-    fi
-    git -C $REPO_ROOT_DIR checkout .
-    git -C $REPO_ROOT_DIR pull
-    if [[ $? == 1 ]]; then
-        color_print error '脚本仓库更新失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
-        color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
-        return 0
-    fi
-    color_print success '脚本仓库更新完毕!请重新执行脚本~'
-    exit 0
-}
-
 ##############################################################################################
 
 function check_script_update() {
@@ -195,8 +179,8 @@ function main_panel_header() {
     git -C $REPO_ROOT_DIR log --oneline | head -n 3 | sed -e 's/^[0-9a-z]* //g' | sed -z -e 's/\n/;    /g'
     echo ''
 
-    color_print tip '如果服务器列表里不显示服务器, 请检查端口和防火墙&云服的安全组设置!'
-    color_print tip '如果你启动游戏时看到有更新的话, 服务端这边也需要更新! 服务端管理界面可以更新服务端。'
+    color_print tip '服务器列表里搜索不到?   -->   检查端口和防火墙&云服的安全组设置!'
+    color_print tip '启动游戏时看到有更新?   -->   在脚本的 "服务端管理界面" 更新服务端!'
 
     if [[ -e $CACHE_DIR/.need_update ]]; then
         print_divider '-' | color_print 208
@@ -214,7 +198,7 @@ function display_running_clusters() {
 
 function main_panel() {
     check_script_update
-    declare -r -a action_list=('服务端管理' '存档管理' 'Mod管理' '更新脚本' '脚本简介' '退出')
+    declare -r -a action_list=('启动' '控制台' '关闭' '服务端管理' '存档管理' 'Mod管理' '其他功能' '退出')
 
     while true; do
         clear
@@ -231,6 +215,15 @@ function main_panel() {
         action=$(cat $ANSWER_PATH)
 
         case $action in
+        '启动')
+            start_server
+            ;;
+        '控制台')
+            enter_console
+            ;;
+        '关闭')
+            stop_server
+            ;;
         '服务端管理')
             server_panel
             ;;
@@ -240,14 +233,8 @@ function main_panel() {
         'Mod管理')
             mod_panel
             ;;
-        '更新脚本')
-            update_repo
-            ;;
-        #'其他功能')
-        #    echo 'other'
-        #    ;;
-        '脚本简介')
-            script_info
+        '其他功能')
+            other_panel
             ;;
         '退出')
             color_print info '感谢你的使用 ✧٩(ˊωˋ*)و✧'

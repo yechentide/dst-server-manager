@@ -1,3 +1,71 @@
+function start_server() {
+    declare -a array=$(generate_cluster_list -cs $KLEI_ROOT_DIR $WORLDS_DIR_NAME)
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; sleep 1; return 0; fi
+
+    color_print tip '请确保先启动主世界'
+    declare answer=''
+    rm $ARRAY_PATH
+    for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
+    selector -cq tip '选择存档名则会启动该存档下的所有世界, 选择世界名则只会启动这个世界'
+    answer=$(cat $ANSWER_PATH)
+    if [[ $answer == '返回' ]]; then return 0; fi
+
+    # 选择了shard
+    if echo $answer | grep -sq -; then
+        declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$(echo $answer | sed -e "s#-#/#g")"
+        if check_shard $shard_path; then
+            start_shard $answer
+        fi
+        return 0
+    fi
+    # 选择了cluster
+    color_print info "将启动存档 $answer 里所有的世界!"
+    if ! check_cluster "$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$answer"; then return 0; fi
+    declare shard=''
+    for shard in $(generate_list_from_cluster $KLEI_ROOT_DIR $WORLDS_DIR_NAME $answer); do
+        declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$answer/$shard"
+        if check_shard $shard_path; then
+            start_shard "$answer-$shard"
+        fi
+    done
+}
+
+function enter_console() {
+    declare -a array=$(generate_server_list -s)
+    if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; sleep 1; return 0; fi
+
+    declare answer=''
+    rm $ARRAY_PATH
+    for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
+    selector -q tip '请选择要操作哪个世界的控制台'
+    answer=$(cat $ANSWER_PATH)
+
+    console_manager $answer
+}
+
+function stop_server() {
+    declare -a array=$(generate_server_list -cs)
+    if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; sleep 1; return 0; fi
+
+    declare answer=''
+    rm $ARRAY_PATH
+    for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
+    selector -cq tip '选择存档名则会关闭该存档下的所有世界, 选择世界名则只会关闭这个世界'
+    answer=$(cat $ANSWER_PATH)
+    if [[ $answer == '返回' ]]; then return 0; fi
+
+    # 选择了shard
+    if echo $answer | grep -sq -; then
+        stop_shard $answer
+        return 0
+    fi
+    # 选择了cluster
+    declare shard=''
+    for shard in $(generate_list_from_cluster $KLEI_ROOT_DIR $WORLDS_DIR_NAME $answer); do
+        stop_shard "$answer-$shard"
+    done
+}
+
 function server_panel() {
     declare -r -a action_list=('启动服务端' '操作控制台' '关闭服务端' '重启服务端' '更新服务端')
 
@@ -15,69 +83,13 @@ function server_panel() {
 
         case $action in
         '启动服务端')
-            declare -a array=$(generate_cluster_list -cs $KLEI_ROOT_DIR $WORLDS_DIR_NAME)
-            if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; continue; fi
-
-            color_print tip '请确保先启动主世界'
-            declare answer=''
-            rm $ARRAY_PATH
-            for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
-            selector -cq tip '选择存档名则会启动该存档下的所有世界, 选择世界名则只会启动这个世界'
-            answer=$(cat $ANSWER_PATH)
-            if [[ $answer == '返回' ]]; then continue; fi
-
-            # 选择了shard
-            if echo $answer | grep -sq -; then
-                declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$(echo $answer | sed -e "s#-#/#g")"
-                if check_shard $shard_path; then
-                    start_shard $answer
-                fi
-                continue
-            fi
-            # 选择了cluster
-            color_print info "将启动存档 $answer 里所有的世界!"
-            if ! check_cluster "$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$answer"; then continue; fi
-            declare shard=''
-            for shard in $(generate_list_from_cluster $KLEI_ROOT_DIR $WORLDS_DIR_NAME $answer); do
-                declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$answer/$shard"
-                if check_shard $shard_path; then
-                    start_shard "$answer-$shard"
-                fi
-            done
+            start_server
             ;;
         '操作控制台')
-            declare -a array=$(generate_server_list -s)
-            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
-
-            declare answer=''
-            rm $ARRAY_PATH
-            for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
-            selector -q tip '请选择要操作哪个世界的控制台'
-            answer=$(cat $ANSWER_PATH)
-
-            console_manager $answer
+            enter_console
             ;;
         '关闭服务端')
-            declare -a array=$(generate_server_list -cs)
-            if [[ ${#array} == 0 ]]; then color_print error '没有运行中的世界!'; continue; fi
-
-            declare answer=''
-            rm $ARRAY_PATH
-            for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
-            selector -cq tip '选择存档名则会关闭该存档下的所有世界, 选择世界名则只会关闭这个世界'
-            answer=$(cat $ANSWER_PATH)
-            if [[ $answer == '返回' ]]; then continue; fi
-
-            # 选择了shard
-            if echo $answer | grep -sq -; then
-                stop_shard $answer
-                continue
-            fi
-            # 选择了cluster
-            declare shard=''
-            for shard in $(generate_list_from_cluster $KLEI_ROOT_DIR $WORLDS_DIR_NAME $answer); do
-                stop_shard "$answer-$shard"
-            done
+            stop_server
             ;;
         '重启服务端')
             declare -a array=$(generate_server_list -cs)
