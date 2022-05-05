@@ -1,8 +1,8 @@
 function update_world_setting() {
     color_print info '修改世界的配置选项...'
 
-    array=($(generate_cluster_list -s $KLEI_ROOT_DIR $WORLDS_DIR_NAME))
-    if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
+    declare -a array=($(generate_cluster_list -s $KLEI_ROOT_DIR $WORLDS_DIR_NAME))
+    if [[ ${#array} == 0 ]]; then color_print error '未找到存档!'; return; fi
 
     declare shard=''
     rm $ARRAY_PATH

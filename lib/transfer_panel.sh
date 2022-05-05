@@ -110,8 +110,8 @@ function transfer_panel() {
     color_print info '在这里本脚本会移动旧脚本管理的文件夹, 以使文件夹位置符合本脚本设置'
     color_print -n info '如果你没在列表里看到自己用过的脚本名字, 请选择 "返回"'; count_down 3
 
-    yes_or_no info '请问你是以root用户执行之前的脚本的吗?'
-    if [[ $answer == 'yes' ]]; then
+    confirm info '请问你是以root用户执行之前的脚本的吗?'
+    if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
         if [[ $has_sudo_perm == 'no' ]]; then
             color_print warn "当前用户$(whoami)没有sudo权限, 无法从/root文件夹里面转移文件, ${error_exit_msg}"
             color_print info '即将返回主面板'
@@ -121,17 +121,19 @@ function transfer_panel() {
         will_need_sudo='yes'
     fi
     
-    declare -r -a script_list=('欲醉无由写的go.sh' 'Ariwori写的dstserver.sh' '返回')
+    declare -a array=()
+    declare -r -a script_list=('欲醉无由写的go.sh' 'Ariwori写的dstserver.sh')
     while true; do
         echo ''
         color_print 70 '>>>>>> 脚本迁移 <<<<<<'
         display_running_clusters
-        array=()
-        answer=''
-
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
-        array=${script_list[@]}; select_one info '请选择你之前使用的脚本'
-        declare script=$answer
+
+        declare script=''
+        if [[ -e $ARRAY_PATH ]]; then rm $ARRAY_PATH; fi
+        for script in ${script_list[@]}; do echo $script >> $ARRAY_PATH; done
+        selector -cq info '请选择你之前使用的脚本'
+        script=$(cat $ANSWER_PATH)
 
         case $script in
         '欲醉无由写的go.sh')

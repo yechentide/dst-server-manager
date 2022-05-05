@@ -114,7 +114,7 @@ function clone_repo() {
     exit 0
 }
 
-function make_directories() {
+function manage_directories() {
     mkdir -p $KLEI_ROOT_DIR/$WORLDS_DIR_NAME
     mkdir -p $BACKUP_DIR
     mkdir -p $IMPORT_DIR
@@ -123,6 +123,8 @@ function make_directories() {
     mkdir -p $CACHE_DIR
     touch $ARRAY_PATH
     touch $ANSWER_PATH
+    
+    if [[ -e $REPO_ROOT_DIR/.cache/modinfo ]]; then rm -rf $REPO_ROOT_DIR/.cache/modinfo; fi
 }
 
 function check_environment() {
@@ -130,7 +132,7 @@ function check_environment() {
     if [[ $ARCHITECTURE == 32 ]]; then color_print error '本脚本不支持32位系统'; exit 1; fi
     check_user_is_root
     clone_repo
-    make_directories
+    manage_directories
 
     if [[ ! -e $CACHE_DIR/.skip_requirements_check ]]; then
         confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
