@@ -29,8 +29,13 @@ fi
 #   $3: UGC_DIR
 #######################################
 
-if [[ ! $only_added == 'true' ]]; then
+if [[ $only_added == 'false' ]]; then
     declare -r file="$3/appworkshop_322330.acf"
+    if [[ ! -e $file ]]; then
+        color_print warn '没有任何模组...'
+        color_print tip '如果你是手动上传的模组, 请使用脚本添加ID, 并使用脚本更新一下模组'
+        exit 0
+    fi
     declare -r start=$(cat $file | grep -n 'WorkshopItemsInstalled' | awk -F: '{print $1}')
     declare -r end=$(cat $file | grep -n 'WorkshopItemDetails' | awk -F: '{print $1}')
 
