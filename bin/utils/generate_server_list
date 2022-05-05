@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
+declare -r ARRAY_PATH="$BIN_DIR/../.cache/array"
+
+#######################################
+
+declare add_cluster='false'
+declare add_shard='false'
+
+declare option
+while getopts :cs option; do
+    case $option in
+        c)  add_cluster='true'; ;;
+        s)  add_shard='true'; ;;
+        *)  echo 'error in function generate_list_from_tmux'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+#######################################
+# 作用: 查找tmux的session列表, 输出存档/世界名字
+# 参数:
+#   注意: 下面必须至少用一个
+#   -c: cluster加进list
+#   -s: shard加进list
+# 输出:
+#   存档1 存档2 存档2-Main 存档2-Cave
+#######################################
+
+if [[ $add_cluster == 'false' && $add_shard == 'false' ]]; then
+    color_print error 'generate_server_list.sh: 参数错误'
+    exit 1
+fi
+
+if [[ $add_cluster == 'true' ]]; then
+    tmux ls 2>&1 | grep -s : | awk '{print $1}' | sed -e "s/://g" | grep - | awk -F- '{print $1}' | uniq
+fi
+if [[ $add_shard == 'true' ]]; then
+    tmux ls 2>&1 | grep -s : | awk '{print $1}' | sed -e "s/://g" | grep - | sort -r
+fi

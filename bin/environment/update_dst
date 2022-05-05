@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
+
+#######################################
+
+declare is_update='false'
+declare clean_install='false'
+declare beta=''
+declare option
+while getopts :bcu option; do
+    case $option in
+        b) beta=$OPTARG ;;
+        c) clean_install='true' ;;
+        u) is_update='true' ;;
+        *) echo 'error in function color_print'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+#######################################
+# 参数:
+#   -b: 测试版的字符串
+#   $1: DST服务端下载位置
+#   ¥2: V1_MOD_DIR
+#######################################
+
+if [[ $clean_install == 'true' ]]; then
+    if [[ -e $1/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
+        color_print warn '删除旧的DST服务端...'
+        rm -rf $1 > /dev/null 2>&1
+    fi
+fi
+
+if [[ $is_update == 'false' ]]; then
+    if [[ -e $1/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
+        color_print success '饥荒服务端已经下载好啦～'
+        exit 0
+    fi
+    echo ''
+    color_print warn "路径$1 未找到饥荒服务端，即将开始下载..."
+else
+    color_print warn '升级服务端之前，将会关闭所有运行中的世界！'
+    confirm warn '是否关闭所有运行中的世界, 并更新服务端？'
+    if [[ $(cat $ANSWER_PATH) == 'no' ]]; then
+        color_print -n info '取消升级 '; count_down 3
+        exit 0
+    fi
+
+    # To Fix: 升级服务端会导致dedicated_server_mods_setup.lua被清空, 然后Mod会无效
+    cp $2/dedicated_server_mods_setup.lua $2/dedicated_server_mods_setup.lua.bak
+    #stop_all_shard
+    color_print info "开始升级服务端..."
+fi
+
+color_print -n info '根据网络状况，可能会很耗时间，更新完成为止请勿息屏 '
+count_down 3
+
+function install_dst() {
+    if [[ ${#beta} == 0 ]]; then
+        # 正式版
+        ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 validate +quit
+    else
+        # 测试版
+        exit 1
+        ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
+        ~/Steam/steamcmd.sh +force_install_dir /home/ubuntu/Server +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
+    fi
+}
+
+install_dst $1
+
+if [[ $? ]]; then
+    color_print success '饥荒服务端下载更新完成!'
+    if [[ $is_update == 'true' ]]; then
+        cp $2/dedicated_server_mods_setup.lua.bak $2/dedicated_server_mods_setup.lua
+    fi
+    color_print info '途中可能会出现Failed to init SDL priority manager: SDL not found警告'
+    color_print info '不用担心, 这个不影响下载/更新DST'
+    color_print -n info '虽然可以解决, 但这需要下载一堆依赖包, 有可能会对其他运行中的服务造成影响, 所以无视它吧～ '
+    count_down -n 6
+else
+    color_print error '似乎出现了什么错误(国内主机的话, 一般是网络问题)...'
+    exit 1
+fi

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -eu
+exit 1
+
+#######################################
+# 作用: 确认是不是DST的模组。国内会被墙导致卡住
+# 参数:
+#   $1: mod id
+# 输出:
+#   'yes' / 'no'
+#######################################
+if wget -O - "https://steamcommunity.com/sharedfiles/filedetails/?id=$1" 2>&1 | grep -sq "Don't Starve Together"; then
+    echo 'yes'
+else
+    echo 'no'
+fi

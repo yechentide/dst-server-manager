@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
+
+#######################################
+# 作用: 包装read命令, 用color_print()添加引导
+# 参数:
+#   $1: 颜色代码(0~255) or 特定的字符串
+#   $2: 提示用户的信息
+#   $3: (可省略)颜色代码(0~255) or 特定的字符串
+#   $4: (可省略)追加的提示
+# 返回:
+#   用户的输入   储存在全局变量answer
+#######################################
+
+answer=''
+color_print $1 "$2"
+if [[ $# == 4 ]]; then
+    color_print $3 "$4"
+fi
+while true; do
+    read -p '> ' answer
+    if [[ ${#answer} == 0 ]]; then
+        color_print error '输入不能为空!'
+        continue
+    fi
+    echo $answer > $ANSWER_PATH
+    exit 0
+done

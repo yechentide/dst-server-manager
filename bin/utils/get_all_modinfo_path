@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+# 作用: 获取所有已经下载的modinfo的路径
+# 参数:
+#   $1: V1_MOD_DIR
+#   $2: V2_MOD_DIR
+# 输出:
+#   所有已经下载的modinfo的路径
+#######################################
+find $1 -mindepth 2 -maxdepth 2 -type f -name modinfo.lua
+find $2 -mindepth 3 -maxdepth 3 -type f -name modinfo.lua

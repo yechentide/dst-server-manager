@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+# 作用: 去除worldgenoverride.lua文件里的'KLEI     1'
+# 参数:
+#   $1: 世界文件夹的绝对路径
+#######################################
+
+if [[ -e $1/worldgenoverride.lua ]]; then
+    if head -n 1 $1/worldgenoverride.lua | grep -sq 'KLEI'; then
+        sed -i -e 's/^KLEI     1 //g' $1/worldgenoverride.lua
+    fi
+fi
+if [[ -e $1/leveldataoverride.lua ]]; then
+    if head -n 1 $1/leveldataoverride.lua | grep -sq 'KLEI'; then
+        sed -i -e 's/^KLEI     1 //g' $1/leveldataoverride.lua
+    fi
+fi

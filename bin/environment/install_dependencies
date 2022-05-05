@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+set -eu
+
+declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
+declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
+
+#######################################
+# 参数:
+#   $1: OS
+#######################################
+
+function check_user_is_sudoer() {
+    declare sudoer_group=''
+    if [[ $1 == 'Ubuntu' ]]; then sudoer_group='sudo'; fi
+    if [[ $1 == 'CentOS' ]]; then sudoer_group='wheel'; fi
+    if groups | grep -sqv $sudoer_group; then
+        color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
+        color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
+        color_print -n warn "有需要的话请联系管理员获取sudo权限, 或者帮忙下载依赖！ "
+        count_down -n 3
+        return 1
+    else
+        return 0
+    fi
+}
+
+function is_package_installed() {
+    if [[ $1 == 'Ubuntu' ]]; then
+        # https://news.mynavi.jp/techplus/article/20190222-775519/
+        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'yes'; fi
+    elif [[ $1 == 'CentOS' ]]; then
+        if yum list installed | grep -sq $1; then echo 'yes'; fi
+    fi
+}
+
+if check_user_is_sudoer; then
+    declare -r is_sudoer='yes'
+elif
+    declare -r is_sudoer='no'
+fi
+if [[ $1 == 'Ubuntu' ]]; then
+    declare -a requires=(lib32gcc1 lua5.3 tmux wget git curl)
+elif [[ $1 == 'CentOS' ]]; then
+    declare -a requires=(libstdc++ lua tmux wget git which)
+fi
+
+echo ''
+color_print info '需要下载或更新的软件: '
+echo "${requires[@]}"
+
+if [[ $is_sudoer == 'no' ]]; then
+    color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
+    $confirm warn '是否已安装？'
+    if [[ $(cat ANSWER_PATH) == 'yes' ]]; then return 0; fi
+
+    color_print error '无权限下载安装必须软件，终止运行脚本。请联系服务器管理员解决。'
+    exit 1
+fi
+
+$confirm warn '是否要开始安装依赖？'
+if [[ $(cat ANSWER_PATH) == 'no' ]]; then
+    color_print error '终止安装依赖包, 结束脚本'
+    exit 1
+fi
+
+color_print -n info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 '
+count_down 3
+    
+if [[ $1 == 'Ubuntu' ]]; then
+    sudo apt update && sudo apt upgrade -y
+    declare -a manager='apt'
+elif [[ $1 == 'CentOS' ]]; then
+    sudo yum update -y
+    declare -a manager='yum'
+fi
+
+declare package
+for package in ${requires[@]}; do
+    eval "sudo $manager install -y $package"
+done
+
+if [[ $1 == 'CentOS' ]] && [[ ! -e /usr/lib64/libcurl-gnutls.so.4 ]]; then
+    # To fix: libcurl-gnutls.so.4: cannot open shared object file: No such file or directory
+    sudo ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4
+fi
+
+declare flag=1
+for package in ${requires[@]}; do
+    if [[ $(is_package_installed $package) == 'yes' ]]; then
+        color_print success "依赖包$package"
+    else
+        color_print error "依赖包$package"
+        flag=0
+    fi
+done
+if [[ $flag == 0 ]]; then color_print error '依赖包安装失败'; exit 1; fi

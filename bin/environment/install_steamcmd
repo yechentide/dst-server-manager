@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -eu
+
+# https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+if [[ ! -e ~/Steam ]]; then mkdir ~/Steam; fi
+if [[ -e ~/Steam/steamcmd.sh ]]; then
+    color_print success 'steamcmd.sh已存在～'
+    exit 0
+fi
+
+echo ''
+color_print -n warn '未在~/Steam 发现steamcmd.sh，开始下载'
+count_down 3
+
+# 该用哪个网站？
+# wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+# wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz
+wget --output-document ~/Steam/steamcmd_linux.tar.gz 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' && tar -xvzf ~/Steam/steamcmd_linux.tar.gz --directory ~/Steam
+
+if [[ $? ]]; then
+    color_print success 'steamcmd.sh脚本下载完成！'
+    rm -f ~/Steam/steamcmd_linux.tar.gz > /dev/null 2>&1
+else
+    color_print error '似乎出现了什么错误...请联系作者修复'
+    exit 1
+fi

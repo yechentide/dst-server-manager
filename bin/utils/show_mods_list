@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+
+declare only_installed='false'
+declare only_added='false'
+declare option
+while getopts :ai option; do
+    case $option in
+        a)  only_added='true'; ;;
+        i)  only_installed='true'; ;;
+        *)  echo 'error in function generate_list_from_dir'; exit 1; ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [[ $only_installed == 'true' ]] && [[ $only_added == 'true' ]]; then
+    color_print error 'show_mods_list.sh: 参数错误'
+    exit 1
+fi
+
+#######################################
+# 参数:
+#   -a: 只输出添加到文件里的mod id
+#   -i: 只输出已经下载了的mod id
+#   $1: V1_MOD_DIR
+#   $2: V2_MOD_DIR
+#   $3: UGC_DIR
+#######################################
+
+if [[ ! $only_added == 'true' ]]; then
+    declare -r file="$3/appworkshop_322330.acf"
+    declare -r start=$(cat $file | grep -n 'WorkshopItemsInstalled' | awk -F: '{print $1}')
+    declare -r end=$(cat $file | grep -n 'WorkshopItemDetails' | awk -F: '{print $1}')
+
+    # 已下载完成的Mod ID
+    declare -a -r installed_mods=$(cat $file | head -n $(($end-1)) | tail -n $(($end - $start)) | grep -s '^		"' | awk -F\" '{print $2}')
+fi
+
+if [[ $only_installed == 'true' ]]; then
+    if [[ ${#installed_mods} == 0 ]]; then
+        exit 0
+    fi
+
+    declare item=''
+    for item in ${installed_mods[@]}; do
+        echo $item
+    done
+    exit 0
+fi
+
+declare -a list=$(generate_installed_mod_list $1)
+
+if [[ $only_added == 'true' ]] && [[ ${#list} == 0 ]]; then
+    exit 0
+fi
+if [[ $only_installed == 'false' ]] && [[ $only_added == 'false' ]]; then
+    color_print -n info '以下是已经添加的模组'
+    color_print -p warn '(显示[..]的是还没下载完成的):'
+    declare -a all_modinfo=$(get_all_modinfo_path $1 $2)
+fi
+
+declare id=''
+for id in ${list[@]}; do
+    if [[ $only_added == 'true' ]]; then
+        echo $id
+        continue
+    fi
+    
+    if echo "$installed_mods" | grep -sq $id; then color_print -np success '[OK] '; else color_print -np warn '[..] '; fi
+
+    echo -n "ID: $id      "
+    declare modinfo_path=$(echo "$all_modinfo" | grep -s $id)
+    if [[ ${#modinfo_path} == 0 ]]; then
+        echo '未找到modinfo文件, mod可能还未下载完成'
+    else
+        get_mod_name $modinfo_path
+    fi
+done

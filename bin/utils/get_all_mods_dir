@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -eu
+
+#######################################
+# 作用: 获取所有已经下载的mod的路径
+# 参数:
+#   $1: V1_MOD_DIR
+#   $1: V2_MOD_DIR
+# 输出:
+#   所有已经下载的mod的路径
+#######################################
+find $1 -maxdepth 1 -type d -name workshop*
+find $2 -mindepth 2 -maxdepth 2 -type d
