@@ -27,17 +27,18 @@ function check_user_is_sudoer() {
 function is_package_installed() {
     if [[ $1 == 'Ubuntu' ]]; then
         # https://news.mynavi.jp/techplus/article/20190222-775519/
-        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then echo 'yes'; fi
+        if dpkg-query -l | awk '{print $2}' | grep -sq $1; then return 0; else return 1; fi
     elif [[ $1 == 'CentOS' ]]; then
-        if yum list installed | grep -sq $1; then echo 'yes'; fi
+        if yum list installed | grep -sq $1; then return 0; else return 1; fi
     fi
 }
 
-if check_user_is_sudoer; then
+if check_user_is_sudoer $1; then
     declare -r is_sudoer='yes'
-elif
+else
     declare -r is_sudoer='no'
 fi
+
 if [[ $1 == 'Ubuntu' ]]; then
     declare -a requires=(lib32gcc1 lua5.3 tmux wget git curl)
 elif [[ $1 == 'CentOS' ]]; then
@@ -50,15 +51,15 @@ echo "${requires[@]}"
 
 if [[ $is_sudoer == 'no' ]]; then
     color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
-    $confirm warn '是否已安装？'
+    confirm warn '是否已安装？'
     if [[ $(cat ANSWER_PATH) == 'yes' ]]; then return 0; fi
 
     color_print error '无权限下载安装必须软件，终止运行脚本。请联系服务器管理员解决。'
     exit 1
 fi
 
-$confirm warn '是否要开始安装依赖？'
-if [[ $(cat ANSWER_PATH) == 'no' ]]; then
+confirm warn '是否要开始安装依赖？'
+if [[ $(cat $ANSWER_PATH) == 'no' ]]; then
     color_print error '终止安装依赖包, 结束脚本'
     exit 1
 fi
@@ -86,11 +87,13 @@ fi
 
 declare flag=1
 for package in ${requires[@]}; do
-    if [[ $(is_package_installed $package) == 'yes' ]]; then
+    if is_package_installed $package; then
         color_print success "依赖包$package"
     else
         color_print error "依赖包$package"
         flag=0
     fi
 done
+
+echo ''
 if [[ $flag == 0 ]]; then color_print error '依赖包安装失败'; exit 1; fi
