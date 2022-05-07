@@ -114,7 +114,18 @@ function server_panel() {
             done
             ;;
         '更新服务端')
-            update_dst -u $DST_ROOT_DIR $V1_MOD_DIR
+            color_print warn '升级服务端之前，将会关闭所有运行中的世界！'
+            confirm warn '是否关闭所有运行中的世界, 并更新服务端？'
+            if [[ $(cat $ANSWER_PATH) == 'no' ]]; then
+                color_print -n info '取消升级 '; count_down 3
+                continue
+            fi
+            # To Fix: 升级服务端会导致dedicated_server_mods_setup.lua被清空, 然后Mod会无效
+            cp $V1_MOD_DIR/dedicated_server_mods_setup.lua $V1_MOD_DIR/dedicated_server_mods_setup.lua.bak
+            stop_all_shard
+
+            update_dst -u $DST_ROOT_DIR
+            cp $V1_MOD_DIR/dedicated_server_mods_setup.lua.bak $V1_MOD_DIR/dedicated_server_mods_setup.lua
             ;;
         '返回')
             color_print info '即将返回主面板'
