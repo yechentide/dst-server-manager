@@ -40,7 +40,7 @@ if [[ $only_added == 'false' ]]; then
     declare -r end=$(cat $file | grep -n 'WorkshopItemDetails' | awk -F: '{print $1}')
 
     # 已下载完成的Mod ID
-    declare -a -r installed_mods=$(cat $file | head -n $(($end-1)) | tail -n $(($end - $start)) | grep -s '^		"' | awk -F\" '{print $2}')
+    declare -a installed_mods=$(cat $file | head -n $(($end-1)) | tail -n $(($end - $start)) | grep -s '^		"' | awk -F\" '{print $2}')
 fi
 
 if [[ $only_installed == 'true' ]]; then
