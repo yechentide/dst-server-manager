@@ -42,7 +42,7 @@ fi
 if [[ $1 == 'Ubuntu' ]]; then
     declare -a requires=(lib32gcc1 lua5.3 tmux wget git curl)
 elif [[ $1 == 'CentOS' ]]; then
-    declare -a requires=(libstdc++ lua tmux wget git which)
+    declare -a requires=(glibc.i686 libstdc++ lua tmux wget git which)
 fi
 
 echo ''
