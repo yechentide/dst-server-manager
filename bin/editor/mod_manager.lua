@@ -212,10 +212,10 @@ function add_new_mods(target_file)
                     configuration["workshop-"..id]["configuration_options"][key] = value
                 end
             end
-            -- 保存model
-            save_configuration_to_file(configuration, target_file)
         end
     end
+    -- 保存model
+    save_configuration_to_file(configuration, target_file)
 end
 
 function configure_modoverride(target_file)
