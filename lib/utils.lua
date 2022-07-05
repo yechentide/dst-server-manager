@@ -364,12 +364,12 @@ function generate_installed_mods_table(repo_root, v1dir, v2dir)
     --     ["3333"] = "名前3",
     --     ...
     -- }
-    
+
     for index, path in ipairs(all_modinfo) do
         local name = get_info_from_modinfo(path, "name")
         local id = exec_linux_command_get_output("echo "..path.." | awk -F/ '{print $(NF-1)}'")
         if string.find(id, "workshop") then
-            id = string.sub(id, 9)
+            id = string.sub(id, 10)
         end
         table.insert(dic["id_array"], id)
         table.insert(dic["name_array"], name)
@@ -377,6 +377,6 @@ function generate_installed_mods_table(repo_root, v1dir, v2dir)
         dic[id] = name
         dic[name] = id
     end
-    
+
     return dic
 end
