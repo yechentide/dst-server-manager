@@ -1,5 +1,5 @@
 function mod_panel() {
-    declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod')
+    declare -r -a action_list=('本机Mod' '下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod' '重置全部Mod')
 
     while true; do
         echo ''
