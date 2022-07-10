@@ -55,19 +55,20 @@ if [[ $only_installed == 'true' ]]; then
     exit 0
 fi
 
-declare -a list=$(generate_installed_mod_list $1)
+declare -a setted_list=$(generate_installed_mod_list $1)
 
-if [[ $only_added == 'true' ]] && [[ ${#list} == 0 ]]; then
+if [[ $only_added == 'true' ]] && [[ ${#setted_list} == 0 ]]; then
     exit 0
 fi
 if [[ $only_installed == 'false' ]] && [[ $only_added == 'false' ]]; then
+    color_print info '手动上传的mod不会显示在下面的列表里, 请使用脚本添加对应id, 并使用脚本更新一下mod'
     color_print -n info '以下是已经添加的模组'
     color_print -p warn '(显示[..]的是还没下载完成的):'
     declare -a all_modinfo=$(get_all_modinfo_path $1 $2)
 fi
 
 declare id=''
-for id in ${list[@]}; do
+for id in ${setted_list[@]}; do
     if [[ $only_added == 'true' ]]; then
         echo $id
         continue
