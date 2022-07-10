@@ -89,7 +89,11 @@ function confirm(color, message)
     print()
 end
 
-function select_one(array, color, message)
+function select_one(array, color, message, allow_cancel)
+    if allow_cancel then
+        table.insert(array, "返回")
+    end
+
     color_print(color, message, true)
     while true do
         for i, v in ipairs(array) do
@@ -106,9 +110,12 @@ function select_one(array, color, message)
     end
     print()
 end
-
 -- Retuen: indexes
-function multi_select(array, color, message)
+function multi_select(array, color, message, allow_cancel)
+    if allow_cancel then
+        table.insert(array, "返回")
+    end
+
     local result = {}
     color_print(color, message, true)
     while true do
@@ -119,6 +126,9 @@ function multi_select(array, color, message)
         for _, input in ipairs(split(io.read(), " ")) do
             local num = tonumber(input)
             if num ~= nil and 1 <= num and num <= #array then
+                if array[num] == "返回" then
+                    return "返回"
+                end
                 result[#result+1] = num
             else
                 color_print("warn", "请输入正确数字。错误输入将被无视: "..input, true)
@@ -319,24 +329,24 @@ end
 -- 作用: 清除读取modinfo.lua文件后残留的变量
 ---------------------------------------
 function reset_dofile_modinfo()
-    if name ~= nil then name = nil end
-    if description ~= nil then description = nil end
-    if author ~= nil then author = nil end
-    if version ~= nil then version = nil end
-    if forumthread ~= nil then forumthread = nil end
-    if api_version ~= nil then api_version = nil end
+    if name         ~= nil then name        = nil end
+    if description  ~= nil then description = nil end
+    if author       ~= nil then author      = nil end
+    if version      ~= nil then version     = nil end
+    if forumthread  ~= nil then forumthread = nil end
+    if api_version  ~= nil then api_version = nil end
 
-    if client_only_mod ~= nil then client_only_mod = nil end
-    if all_clients_require_mod ~= nil then all_clients_require_mod = nil end
-    if configuration_options ~= nil then configuration_options = nil end
-    if server_filter_tags ~= nil then server_filter_tags = nil end
+    if client_only_mod          ~= nil then client_only_mod         = nil end
+    if all_clients_require_mod  ~= nil then all_clients_require_mod = nil end
+    if configuration_options    ~= nil then configuration_options   = nil end
+    if server_filter_tags       ~= nil then server_filter_tags      = nil end
 
-    if dst_compatible ~= nil then dst_compatible = nil end
-    if dont_starve_compatible ~= nil then dont_starve_compatible = nil end
-    if reign_of_giants_compatible ~= nil then reign_of_giants_compatible = nil end
-    if shipwrecked_compatible ~= nil then shipwrecked_compatible = nil end
-    if hamlet_compatible ~= nil then hamlet_compatible = nil end
-    if porkland_compatible ~= nil then porkland_compatible = nil end
+    if dst_compatible               ~= nil then dst_compatible              = nil end
+    if dont_starve_compatible       ~= nil then dont_starve_compatible      = nil end
+    if reign_of_giants_compatible   ~= nil then reign_of_giants_compatible  = nil end
+    if shipwrecked_compatible       ~= nil then shipwrecked_compatible      = nil end
+    if hamlet_compatible            ~= nil then hamlet_compatible           = nil end
+    if porkland_compatible          ~= nil then porkland_compatible         = nil end
 end
 
 function get_info_from_modinfo(modinfo_path, property)
@@ -360,8 +370,9 @@ function generate_installed_mods_table(repo_root, v1dir, v2dir)
     --         ["111"] = "/.../.../.../modinfo.lua"
     --     },
     --     ["1111"] = "名前1",
+    --     ["名前1"] = "111",
     --     ["2222"] = "名前2",
-    --     ["3333"] = "名前3",
+    --     ["名前2"] = "222",
     --     ...
     -- }
 
