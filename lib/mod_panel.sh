@@ -14,6 +14,9 @@ function mod_panel() {
         action=$(cat $ANSWER_PATH)
 
         case $action in
+        '本机Mod')
+            show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
+            ;;
         '下载Mod')
             add_mods_to_file
             update_mods
@@ -29,6 +32,14 @@ function mod_panel() {
             ;;
         '删除Mod')
             delete_mods
+            ;;
+        '重置全部Mod')
+            confirm warn '即将删除本主机上面的全部Mod文件, 是否继续?'
+            if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+                echo '' > $V1_MOD_DIR/dedicated_server_mods_setup.lua
+                rm -rf $V1_MOD_DIR/workshop*
+                rm -rf $UGC_DIR/*
+            fi
             ;;
         '返回')
             color_print info '即将返回主面板'
