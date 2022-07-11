@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Get repository
         uses: actions/checkout@v3
+      - name: Run ShellCheck
+        uses: azohra/shell-linter@latest
       - name: Work around permission issue
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Count Lines of Code (cloc)
