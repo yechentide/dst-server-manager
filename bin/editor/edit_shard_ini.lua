@@ -67,7 +67,9 @@ function configure_model(table)
         if answer == false then break end
 
         local option_array = table["array"]
-        local target = select_one(option_array, "info", "请选一个选项")
+        local target = select_one(option_array, "info", "请选一个选项", true)
+        if target = "返回" then break end
+
         local value_type = table[target]["type"]
         local new_value
         if value_type == "string" then

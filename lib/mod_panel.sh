@@ -1,10 +1,11 @@
 function mod_panel() {
-    declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod')
+    declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod' '重置全部Mod')
 
     while true; do
         echo ''
         color_print 70 '>>>>>> Mod管理 <<<<<<'
         display_running_clusters
+        show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
 
         declare action=''
@@ -29,6 +30,14 @@ function mod_panel() {
             ;;
         '删除Mod')
             delete_mods
+            ;;
+        '重置全部Mod')
+            confirm warn '即将删除本主机上面的全部Mod文件, 是否继续?'
+            if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+                echo '' > $V1_MOD_DIR/dedicated_server_mods_setup.lua
+                rm -rf $V1_MOD_DIR/workshop*
+                rm -rf $UGC_DIR/*
+            fi
             ;;
         '返回')
             color_print info '即将返回主面板'

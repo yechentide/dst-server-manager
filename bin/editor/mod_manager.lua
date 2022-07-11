@@ -171,7 +171,9 @@ function configure_mod(mod_id, mod_name, configuration)
         if answer == false then break end
 
         local options_array = get_mod_setting_options(mod_id)
-        local target_option = select_one(options_array, "info", "请选一个选项")
+        local target_option = select_one(options_array, "info", "请选一个选项", true)
+        if target_option == "返回" then break end
+
         local index = indexof(options_array, target_option) - 1
         local new_value = get_new_setting(mod_id, target_option, index, show_description)
         if target_option == "是否启用" then
@@ -188,7 +190,10 @@ end
 
 function add_new_mods(target_file)
     -- 用户选择mod
-    local selected_mods = multi_select(installed_mods["name_array"], "info", "(多选用空格隔开)请选择要添加的Mod")
+    local selected_mods = multi_select(installed_mods["name_array"], "info", "(多选用空格隔开)请选择要添加的Mod", true)
+    if selected_mods == "返回" then
+        return
+    end
 
     -- 读取/更新model
     local configuration = dofile(target_file)
@@ -228,7 +233,9 @@ function configure_modoverride(target_file)
         color_print("tip", "以下是当前存档里的Mod:", true)
         print()
 
-        local mod_name = select_one(added_mods, "info", "请选择要配置的Mod")
+        local mod_name = select_one(added_mods, "info", "请选择要配置的Mod", true)
+        if mod_name == "返回" then break end
+
         local mod_id = installed_mods[mod_name]
 
         if is_mod_configurable(mod_id) then
