@@ -17,5 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: work around permission issue
+        run: git config --global --add safe.directory /github/workspace
       - name: Count Lines of Code (cloc)
         uses: djdefi/cloc-action@3
