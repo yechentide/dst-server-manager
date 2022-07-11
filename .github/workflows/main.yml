@@ -16,8 +16,9 @@ jobs:
   cloc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: work around permission issue
+      - name: Get repository
+        uses: actions/checkout@v3
+      - name: Work around permission issue
         run: git config --global --add safe.directory '/home/user/DSTServerManager'
       - name: Count Lines of Code (cloc)
         uses: djdefi/cloc-action@3
