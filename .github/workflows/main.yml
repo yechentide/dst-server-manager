@@ -18,6 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: work around permission issue
-        run: git config --global --add safe.directory /github/workspace
+        run: git config --global --add safe.directory '/home/user/DSTServerManager'
       - name: Count Lines of Code (cloc)
         uses: djdefi/cloc-action@3
