@@ -63,7 +63,7 @@ fi
 if [[ $only_installed == 'false' ]] && [[ $only_added == 'false' ]]; then
     color_print info '手动上传的mod不会显示在下面的列表里, 请使用脚本添加对应id, 并使用脚本更新一下mod'
     color_print -n info '以下是已经添加的模组'
-    color_print -p warn '(显示[..]的是还没下载完成的):'
+    color_print -p warn '(显示[..]的是还没下载完成的, 请使用脚本的"Mod更新"功能继续下载):'
     declare -a all_modinfo=$(get_all_modinfo_path $1 $2)
 fi
 

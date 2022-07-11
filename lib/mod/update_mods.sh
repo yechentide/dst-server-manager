@@ -6,7 +6,7 @@ function update_mods() {
     tmux new -s 'update_mods' "cd $DST_ROOT_DIR/bin64; ./dontstarve_dedicated_server_nullrenderer_x64 -only_update_server_mods -ugc_directory $UGC_DIR -persistent_storage_root $REPO_ROOT_DIR/.cache/.klei -conf_dir xxxxxx -cluster tmp -shard master"
     
     color_print info 'Mod下载/更新结束!'
-    show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
+    #show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
 
     count_down 3
 }

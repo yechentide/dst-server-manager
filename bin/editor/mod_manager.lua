@@ -172,7 +172,7 @@ function configure_mod(mod_id, mod_name, configuration)
 
         local options_array = get_mod_setting_options(mod_id)
         local target_option = select_one(options_array, "info", "请选一个选项", true)
-        if target_option = "返回" then break end
+        if target_option == "返回" then break end
 
         local index = indexof(options_array, target_option) - 1
         local new_value = get_new_setting(mod_id, target_option, index, show_description)
@@ -234,7 +234,7 @@ function configure_modoverride(target_file)
         print()
 
         local mod_name = select_one(added_mods, "info", "请选择要配置的Mod", true)
-        if mod_name = "返回" then break end
+        if mod_name == "返回" then break end
 
         local mod_id = installed_mods[mod_name]
 

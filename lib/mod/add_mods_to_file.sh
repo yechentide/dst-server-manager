@@ -28,7 +28,7 @@ function add_mods_to_file() {
     declare id=''
     declare -a list=$(generate_installed_mod_list $V1_MOD_DIR)
 
-    show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
+    #show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
 
     get_mods_id_from_input
     declare -a array=$(cat $ANSWER_PATH)

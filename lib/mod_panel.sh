@@ -1,10 +1,11 @@
 function mod_panel() {
-    declare -r -a action_list=('本机Mod' '下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod' '重置全部Mod')
+    declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod' '重置全部Mod')
 
     while true; do
         echo ''
         color_print 70 '>>>>>> Mod管理 <<<<<<'
         display_running_clusters
+        show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
 
         declare action=''
@@ -14,9 +15,6 @@ function mod_panel() {
         action=$(cat $ANSWER_PATH)
 
         case $action in
-        '本机Mod')
-            show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
-            ;;
         '下载Mod')
             add_mods_to_file
             update_mods
