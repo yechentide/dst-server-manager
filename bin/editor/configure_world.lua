@@ -120,12 +120,12 @@ function configure_model(table, prefix, is_generation)
             if answer == false then break end
 
             local target = select_one(option_array, "info", "请选一个选项", true)
-            if target = "返回" then break end
+            if target == "返回" then break end
 
             local value_type = table[group_name][target]["type"]
             local value_options = world_value_types[value_type]["zh"]
             local new_value = select_one(value_options, "info", "请选一个选项", true)
-            if new_value = "返回" then break end
+            if new_value == "返回" then break end
 
             table[group_name][target]["value"] = translate_2key(world_value_types, value_type, new_value)
         end
