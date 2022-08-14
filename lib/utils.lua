@@ -103,7 +103,9 @@ function select_one(array, color, message, allow_cancel)
         local selected = tonumber(io.read())
 
         if selected ~= nil and 1 <= selected and selected <= #array then
-            return array[selected]
+            local answer = array[selected]
+            if allow_cancel then table.remove(array, #array) end
+            return answer
         else
             color_print("error", "请输入正确的数字！", true)
         end
@@ -127,6 +129,7 @@ function multi_select(array, color, message, allow_cancel)
             local num = tonumber(input)
             if num ~= nil and 1 <= num and num <= #array then
                 if array[num] == "返回" then
+                    table.remove(array, #array)
                     return "返回"
                 end
                 result[#result+1] = num
@@ -138,6 +141,7 @@ function multi_select(array, color, message, allow_cancel)
     end
     color_print("info", "你选择的: "..array2string(result), false)
     count_down(3, true)
+    if allow_cancel then table.remove(array, #array) end
     return result
 end
 
