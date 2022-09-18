@@ -40,7 +40,7 @@ else
 fi
 
 if [[ $1 == 'Ubuntu' ]]; then
-    declare -a requires=(lib32gcc1 lua5.3 tmux wget git curl)
+    declare -a requires=(lib32gcc-s1 lua5.3 tmux wget git curl)
 elif [[ $1 == 'CentOS' ]]; then
     declare -a requires=(glibc.i686 libstdc++ lua tmux wget git which)
 fi
@@ -69,10 +69,10 @@ count_down 3
     
 if [[ $1 == 'Ubuntu' ]]; then
     sudo apt update && sudo apt upgrade -y
-    declare -a manager='apt'
+    declare -r manager='apt'
 elif [[ $1 == 'CentOS' ]]; then
     sudo yum update -y
-    declare -a manager='yum'
+    declare -r manager='yum'
 fi
 
 declare package
