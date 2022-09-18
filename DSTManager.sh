@@ -135,15 +135,16 @@ function check_environment() {
     manage_directories
 
     if [[ ! -e $CACHE_DIR/.skip_requirements_check ]]; then
-        confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
-        if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
-            color_print -n info '即将进入脚本迁移面板'
-            count_down -n 3
-            transfer_panel
-        fi
+        # >>>>>> BUG <<<<<<
+        # confirm info '你之前有在本机器/云服上使用别的脚本开服吗?'
+        # if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+        #     color_print -n info '即将进入脚本迁移面板 '
+        #     count_down -n 3
+        #     transfer_panel
+        # fi
         add_alias
         install_dependencies $OS
-        color_print -n info '输入source ~/.bashrc 或者重新登录后, 即可使用dst来执行脚本～'
+        color_print -n info '输入source ~/.bashrc 或者重新登录后, 即可使用dst来执行脚本～ '
         count_down -n 6
         check_lua $OS
 
