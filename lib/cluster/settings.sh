@@ -23,9 +23,9 @@ function update_world_setting() {
         file='leveldataoverride.lua'
     fi
     if cat $shard_path/$file | grep -sq 'CAVE'; then
-        lua $REPO_ROOT_DIR/bin/editor/configure_world.lua $REPO_ROOT_DIR 'update' $shard_path 'false' $file
+        lua $REPO_ROOT_DIR/bin/editor/configure_world.lua $REPO_ROOT_DIR 'update' $shard_path 'cave' $file
     else
-        lua $REPO_ROOT_DIR/bin/editor/configure_world.lua $REPO_ROOT_DIR 'update' $shard_path 'true' $file
+        lua $REPO_ROOT_DIR/bin/editor/configure_world.lua $REPO_ROOT_DIR 'update' $shard_path 'forest' $file
     fi
 }
 
