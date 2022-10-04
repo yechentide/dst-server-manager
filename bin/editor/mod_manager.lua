@@ -125,6 +125,13 @@ function get_new_setting(mod_id, option, option_index, show_description)
         dofile(installed_mods["path_array"][mod_id])
         --local option_name = configuration_options[option_index]["name"]
         local options = configuration_options[option_index]["options"]
+
+        if type(options[1]["data"]) == "table" then
+            color_print("warn", "无法使用脚本编辑mod配置文件里的table, 请手动编辑此项目", true)
+            count_down(6, false)
+            return "{请勿使用脚本修改此配置}"
+        end
+
         local values_list = {}
         for _, option in ipairs(options) do
             values_list[#values_list+1] = option["data"]
@@ -194,7 +201,6 @@ function add_new_mods(target_file)
     if selected_mods == "返回" then
         return
     end
-
     -- 读取/更新model
     local configuration = dofile(target_file)
     for _, index in ipairs(selected_mods) do
@@ -214,7 +220,12 @@ function add_new_mods(target_file)
                 for _, option in ipairs(configuration_options) do
                     local key = option["name"]
                     local value = option["default"]
-                    configuration["workshop-"..id]["configuration_options"][key] = value
+                    if type(value) == "table" then
+                        print("table: "..key)
+                        configuration["workshop-"..id]["configuration_options"][key] = "{请勿使用脚本修改此配置}"
+                    else
+                        configuration["workshop-"..id]["configuration_options"][key] = value
+                    end
                 end
             end
         end
