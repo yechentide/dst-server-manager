@@ -175,7 +175,7 @@ function generate_new(shard_dir_path, is_overground)
     local model_set = {}
     local gen_suffix = ".wgp.lua"
     local set_suffix = ".wsp.lua"
-    local preset_file_prefix = select_preset()
+    local preset_file_prefix = select_preset(is_overground)
 
     if is_overground then
         model_gen = forest_generations_table
