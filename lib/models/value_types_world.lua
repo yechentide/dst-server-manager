@@ -79,6 +79,34 @@ world_value_types = {
         key = {"default", "always"},
         zh = {"默认", "所有"}
     },
+    defaultnone = {
+        key = {"default", "none"},
+        zh = {"默认", "所有"}
+    },
+    nonealways = {
+        key = {"none", "always"},
+        zh = {"禁用", "启用"}
+    },
+    nonealways4ghost = {
+        key = {"none", "always"},
+        zh = {"更改冒险家", "变鬼魂"}
+    },
+    mode01 = {
+        key = {"fixed", "scatter"},
+        zh = {"绚丽之门", "随机"}
+    },
+    damage01 = {
+        key = {"always", "none", "more"},
+        zh = {"较少", "默认", "较多"}
+    },
+    damage02 = {
+        key = {"nonlethal", "default"},
+        zh = {"非致命", "默认"}
+    },
+    resettime = {
+        key = {"none", "slow", "default", "fast", "always"},
+        zh = {"禁用", "慢", "默认", "快", "立刻"}
+    },
     extrastartingitems = {
         key = {"0", "5", "default", "15", "20", "none"},
         zh = {"总是", "第5天后", "第10天后", "第15天后", "第20天后", "从不"}
