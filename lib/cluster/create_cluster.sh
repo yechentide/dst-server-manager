@@ -1,4 +1,8 @@
 function create_cluster() {
+    color_print tip '强烈推荐一个在线配置世界的网站'
+    color_print tip 'https://dst.suke.fun'
+    color_print tip '如果你要创建新的世界，可以用这个网站创建好了再上传到服务器'
+    count_down 3
     color_print info '开始创建新的存档...'
     
     color_print -n 30 '已有存档: '; generate_cluster_list -c $KLEI_ROOT_DIR $WORLDS_DIR_NAME | tr '\n' ' '; echo ''
