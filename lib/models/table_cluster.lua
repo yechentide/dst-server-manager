@@ -10,7 +10,7 @@
 --      port                -->     2000~65535的数字
 
 cluster_table = {
-    array = {"服务器名", "服务器介绍", "服务器密码", "服务器语言", "游戏风格", "游戏模式", "玩家上限", "开启PVP", "无人暂停", "开启投票", "开启控制台", "最大快照数", "是否有多个shard", "bind_ip", "master_ip", "master_port"},
+    array = {"服务器名", "服务器介绍", "服务器密码", "服务器语言", "玩家上限", "开启PVP", "无人暂停", "开启投票", "开启控制台", "最大快照数", "是否有多个shard", "bind_ip", "master_ip", "master_port"},
     ["服务器名"] = {
         key = "cluster_name",
         value = "鸽子们的摸鱼日常",
@@ -35,18 +35,18 @@ cluster_table = {
         description = "语言设置",
         type = "language"
     },
-    ["游戏风格"] = {
-        key = "cluster_intention",
-        value = "cooperative",
-        description = "游戏风格。合作, 竞赛, 休闲, 疯狂。",
-        type = "intention"
-    },
-    ["游戏模式"] = {
-        key = "game_mode",
-        value = "endless",
-        description = "游戏模式。生存, 无尽, 荒野。本脚本不支持熔炉和暴食。",
-        type = "mode"
-    },
+    -- ["游戏风格"] = {
+    --     key = "cluster_intention",
+    --     value = "cooperative",
+    --     description = "游戏风格。合作, 竞赛, 休闲, 疯狂。",
+    --     type = "intention"
+    -- },
+    -- ["游戏模式"] = {
+    --     key = "game_mode",
+    --     value = "endless",
+    --     description = "游戏模式。生存, 无尽, 荒野。本脚本不支持熔炉和暴食。",
+    --     type = "mode"
+    -- },
     ["玩家上限"] = {
         key = "max_players",
         value = "6",
