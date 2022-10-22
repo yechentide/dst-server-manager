@@ -35,7 +35,7 @@ declare -r IMPORT_DIR="$KLEI_ROOT_DIR/import"
 
 # 仓库地址
 declare -r REPO_URL_CN='https://gitee.com/yechentide/DSTServerManager'
-declare -r REPO_URL_GITHUB='https://github.com/PolarNightCLI/DSTServerManager'
+declare -r REPO_URL_GITHUB='https://github.com/PNCommand/DSTServerManager'
 # 用来传递值的文件位置
 declare -r CACHE_DIR="$REPO_ROOT_DIR/.cache"
 declare -r ARRAY_PATH="$CACHE_DIR/array"
