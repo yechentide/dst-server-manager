@@ -3,6 +3,7 @@
 
 -- 以下table里面的type, 指定了world_value_types.lua里面的key
 
+-- WORLDGEN
 forest_generations_table = {
     array = {"全局", "世界", "资源", "生物以及刷新点", "敌对生物以及刷新点"},
     ["全局"] = {
@@ -13,8 +14,9 @@ forest_generations_table = {
             type = "startseason"
         }
     },
+    -- MISC
     ["世界"] = {
-        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "道路", "试金石", "失败的冒险家", "开始资源多样化", "天体裂隙", "盒中泰拉"},
+        array = {"生物群落", "出生点", "世界大小", "分支", "环形", "道路", "试金石", "失败的冒险家", "开始资源多样化", "天体裂隙", "盒中泰拉", "舞台剧"},
         ["生物群落"] = {
             key = "task_set",
             value = "default",
@@ -69,10 +71,16 @@ forest_generations_table = {
             key = "terrariumchest",
             value = "default",
             type = "defaultnever"
+        },
+        ["舞台剧"] = {
+            key = "stageplays",
+            value = "default",
+            type = "defaultnever"
         }
     },
+    -- RESOURCES
     ["资源"] = {
-        array = {"草", "巨石", "月树", "树苗", "池塘", "浮堆", "海星", "温泉", "燧石", "芦苇", "蘑菇", "仙人掌", "尖灌木", "月亮石", "浆果丛", "胡萝卜", "风滚草", "公牛海带", "月亮树苗", "流星区域", "迷你冰川", "树(所有)", "石果灌木丛", "花，邪恶花", "海岸公牛海带"},
+        array = {"草", "巨石", "月树", "树苗", "池塘", "浮堆", "海星", "温泉", "燧石", "芦苇", "蘑菇", "仙人掌", "尖灌木", "月亮石", "浆果丛", "胡萝卜", "风滚草", "公牛海带", "月亮树苗", "流星区域", "迷你冰川", "树(所有)", "石果灌木丛", "花，邪恶花", "海岸公牛海带", "棕榈松果树"},
         ["草"] = {
             key = "grass",
             value = "default",
@@ -197,6 +205,11 @@ forest_generations_table = {
             key = "moon_bullkelp",
             value = "default",
             type = "options8"
+        },
+        ["棕榈松果树"] = {
+            key = "palmconetree",
+            value = "default",
+            type = "options8"
         }
     },
     ["生物以及刷新点"] = {
@@ -317,10 +330,12 @@ forest_generations_table = {
     }
 }
 
+-- WORLDSETTINGS
 forest_settings_table = {
     array = {"全局", "活动", "冒险家", "世界", "资源再生", "生物", "敌对生物", "巨兽"},
+    -- GLOBAL
     ["全局"] = {
-        array = {"活动", "春", "夏", "秋", "冬", "昼夜选项", "皮费娄牛交配频率", "坎普斯"},
+        array = {"活动", "春", "夏", "秋", "冬", "昼夜选项", "皮费娄牛交配频率", "坎普斯", "出生模式", "冒险家死亡", "在绚丽之门复活", "鬼魂精神值惩罚", "死亡重置倒计时"},
         ["活动"] = {
             key = "specialevent",
             value = "default",
@@ -360,6 +375,31 @@ forest_settings_table = {
             key = "krampus",
             value = "default",
             type = "options5"
+        },
+        ["出生模式"] = {
+            key = "spawnmode",
+            value = "fixed",
+            type = "mode01"
+        },
+        ["冒险家死亡"] = {
+            key = "ghostenabled",
+            value = "always",
+            type = "nonealways4ghost"
+        },
+        ["在绚丽之门复活"] = {
+            key = "portalresurection",
+            value = "none",
+            type = "nonealways"
+        },
+        ["鬼魂精神值惩罚"] = {
+            key = "ghostsanitydrain",
+            value = "always",
+            type = "nonealways"
+        },
+        ["死亡重置倒计时"] = {
+            key = "resettime",
+            value = "default",
+            type = "resettime"
         }
     },
     ["活动"] = {
@@ -410,8 +450,9 @@ forest_settings_table = {
             type = "specificevent"
         },
     },
+    --SURVIVORS
     ["冒险家"] = {
-        array = {"额外起始资源", "季节起始物品", "防骚扰出生保护", "离开游戏后物品掉落", "启蒙怪兽", "理智怪兽"},
+        array = {"额外起始资源", "季节起始物品", "防骚扰出生保护", "离开游戏后物品掉落", "启蒙怪兽", "理智怪兽", "血量上限惩罚", "受到的破坏", "温度伤害", "饥饿伤害", "黑暗伤害"},
         ["额外起始资源"] = {
             key = "extrastartingitems",
             value = "default",
@@ -441,6 +482,31 @@ forest_settings_table = {
             key = "shadowcreatures",
             value = "default",
             type = "options5"
+        },
+        ["血量上限惩罚"] = {
+            key = "healthpenalty",
+            value = "always",
+            type = "nonealways"
+        },
+        ["受到的伤害"] = {
+            key = "lessdamagetaken",
+            value = "none",
+            type = "damage01"
+        },
+        ["温度伤害"] = {
+            key = "temperaturedamage",
+            value = "default",
+            type = "damage02"
+        },
+        ["饥饿伤害"] = {
+            key = "hunger",
+            value = "default",
+            type = "damage02"
+        },
+        ["黑暗伤害"] = {
+            key = "darkness",
+            value = "default",
+            type = "damage02"
         }
     },
     ["世界"] = {
@@ -501,8 +567,9 @@ forest_settings_table = {
             type = "options5"
         }
     },
+    -- RESOURCES
     ["资源再生"] = {
-        array = {"重生速度", "花", "月树", "盐堆", "多枝树", "常青树", "桦栗树", "胡萝卜"},
+        array = {"重生速度", "花", "月树", "盐堆", "多枝树", "常青树", "桦栗树", "胡萝卜", "仙人掌", "基础资源", "棕榈松果树", "芦苇"},
         ["重生速度"] = {
             key = "regrowth",
             value = "default",
@@ -542,6 +609,60 @@ forest_settings_table = {
             key = "carrots_regrowth",
             value = "default",
             type = "regrowthspeed"
+        },
+        ["仙人掌"] = {
+            key = "cactus_regrowth",
+            value = "default",
+            type = "regrowthspeed"
+        },
+        ["基础资源"] = {
+            key = "basicresource_regrowth",
+            value = "none",
+            type = "nonealways"
+        },
+        ["棕榈松果树"] = {
+            key = "palmconetree_regrowth",
+            value = "default",
+            type = "regrowthspeed"
+        },
+        ["芦苇"] = {
+            key = "reeds_regrowth",
+            value = "default",
+            type = "regrowthspeed"
+        }
+    },
+    -- UNNATURAL PORTAL
+    ["非自然传送门资源"] = {
+        array = {"传送率", "发光蟹", "棕榈松果树芽", "火药猴", "猴尾草", "香蕉丛"},
+        ["传送率"] = {
+            key = "portal_spawnrate",
+            value = "default",
+            type = "options5"
+        },
+        ["发光蟹"] = {
+            key = "lightcrab_portalrate",
+            value = "default",
+            type = "options5"
+        },
+        ["棕榈松果树芽"] = {
+            key = "palmcone_seed_portalrate",
+            value = "default",
+            type = "options5"
+        },
+        ["火药猴"] = {
+            key = "powder_monkey_portalrate",
+            value = "default",
+            type = "options5"
+        },
+        ["猴尾草"] = {
+            key = "monkeytail_portalrate",
+            value = "default",
+            type = "options5"
+        },
+        ["香蕉丛"] = {
+            key = "bananabush_portalrate",
+            value = "default",
+            type = "options5"
         }
     },
     ["生物"] = {
@@ -617,8 +738,9 @@ forest_settings_table = {
             type = "options5"
         }
     },
+    -- MONSTERS
     ["敌对生物"] = {
-        array = {"海象", "猎犬", "蚊子", "蜘蛛", "蝙蝠", "青蛙", "鱼人", "鱿鱼", "鲨鱼", "杀人蜂", "食人花", "恐怖猎犬", "月石企鹅", "破碎蜘蛛", "蜘蛛战士", "饼干切割机"},
+        array = {"海象", "猎犬", "蚊子", "蜘蛛", "蝙蝠", "青蛙", "鱼人", "鱿鱼", "鲨鱼", "杀人蜂", "食人花", "恐怖猎犬", "月石企鹅", "破碎蜘蛛", "蜘蛛战士", "饼干切割机", "月亮码头海盗"},
         ["海象"] = {
             key = "walrus_setting",
             value = "default",
@@ -696,6 +818,11 @@ forest_settings_table = {
         },
         ["饼干切割机"] = {
             key = "cookiecutters",
+            value = "default",
+            type = "options5"
+        },
+        ["月亮码头海盗"] = {
+            key = "pirateraids",
             value = "default",
             type = "options5"
         }
