@@ -1,15 +1,24 @@
 #!/usr/bin/env lua
 -- arg[1]: $repo_root_dir       --> ~/DSTServerManager
 -- arg[2]: action               --> new / update / convert
+
+------ arg[2] = new / update
 -- arg[3]: shard dir path       --> ~/Klei/worlds/c01/Main
 -- arg[4]: world type           --> forest / cave / shipwrecked / volcano
 -- arg[5]: setting file         --> 默认worldgenoverride, 或者传递leveldataoverride
 
+------ arg[2] = convert
+-- arg[3]: old worldgenoverride
+-- arg[4]: new worldgenoverride
+-- arg[5]: 'true' / 'false'
+
 package.path = package.path..';'..arg[1]..'/lib/?.lua;'..arg[1]..'/lib/models/?.lua;'
 
 WORLD_PRESETS_DIR = arg[1].."/templates/world_presets"
+
 shipwrecked = false
 if arg[4] == "shipwrecked" or arg[4] == "volcano" then shipwrecked = true end
+
 setting_file = "worldgenoverride.lua"
 if arg[5] == "leveldataoverride.lua" then setting_file = "leveldataoverride.lua" end
 
@@ -132,18 +141,28 @@ function configure_model(table, prefix, is_generation)
     end
 end
 
--- Return: 某个preset的文件夹的路径
-function select_preset()
+-- Return: 某个preset的文件夹的路径 (但缺少像 .wgp.lua 这样的后缀)
+function select_preset(is_overground)
     local presets_dir_path = arg[1].."/templates/world_presets"
-    local result = exec_linux_command_get_output("ls "..presets_dir_path)
+    local keyword = "cave"
+    if is_overground then
+        keyword = "forest"
+    end
+
+    local command = "find "..presets_dir_path.."/*"..keyword.."/*.lua -type f | awk -F. '{print $2}' | sort | uniq"
+    local result = exec_linux_command_get_output(command)
     local presets = split(result, "\n")
+    -- /custom_forest/AAA
+    -- /forest/无尽
+    -- /forest/森林
+
     local answer = select_one(presets, "info", "请选择一个模板")
-    return arg[1].."/templates/world_presets/"..answer
+    return presets_dir_path + answer
 end
 
 ----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------
--- 新建世界时, 会由Shell脚本来复制worldgenoverride.lua到制定文件夹, 然后执行本脚本更改设置
+-- 新建世界时, 会由Shell脚本来复制worldgenoverride.lua到指定文件夹, 然后执行本脚本更改设置
 -- 新建世界或者更改选项, 流程都是: 读取model, 更新model, 展示model, 保存model
 
 function generate_new(shard_dir_path, is_overground)
@@ -154,31 +173,26 @@ function generate_new(shard_dir_path, is_overground)
     -- 读取model, 更新model
     local model_gen = {}
     local model_set = {}
-    local file_gen = ""
-    local file_set = ""
-    color_print("tip", "standard是游戏里的默认配置, terraria是游戏里的泰拉瑞亚配置", true)
-    color_print("tip", "这两个模板里的草蜥蜴和多枝树均已关闭", true)
-    local preset_dir_path = select_preset()
+    local gen_suffix = ".wgp.lua"
+    local set_suffix = ".wsp.lua"
+    local preset_file_prefix = select_preset()
 
-    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false); count_down(3, false)
     if is_overground then
         model_gen = forest_generations_table
         model_set = forest_settings_table
-        file_gen = "/forest_gen.lua"
-        file_set = "/forest_set.lua"
     else
         model_gen = cave_generations_table
         model_set = cave_settings_table
-        file_gen = "/cave_gen.lua"
-        file_set = "/cave_set.lua"
     end
-    update_model_from_file(model_gen, preset_dir_path..file_gen)
-    update_model_from_file(model_set, preset_dir_path..file_set)
+    update_model_from_file(model_gen, preset_file_prefix..gen_suffix)
+    update_model_from_file(model_set, preset_file_prefix..set_suffix)
 
     -- 展示model
+    color_print("info", "接下来会列出各个配置列表, 请按需求修改 ", false)
+    count_down(3, false)
+    -- local answer = ""
     local title_gen = ""
     local title_set = ""
-    local answer = ""
     if is_overground then
         title_gen = "地上 - 生成 - "
         title_set = "地上 - 选项 - "
@@ -205,24 +219,37 @@ function generate_new(shard_dir_path, is_overground)
     clear()
     print_divider("-", 36)
     if confirm("info", "是否要把当前设置保存为新的模板?") == true then
-        local default_presets = {standard = true, terraria = true, empty = true}
-        while true do
-            local name = readline(false, "info", "请输入新模板的名字")
-            if default_presets[name] ~= nil then
-                color_print("error", "该名字和默认模板同名!", true)
-            else
-                local new_preset_path = WORLD_PRESETS_DIR.."/"..name
-                if file_exist(new_preset_path) == false then
-                    copy_file(WORLD_PRESETS_DIR.."/standard", new_preset_path, true)
-                    color_print("tip", "新模板文件位于 "..WORLD_PRESETS_DIR, true)
-                    color_print("tip", "保存新模板时选择已有模板, 就可以更新模板。(默认模板无法修改)", true)
-                end
-                apply_changes_to_file(model_gen, new_preset_path..file_gen)
-                apply_changes_to_file(model_set, new_preset_path..file_set)
-                sleep(3)
-                break
-            end
+        local keyword = "cave"
+        if is_overground then
+            keyword = "forest"
         end
+
+        local target_dir = WORLD_PRESETS_DIR.."/custom_"..keyword
+        if file_exist(target_dir) == false then
+            os.execute("mkdir "..target_dir)
+        end
+
+        local name = readline(false, "info", "请输入新模板的名字")
+        local gen_file = target_dir.."/"..name + gen_suffix
+        local set_file = target_dir.."/"..name + set_suffix
+
+        color_print("tip", "新模板文件位于 "..target_dir, true)
+        color_print("tip", "保存新模板时选择已有模板, 就可以更新模板。(默认模板无法修改)", true)
+
+        if is_overground then
+            copy_file(WORLD_PRESETS_DIR.."/forest/森林.wgp.lua", gen_file, false)
+            apply_changes_to_file(model_gen, gen_file)
+            copy_file(WORLD_PRESETS_DIR.."/forest/森林.wsp.lua", set_file, false)
+            apply_changes_to_file(model_set, set_file)
+        else
+            copy_file(WORLD_PRESETS_DIR.."/cave/洞穴.wgp.lua", gen_file, false)
+            apply_changes_to_file(model_gen, gen_file)
+            copy_file(WORLD_PRESETS_DIR.."/forest/洞穴.wsp.lua", set_file, false)
+            apply_changes_to_file(model_set, set_file)
+        end
+
+        sleep(3)
+        break
     end
 
     clear()
@@ -287,8 +314,5 @@ elseif arg[2] == 'update' then
     if arg[4] ~= "forest" then is_forest = false end
     change_options(arg[3], is_forest)
 elseif arg[2] == 'convert' then
-    -- arg[3]: old worldgenoverride
-    -- arg[4]: new worldgenoverride
-    -- arg[5]: 'true' / 'false'
     convert(arg[3], arg[4], arg[5])
 end
