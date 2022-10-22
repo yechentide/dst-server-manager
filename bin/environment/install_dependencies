@@ -58,8 +58,7 @@ if [[ $is_sudoer == 'no' ]] && [[ $(whoami) != 'root' ]]; then
     exit 1
 fi
 
-which sudo > /dev/null 2>&1
-if [[ $? == 1 ]] && [[ $(whoami) != 'root' ]]; then
+if which sudo > /dev/null 2>&1; [[ $? == 1 ]] && [[ $(whoami) != 'root' ]]; then
     color_print error '没有sudo命令，无权限下载安装必须软件，终止运行脚本。请联系服务器管理员解决。'
     exit 1
 fi
@@ -74,8 +73,8 @@ color_print -n info '即将以管理员权限下载更新软件，可能会要�
 count_down 3
 
 if [[ $1 == 'Ubuntu' ]]; then
-    if [[ $(whoami) == 'root' ]] then
-        apt update && sudo apt upgrade -y
+    if [[ $(whoami) == 'root' ]]; then
+        apt update && apt upgrade -y
     else
         sudo apt update && sudo apt upgrade -y
     fi
@@ -83,7 +82,7 @@ if [[ $1 == 'Ubuntu' ]]; then
 fi
 
 if [[ $1 == 'CentOS' ]]; then
-    if [[ $(whoami) == 'root' ]] then
+    if [[ $(whoami) == 'root' ]]; then
         yum update -y
     else
         sudo yum update -y
@@ -93,7 +92,7 @@ fi
 
 declare package
 for package in ${requires[@]}; do
-    if [[ $(whoami) == 'root' ]] then
+    if [[ $(whoami) == 'root' ]]; then
         eval "$manager install -y $package"
     else
         eval "sudo $manager install -y $package"
@@ -102,7 +101,7 @@ done
 
 if [[ $1 == 'CentOS' ]] && [[ ! -e /usr/lib64/libcurl-gnutls.so.4 ]]; then
     # To fix: libcurl-gnutls.so.4: cannot open shared object file: No such file or directory
-    if [[ $(whoami) == 'root' ]] then
+    if [[ $(whoami) == 'root' ]]; then
         ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4
     else
         sudo ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4

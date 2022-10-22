@@ -149,7 +149,7 @@ function select_preset(is_overground)
         keyword = "forest"
     end
 
-    local command = "find "..presets_dir_path.."/*"..keyword.."/*.lua -type f | awk -F. '{print $2}' | sort | uniq"
+    local command = "find "..presets_dir_path.."/*"..keyword.."/*.lua -type f | awk -F. '{print $1}' | sort | uniq"
     local result = exec_linux_command_get_output(command)
     local presets = split(result, "\n")
     -- /custom_forest/AAA
@@ -157,7 +157,7 @@ function select_preset(is_overground)
     -- /forest/森林
 
     local answer = select_one(presets, "info", "请选择一个模板")
-    return presets_dir_path + answer
+    return answer
 end
 
 ----------------------------------------------------------------------------------------------
@@ -230,8 +230,8 @@ function generate_new(shard_dir_path, is_overground)
         end
 
         local name = readline(false, "info", "请输入新模板的名字")
-        local gen_file = target_dir.."/"..name + gen_suffix
-        local set_file = target_dir.."/"..name + set_suffix
+        local gen_file = target_dir.."/"..name..gen_suffix
+        local set_file = target_dir.."/"..name..set_suffix
 
         color_print("tip", "新模板文件位于 "..target_dir, true)
         color_print("tip", "保存新模板时选择已有模板, 就可以更新模板。(默认模板无法修改)", true)
@@ -244,12 +244,11 @@ function generate_new(shard_dir_path, is_overground)
         else
             copy_file(WORLD_PRESETS_DIR.."/cave/洞穴.wgp.lua", gen_file, false)
             apply_changes_to_file(model_gen, gen_file)
-            copy_file(WORLD_PRESETS_DIR.."/forest/洞穴.wsp.lua", set_file, false)
+            copy_file(WORLD_PRESETS_DIR.."/cave/洞穴.wsp.lua", set_file, false)
             apply_changes_to_file(model_set, set_file)
         end
 
         sleep(3)
-        break
     end
 
     clear()

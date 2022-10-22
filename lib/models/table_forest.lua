@@ -488,7 +488,7 @@ forest_settings_table = {
             value = "always",
             type = "nonealways"
         },
-        ["受到的伤害"] = {
+        ["受到的破坏"] = {
             key = "lessdamagetaken",
             value = "none",
             type = "damage01"
