@@ -2,7 +2,5 @@ test/*
 .cache
 
 templates/world_presets/*
-!templates/world_presets/standard
-!templates/world_presets/terraria
-!templates/world_presets/empty
-!templates/world_presets/shipwrecked
+!templates/world_presets/forest
+!templates/world_presets/cave
