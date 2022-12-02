@@ -13,6 +13,7 @@ function check_user_is_sudoer() {
     declare sudoer_group=''
     if [[ $1 == 'Ubuntu' ]]; then sudoer_group='sudo'; fi
     if [[ $1 == 'CentOS' ]]; then sudoer_group='wheel'; fi
+    if [[ $(whoami) == 'root' ]]; then return 0; fi
     if groups | grep -sqv $sudoer_group; then
         color_print warn "当前用户$(whoami)没有sudo权限, 可能无法下载依赖。"
         color_print warn '接下来将会列出所需依赖包, 如果不确定是否已安装, 请终止脚本！'
@@ -40,7 +41,11 @@ else
 fi
 
 if [[ $1 == 'Ubuntu' ]]; then
-    declare -a requires=(lib32gcc-s1 lua5.3 tmux wget git curl)
+    if grep -sq '^VERSION_ID="18.04"' /etc/os-release; then
+        declare -a requires=(lib32gcc1 lua5.3 tmux wget git curl)
+    else
+        declare -a requires=(lib32gcc-s1 lua5.3 tmux wget git curl)
+    fi
 elif [[ $1 == 'CentOS' ]]; then
     declare -a requires=(glibc.i686 libstdc++ lua tmux wget git which)
 fi
@@ -52,7 +57,7 @@ echo "${requires[@]}"
 if [[ $is_sudoer == 'no' ]] && [[ $(whoami) != 'root' ]]; then
     color_print warn '以上软件是否已安装？没有安装的话请联系该服务器的管理员...'
     confirm warn '是否已安装？'
-    if [[ $(cat ANSWER_PATH) == 'yes' ]]; then return 0; fi
+    if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then return 0; fi
 
     color_print error '无权限下载安装必须软件，终止运行脚本。请联系服务器管理员解决。'
     exit 1

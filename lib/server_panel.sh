@@ -12,7 +12,7 @@ function start_server() {
 
     # 选择了shard
     if echo $answer | grep -sq -; then
-        declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$(echo $answer | sed -e "s#-#/#g")"
+        declare shard_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$(echo $answer | sed -e 's#-\([^-]*\)$#/\1#g')"
         if check_shard $shard_path; then
             start_shard $answer
         fi

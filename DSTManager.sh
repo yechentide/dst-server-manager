@@ -11,7 +11,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.6.1'
+declare -r SCRIPT_VERSION='v1.6.2'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -63,9 +63,9 @@ function check_os() {
 
 function check_user_is_root() {
     if echo $HOME | grep -sq ^/root; then
-        color_print error '出于安全方面考虑, 最好不要使用root用户执行本脚本！'
-        color_print tip '这里建议你使用 Ctrl 加 c 来终止脚本, 并使用sudo权限的用户执行本脚本(暂停10s来等你决定)'
-        count_down -n 10
+        color_print warn '出于安全方面考虑, 最好不要使用root用户执行本脚本！'
+        color_print tip '这里建议你使用 Ctrl 加 c 来终止脚本, 并使用sudo权限的用户执行本脚本(暂停5s来等你决定)'
+        count_down -n 5
     fi
 }
 
