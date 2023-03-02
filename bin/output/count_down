@@ -24,13 +24,13 @@ shift $((OPTIND - 1))
 
 declare i
 if [[ $use_number == 'true' ]]; then
-    for i in $(seq $1 -1 1); do
+    for i in $(seq "$1" -1 1); do
         echo -n "$i " | color_print -n 102
         sleep 1
     done
     color_print 102 '0'
 else
-    for i in $(seq $1 -1 1); do
+    for i in $(seq "$1" -1 1); do
         color_print -n 102 '.'
         sleep 1
     done

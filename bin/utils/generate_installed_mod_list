@@ -9,4 +9,4 @@ set -eu
 #   123456 123456 123456
 #######################################
 declare -r file_path="$1/dedicated_server_mods_setup.lua"
-cat $file_path | grep '^ServerModSetup' | awk -F\" '{print $2}'
+grep '^ServerModSetup' "$file_path" | awk -F\" '{print $2}'

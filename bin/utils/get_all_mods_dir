@@ -9,5 +9,5 @@ set -eu
 # 输出:
 #   所有已经下载的mod的路径
 #######################################
-find $1 -maxdepth 1 -type d -name workshop*
-find $2 -mindepth 2 -maxdepth 2 -type d
+find "$1" -maxdepth 1 -type d -name 'workshop*'
+find "$2" -mindepth 2 -maxdepth 2 -type d

@@ -9,5 +9,5 @@ set -eu
 # 输出:
 #   所有已经下载的modinfo的路径
 #######################################
-find $1 -mindepth 2 -maxdepth 2 -type f -name modinfo.lua
-find $2 -mindepth 3 -maxdepth 3 -type f -name modinfo.lua
+find "$1" -mindepth 2 -maxdepth 2 -type f -name modinfo.lua
+find "$2" -mindepth 3 -maxdepth 3 -type f -name modinfo.lua

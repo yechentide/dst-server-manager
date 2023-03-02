@@ -12,5 +12,4 @@ echo 'Gitee 地址: https://gitee.com/yechentide/DSTServerManager'
 color_print -p error '欢迎会 shellscript / lua 的伙伴来一起写开服脚本！'
 echo ''
 
-declare tmp
-read -p '输入回车继续...' tmp
+read -r -p '输入回车继续...' _

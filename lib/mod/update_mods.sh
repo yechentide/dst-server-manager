@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function update_mods() {
     color_print info '即将开始下载/更新Mod...'
     color_print info "一次性指定的Mod越多, 下载越耗时间, 如果1次没下载完, 请使用'更新Mod'功能来继续下载"

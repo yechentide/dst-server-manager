@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #######################################
 # 作用: 向session传递命令
 # 参数:
@@ -5,7 +7,7 @@
 #   $2: dst控制台命令
 #######################################
 function send_command_to_session() {
-    tmux send-keys -t $1 "$2" ENTER
+    tmux send-keys -t "$1" "$2" ENTER
 }
 
 #######################################
@@ -14,7 +16,7 @@ function send_command_to_session() {
 #   $1: tmux session名    例: c01-Main
 #######################################
 function shutdown_shard() {
-    send_command_to_session $1 'c_shutdown(true)'
+    send_command_to_session "$1" 'c_shutdown(true)'
 }
 
 #######################################
@@ -23,7 +25,7 @@ function shutdown_shard() {
 #   $1: tmux session名    例: c01-Main
 #######################################
 function force_shutdown_session() {
-    tmux send-keys -t $1 C-c
+    tmux send-keys -t "$1" C-c
 }
 
 #######################################

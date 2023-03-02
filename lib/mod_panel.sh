@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function mod_panel() {
     declare -r -a action_list=('下载Mod' '添加Mod' '配置Mod' '更新Mod' '删除Mod' '重置全部Mod')
 
@@ -5,14 +7,14 @@ function mod_panel() {
         echo ''
         color_print 70 '>>>>>> Mod管理 <<<<<<'
         display_running_clusters
-        show_mods_list $V1_MOD_DIR $V2_MOD_DIR $UGC_DIR
+        show_mods_list "$V1_MOD_DIR" "$V2_MOD_DIR" "$UGC_DIR"
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
 
         declare action=''
-        rm $ARRAY_PATH
-        for action in ${action_list[@]}; do echo $action >> $ARRAY_PATH; done
+        rm "$ARRAY_PATH"
+        for action in "${action_list[@]}"; do echo "$action" >> "$ARRAY_PATH"; done
         selector -cq info '请从下面选一个'
-        action=$(cat $ANSWER_PATH)
+        action=$(cat "$ANSWER_PATH")
 
         case $action in
         '下载Mod')
@@ -33,10 +35,10 @@ function mod_panel() {
             ;;
         '重置全部Mod')
             confirm warn '即将删除本主机上面的全部Mod文件, 是否继续?'
-            if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
-                echo '' > $V1_MOD_DIR/dedicated_server_mods_setup.lua
-                rm -rf $V1_MOD_DIR/workshop*
-                rm -rf $UGC_DIR/*
+            if [[ $(cat "$ANSWER_PATH") == 'yes' ]]; then
+                echo '' > "$V1_MOD_DIR/dedicated_server_mods_setup.lua"
+                rm -rf "$V1_MOD_DIR/workshop*"
+                rm -rf "${UGC_DIR:?}/*"
             fi
             ;;
         '返回')

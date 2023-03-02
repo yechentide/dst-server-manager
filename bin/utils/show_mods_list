@@ -36,11 +36,14 @@ if [[ $only_added == 'false' ]]; then
         color_print tip '如果你是手动上传的模组, 请使用脚本添加ID, 并使用脚本更新一下模组'
         exit 0
     fi
-    declare -r start=$(cat $file | grep -n 'WorkshopItemsInstalled' | awk -F: '{print $1}')
-    declare -r end=$(cat $file | grep -n 'WorkshopItemDetails' | awk -F: '{print $1}')
+    start=$(grep -n 'WorkshopItemsInstalled' "$file" | awk -F: '{print $1}')
+    end=$(grep -n 'WorkshopItemDetails' "$file" | awk -F: '{print $1}')
+    declare -r start
+    declare -r end
 
     # 已下载完成的Mod ID
-    declare -a installed_mods=$(cat $file | head -n $(($end-1)) | tail -n $(($end - $start)) | grep -s '^		"' | awk -F\" '{print $2}')
+    installed_mods=$(head -n $((end-1)) "$file" | tail -n $((end - start)) | grep -s '^		"' | awk -F\" '{print $2}')
+    declare -a installed_mods
 fi
 
 if [[ $only_installed == 'true' ]]; then
@@ -49,13 +52,14 @@ if [[ $only_installed == 'true' ]]; then
     fi
 
     declare item=''
-    for item in ${installed_mods[@]}; do
-        echo $item
+    for item in "${installed_mods[@]}"; do
+        echo "$item"
     done
     exit 0
 fi
 
-declare -a setted_list=$(generate_installed_mod_list $1)
+setted_list=$(generate_installed_mod_list "$1")
+declare -a setted_list
 
 if [[ $only_added == 'true' ]] && [[ ${#setted_list} == 0 ]]; then
     exit 0
@@ -64,23 +68,25 @@ if [[ $only_installed == 'false' ]] && [[ $only_added == 'false' ]]; then
     color_print info '手动上传的mod不会显示在下面的列表里, 请使用脚本添加对应id, 并使用脚本更新一下mod'
     color_print -n info '以下是已经添加的模组'
     color_print -p warn '(显示[..]的是还没下载完成的, 请使用脚本的"Mod更新"功能继续下载):'
-    declare -a all_modinfo=$(get_all_modinfo_path $1 $2)
+    all_modinfo=$(get_all_modinfo_path "$1" "$2")
+    declare -a all_modinfo
 fi
 
 declare id=''
-for id in ${setted_list[@]}; do
+for id in "${setted_list[@]}"; do
     if [[ $only_added == 'true' ]]; then
-        echo $id
+        echo "$id"
         continue
     fi
     
-    if echo "$installed_mods" | grep -sq $id; then color_print -np success '[OK] '; else color_print -np warn '[..] '; fi
+    if echo "${installed_mods[@]}" | grep -sq "$id"; then color_print -np success '[OK] '; else color_print -np warn '[..] '; fi
 
     echo -n "ID: $id      "
-    declare modinfo_path=$(echo "$all_modinfo" | grep -s $id)
+    modinfo_path=$(echo "${all_modinfo[@]}" | grep -s "$id")
+    declare modinfo_path
     if [[ ${#modinfo_path} == 0 ]]; then
         echo '未找到modinfo文件, mod可能还未下载完成'
     else
-        get_mod_name $modinfo_path
+        get_mod_name "$modinfo_path"
     fi
 done

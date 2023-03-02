@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -eu
 
-declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
-declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
-declare -r ARRAY_PATH="$BIN_DIR/../.cache/array"
+BIN_DIR="$(cd "$(dirname "$0")"; pwd)/.."
+ANSWER_PATH="$BIN_DIR/../.cache/answer"
+ARRAY_PATH="$BIN_DIR/../.cache/array"
+declare -r BIN_DIR
+declare -r ANSWER_PATH
+declare -r ARRAY_PATH
 
 #######################################
 
@@ -37,7 +40,7 @@ if [[ ! -e $ARRAY_PATH ]]; then
     color_print error '未找到文件array'
     exit 1
 fi
-declare -a array=($(cat $ARRAY_PATH))
+declare -a array=("$(cat "$ARRAY_PATH")")
 if [[ $allow_cancel == 'true' ]]; then array+=('返回'); fi
 declare -a selected=()
 
@@ -47,19 +50,18 @@ else
     PS3='请输入选项数字> '
 fi
 
-color_print $1 "$2"
+color_print "$1" "$2"
 
 while true; do
-    declare answer=''
     declare item=''
-    select answer in ${array[@]}; do break; done
-    for item in ${REPLY[@]}; do
+    select _ in "${array[@]}"; do break; done
+    for item in "${REPLY[@]}"; do
         if [[ ! $item =~ ^[0-9]+$ ]] || [[ $item -le 0 ]] || [[ $item -gt ${#array[@]} ]]; then
             color_print warn "请输入正确数字。错误输入将被无视: $item"
             continue
         fi
-        declare index=$(( $item - 1 ))
-        selected+=(${array[index]})
+        declare index=$(( "$item" - 1 ))
+        selected+=("${array[index]}")
         if [[ $allow_multi_select == 'false' ]]; then break; fi
     done
     if [[ ${#selected[@]} -gt 0 ]]; then break; fi
@@ -73,9 +75,9 @@ if [[ $quiet_mode == 'false' ]]; then
     fi
 fi
 
-if [[ -e $ANSWER_PATH ]]; then rm $ANSWER_PATH; fi
-for item in ${selected[@]}; do
-    echo "$item" >> $ANSWER_PATH
+if [[ -e $ANSWER_PATH ]]; then rm "$ANSWER_PATH"; fi
+for item in "${selected[@]}"; do
+    echo "$item" >> "$ANSWER_PATH"
 done
 
 if [[ $quiet_mode == 'false' ]]; then

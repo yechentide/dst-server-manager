@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -eu
 
-declare -r esc=$(printf "\033")    # 更改输出颜色用的前缀
-declare -r reset="${esc}[0m"       # 重置所有颜色，字体设定
+esc=$(printf "\033")    # 更改输出颜色用的前缀
+reset="${esc}[0m"       # 重置所有颜色，字体设定
+declare -r esc
+declare -r reset
 
 #######################################
 
@@ -35,10 +37,11 @@ if [[ $# == 0 ]] || [[ $# == 1 && ! -p /dev/stdin ]]; then
 fi
 
 if [[ -p /dev/stdin ]]; then        # <-- make pipe work
-    declare -r str=$(cat -)        # <-- make pipe work
+    str=$(cat -)                    # <-- make pipe work
 else
-    declare -r str="$2"
+    str="$2"
 fi
+declare -r str
 
 declare prefix=''
 declare color=''

@@ -8,12 +8,12 @@ set -eu
 #######################################
 
 if [[ -e $1/worldgenoverride.lua ]]; then
-    if head -n 1 $1/worldgenoverride.lua | grep -sq 'KLEI'; then
-        sed -i -e 's/^KLEI     1 //g' $1/worldgenoverride.lua
+    if head -n 1 "$1"/worldgenoverride.lua | grep -sq 'KLEI'; then
+        sed -i -e 's/^KLEI     1 //g' "$1"/worldgenoverride.lua
     fi
 fi
 if [[ -e $1/leveldataoverride.lua ]]; then
-    if head -n 1 $1/leveldataoverride.lua | grep -sq 'KLEI'; then
-        sed -i -e 's/^KLEI     1 //g' $1/leveldataoverride.lua
+    if head -n 1 "$1"/leveldataoverride.lua | grep -sq 'KLEI'; then
+        sed -i -e 's/^KLEI     1 //g' "$1"/leveldataoverride.lua
     fi
 fi

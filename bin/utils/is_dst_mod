@@ -9,8 +9,9 @@ exit 1
 # 输出:
 #   'yes' / 'no'
 #######################################
-if wget -O - "https://steamcommunity.com/sharedfiles/filedetails/?id=$1" 2>&1 | grep -sq "Don't Starve Together"; then
-    echo 'yes'
-else
-    echo 'no'
-fi
+
+# if wget -O - "https://steamcommunity.com/sharedfiles/filedetails/?id=$1" 2>&1 | grep -sq "Don't Starve Together"; then
+#     echo 'yes'
+# else
+#     echo 'no'
+# fi

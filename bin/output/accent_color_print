@@ -27,16 +27,16 @@ shift $((OPTIND - 1))
 
 case $accent_pattern in
 1)      #   --- * ---
-    color_print -n $1 "$3"
-    color_print -np $2 "$4"
-    color_print -p $1 "$5"
+    color_print -n "$1" "$3"
+    color_print -np "$2" "$4"
+    color_print -p "$1" "$5"
     ;;
 2)      #   --- * --- * ---
-    color_print -n $1 "$3"
-    color_print -np $2 "$4"
-    color_print -np $1 "$5"
-    color_print -np $2 "$6"
-    color_print -p $1 "$7"
+    color_print -n "$1" "$3"
+    color_print -np "$2" "$4"
+    color_print -np "$1" "$5"
+    color_print -np "$2" "$6"
+    color_print -p "$1" "$7"
     ;;
 *)
     color_print error 'accent_color_print()参数错误:'

@@ -10,11 +10,11 @@ set -eu
 #######################################
 
 if [[ ! -e $1/cluster.ini ]]; then
-    accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'cluster.ini' '文件!'
+    accent_color_print -p 2 error 36 '在 ' "$1" ' 里未能找到 ' 'cluster.ini' '文件!'
     exit 1
 fi
 if [[ ! -e $1/cluster_token.txt ]]; then
-    accent_color_print -p 2 error 36 '在 ' $1 ' 里未能找到 ' 'cluster_token.txt' '文件!'
+    accent_color_print -p 2 error 36 '在 ' "$1" ' 里未能找到 ' 'cluster_token.txt' '文件!'
     exit 1
 fi
 exit 0

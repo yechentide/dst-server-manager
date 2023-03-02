@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-declare -r BIN_DIR="$(cd $(dirname $0); pwd)/.."
-declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
-
 #######################################
 
 declare is_update='false'
@@ -31,7 +28,7 @@ shift $((OPTIND - 1))
 if [[ $clean_install == 'true' ]]; then
     if [[ -e $1/bin64/dontstarve_dedicated_server_nullrenderer_x64 ]]; then
         color_print warn '删除旧的DST服务端...'
-        rm -rf $1 > /dev/null 2>&1
+        rm -rf "$1" > /dev/null 2>&1
     fi
 fi
 
@@ -52,16 +49,16 @@ count_down 3
 function install_dst() {
     if [[ ${#beta} == 0 ]]; then
         # 正式版
-        ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 validate +quit
-    else
-        # 测试版
-        exit 1
-        ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
-        ~/Steam/steamcmd.sh +force_install_dir /home/ubuntu/Server +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
+        ~/Steam/steamcmd.sh +force_install_dir "$1" +login anonymous +app_update 343050 validate +quit
+    # else
+    #     # 测试版
+    #     exit 1
+    #     ~/Steam/steamcmd.sh +force_install_dir $1 +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
+    #     ~/Steam/steamcmd.sh +force_install_dir /home/ubuntu/Server +login anonymous +app_update 343050 -beta returnofthembeta validate +quit
     fi
 }
 
-install_dst $1
+install_dst "$1"
 
 if [[ $? ]]; then
     color_print success '饥荒服务端下载更新完成!'

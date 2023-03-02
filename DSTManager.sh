@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1090
 set -eu
 
 #################### ################### Repositories ################### ####################
@@ -12,7 +13,8 @@ set -eu
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
 declare -r SCRIPT_VERSION='v1.6.2'
-declare -r ARCHITECTURE=$(getconf LONG_BIT)
+ARCHITECTURE=$(getconf LONG_BIT)
+declare -r ARCHITECTURE
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
 declare -r DST_ROOT_DIR="$HOME/Server"
@@ -54,15 +56,15 @@ function check_os() {
         OS='CentOS'
     else
         color_print error '本脚本暂不支持此Linux系统：'
-        cat /etc/os-release | grep ^NAME | color_print error
-        cat /etc/os-release | grep ^VERSION= | color_print error
+        grep ^NAME /etc/os-release | color_print error
+        grep ^VERSION= /etc/os-release | color_print error
         color_print tip '你可以换个系统, 或者自己修改这个脚本, 或者联系作者(需求多的话才会添加支持)'
         exit 1
     fi
 }
 
 function check_user_is_root() {
-    if echo $HOME | grep -sq ^/root; then
+    if echo "$HOME" | grep -sq ^/root; then
         color_print warn '出于安全方面考虑, 最好不要使用root用户执行本脚本！'
         color_print tip '这里建议你使用 Ctrl 加 c 来终止脚本, 并使用sudo权限的用户执行本脚本(暂停5s来等你决定)'
         count_down -n 5
@@ -75,7 +77,7 @@ function clone_repo() {
     if [[ -e $REPO_ROOT_DIR ]]; then
         if [[ ! -e $REPO_ROOT_DIR/.git ]]; then
             color_print warn '脚本仓库可能已经损坏, 即将重新下载...'
-            rm -rf $REPO_ROOT_DIR > /dev/null 2>&1
+            rm -rf "$REPO_ROOT_DIR" > /dev/null 2>&1
         else
             color_print success '脚本仓库已存在！无需下载～'
             return 0
@@ -88,24 +90,24 @@ function clone_repo() {
     count_down -d 3
 
     confirm info '请问这个主机是否位于国内？'
-    if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+    if [[ $(cat "$ANSWER_PATH") == 'yes' ]]; then
         color_print info '远程仓库将使用gitee上的仓库'
         color_print warn 'gitee网站有时候会无法访问, 如果无法下载, 请隔一段时间重试'
-        git clone $REPO_URL_CN $REPO_ROOT_DIR
+        git clone $REPO_URL_CN "$REPO_ROOT_DIR"
     else
         color_print info '远程仓库将使用github上的仓库'
-        git clone $REPO_URL_GITHUB $REPO_ROOT_DIR
+        git clone $REPO_URL_GITHUB "$REPO_ROOT_DIR"
     fi
 
     if [[ $? == 1 ]]; then
         color_print error '脚本仓库下载失败, 请检查git命令是否可用, 也有可能远程仓库目前无法访问'
         color_print error "当前的远程仓库URL: $(git remote -v | awk '{print $2}' | uniq)"
-        rm -rf $REPO_ROOT_DIR > /dev/null 2>&1
+        rm -rf "$REPO_ROOT_DIR" > /dev/null 2>&1
         exit 1
     fi
 
-    rm $0       # 删除被执行的脚本文件
-    ln -s $REPO_ROOT_DIR/DSTManager.sh $HOME/DSTManager.sh
+    rm "$0"       # 删除被执行的脚本文件
+    ln -s "$REPO_ROOT_DIR/DSTManager.sh" "$HOME/DSTManager.sh"
 
     echo ''
     color_print success '脚本仓库下载完成！请重新运行脚本。'
@@ -115,16 +117,16 @@ function clone_repo() {
 }
 
 function manage_directories() {
-    mkdir -p $KLEI_ROOT_DIR/$WORLDS_DIR_NAME
-    mkdir -p $BACKUP_DIR
-    mkdir -p $IMPORT_DIR
-    mkdir -p $V1_MOD_DIR
-    mkdir -p $V2_MOD_DIR
-    mkdir -p $CACHE_DIR
-    touch $ARRAY_PATH
-    touch $ANSWER_PATH
+    mkdir -p "$KLEI_ROOT_DIR/$WORLDS_DIR_NAME"
+    mkdir -p "$BACKUP_DIR"
+    mkdir -p "$IMPORT_DIR"
+    mkdir -p "$V1_MOD_DIR"
+    mkdir -p "$V2_MOD_DIR"
+    mkdir -p "$CACHE_DIR"
+    touch "$ARRAY_PATH"
+    touch "$ANSWER_PATH"
     
-    if [[ -e $REPO_ROOT_DIR/.cache/modinfo ]]; then rm -rf $REPO_ROOT_DIR/.cache/modinfo; fi
+    if [[ -e $REPO_ROOT_DIR/.cache/modinfo ]]; then rm -rf "$REPO_ROOT_DIR/.cache/modinfo"; fi
 }
 
 function check_environment() {
@@ -148,17 +150,17 @@ function check_environment() {
         count_down -n 6
         check_lua $OS
 
-        touch $CACHE_DIR/.skip_requirements_check
+        touch "$CACHE_DIR/.skip_requirements_check"
     fi
 
     install_steamcmd
-    update_dst $DST_ROOT_DIR
+    update_dst "$DST_ROOT_DIR"
 
     declare file=''
-    for file in $(ls $REPO_ROOT_DIR/lib/*.sh); do source $file; done
-    for file in $(ls $REPO_ROOT_DIR/lib/server/*.sh); do source $file; done
-    for file in $(ls $REPO_ROOT_DIR/lib/cluster/*.sh); do source $file; done
-    for file in $(ls $REPO_ROOT_DIR/lib/mod/*.sh); do source $file; done
+    for file in "$REPO_ROOT_DIR"/lib/*.sh; do source "$file"; done
+    for file in "$REPO_ROOT_DIR"/lib/server/*.sh; do source "$file"; done
+    for file in "$REPO_ROOT_DIR"/lib/cluster/*.sh; do source "$file"; done
+    for file in "$REPO_ROOT_DIR"/lib/mod/*.sh; do source "$file"; done
 
     color_print info '即将跳转到主面板'
     sleep 1
@@ -177,7 +179,7 @@ function main_panel_header() {
     print_divider '-' | color_print 208
 
     color_print -n info '最近更新: '
-    git -C $REPO_ROOT_DIR log --oneline | head -n 3 | sed -e 's/^[0-9a-z]* //g' | sed -z -e 's/\n/;    /g'
+    git -C "$REPO_ROOT_DIR" log --oneline | head -n 3 | sed -e 's/^[0-9a-z]* //g' | sed -z -e 's/\n/;    /g'
     echo ''
 
     color_print tip '服务器列表里搜索不到?   -->   检查端口和防火墙&云服的安全组设置!'
@@ -191,8 +193,9 @@ function main_panel_header() {
 }
 
 function display_running_clusters() {
-    declare -a running_cluster_list=$(generate_server_list -s | tr '\n' ' ')
-    color_print 30 "运行中的世界 ==> $running_cluster_list"
+    running_cluster_list=$(generate_server_list -s | tr '\n' ' ')
+    declare -a running_cluster_list
+    color_print 30 "运行中的世界 ==> ${running_cluster_list[*]}"
 }
 
 ##############################################################################################
@@ -210,10 +213,10 @@ function main_panel() {
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
 
         declare action=''
-        rm $ARRAY_PATH
-        for action in ${action_list[@]}; do echo $action >> $ARRAY_PATH; done
+        rm "$ARRAY_PATH"
+        for action in "${action_list[@]}"; do echo "$action" >> "$ARRAY_PATH"; done
         selector -q info '请从下面选一个'
-        action=$(cat $ANSWER_PATH)
+        action=$(cat "$ANSWER_PATH")
 
         case $action in
         '启动')

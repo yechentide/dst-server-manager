@@ -9,14 +9,13 @@ set -eu
 clear
 echo ''
 
-cat $1/docs/结构.md | head -n 66 | tail -n 61 > /tmp/struct.txt
+head -n 66 "$1/docs/结构.md" | tail -n 61 > /tmp/struct.txt
 
-while read line; do
+while read -r line; do
   echo "$line"
   sleep 0.1   
 done < /tmp/struct.txt
 
 echo ''
 
-declare tmp
-read -p '输入回车继续...' tmp
+read -r -p '输入回车继续...' _

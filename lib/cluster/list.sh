@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2178,SC2207
+
 #######################################
 # 作用: 管理各种名单(白名单/黑名单/管理员名单)
 # 参数:
@@ -21,65 +24,68 @@ function edit_list() {
     fi
     color_print info "开始修改存档的${list_type}名单..."
 
-    declare -a array=($(generate_cluster_list -c $KLEI_ROOT_DIR $WORLDS_DIR_NAME))
+    declare -a array
+    array=($(generate_cluster_list -c "$KLEI_ROOT_DIR" "$WORLDS_DIR_NAME"))
     if [[ ${#array[@]} == 0 ]]; then color_print error '未找到存档!'; return; fi
     
     declare cluster=''
-    rm $ARRAY_PATH
-    for cluster in ${array[@]}; do echo $cluster >> $ARRAY_PATH; done
+    rm "$ARRAY_PATH"
+    for cluster in "${array[@]}"; do echo "$cluster" >> "$ARRAY_PATH"; done
     selector -cq info '请选择一个存档'
-    cluster=$(cat $ANSWER_PATH)
+    cluster=$(cat "$ANSWER_PATH")
     if [[ $cluster == '返回' ]]; then return 0; fi
 
     declare -r list_path="$KLEI_ROOT_DIR/$WORLDS_DIR_NAME/$cluster/$file_name"
 
     array=('添加 删除')
     declare answer=''
-    rm $ARRAY_PATH
-    for answer in ${array[@]}; do echo $answer >> $ARRAY_PATH; done
+    rm "$ARRAY_PATH"
+    for answer in "${array[@]}"; do echo "$answer" >> "$ARRAY_PATH"; done
     selector -cq info '请选择'
-    answer=$(cat $ANSWER_PATH)
+    answer=$(cat "$ANSWER_PATH")
     if [[ $answer == '返回' ]]; then return 0; fi
 
     if [[ $answer == '添加' ]]; then
-        if [[ ! -e $list_path ]]; then echo '' > $list_path; fi
+        if [[ ! -e $list_path ]]; then echo '' > "$list_path"; fi
         color_print info "存档 $cluster 当前的$list_type名单:"
-        cat $list_path
-        read -p '请输入玩家ID, 多个ID之间用空格隔开> ' array
+        cat "$list_path"
+        read -r -p '请输入玩家ID, 多个ID之间用空格隔开> ' array
         declare id
-        for id in ${array[@]}; do
-            if cat $list_path | grep -sq $id; then
+        for id in "${array[@]}"; do
+            if grep -sq "$id" "$list_path"; then
                 color_print warn "ID:${id}已存在于${list_type}名单"
             else
-                echo $id >> $list_path
+                echo "$id" >> "$list_path"
             fi
         done
     fi
     if [[ $answer == '删除' ]]; then
         if [[ ! -e $list_path ]]; then color_print warn "存档 $cluster 里未找到$list_type名单!请先添加!"; return; fi
-        sed -i -e '/^$/d' $list_path
+        sed -i -e '/^$/d' "$list_path"
         if [[ ! -s $list_path ]]; then
             color_print warn "$list_type名单为空!"
             return 0
         fi
 
         unset array
-        declare -a array=($(cat $list_path))
+        declare -a array
+        array=($(cat "$list_path"))
         declare delete_id
-        rm $ARRAY_PATH
-        for delete_id in ${array[@]}; do echo $delete_id >> $ARRAY_PATH; done
+        rm "$ARRAY_PATH"
+        for delete_id in "${array[@]}"; do echo "$delete_id" >> "$ARRAY_PATH"; done
 
         selector -cmq info "请选择要从${list_type}名单删除的ID"
         unset array
-        declare -a array=$(cat $ANSWER_PATH)
-        if echo $array | grep -sq '返回'; then return 0; fi
+        declare -a array
+        array=$(cat "$ANSWER_PATH")
+        if echo "${array[@]}" | grep -sq '返回'; then return 0; fi
 
-        for delete_id in ${array[@]}; do
-            sed -i -e "s/^${delete_id}//g" $list_path
+        for delete_id in "${array[@]}"; do
+            sed -i -e "s/^${delete_id}//g" "$list_path"
         done
     fi
-    sed -i -e '/^$/d' $list_path
+    sed -i -e '/^$/d' "$list_path"
 
     color_print info "存档 $cluster 当前的$list_type名单:"
-    cat $list_path
+    cat "$list_path"
 }

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #######################################
 # 作用:
 #   移动文件夹到本脚本指定位置,
@@ -103,7 +105,7 @@ function transfer_from_dstserver() {
 function transfer_panel() {
     declare will_need_sudo='no'
     check_user_is_sudoer
-    declare -r has_sudo_perm=$answer
+    declare -r has_sudo_perm='yes'
     declare -r error_exit_msg="请参考${REPO_ROOT_DIR}/docs/结构.md文件, 手动移动文件夹"
 
     color_print warn '本功能未经测试!如果担心出问题的话, 请选择 "返回"'
@@ -111,7 +113,7 @@ function transfer_panel() {
     color_print -n info '如果你没在列表里看到自己用过的脚本名字, 请选择 "返回"'; count_down 3
 
     confirm info '请问你是以root用户执行之前的脚本的吗?'
-    if [[ $(cat $ANSWER_PATH) == 'yes' ]]; then
+    if [[ $(cat "$ANSWER_PATH") == 'yes' ]]; then
         if [[ $has_sudo_perm == 'no' ]]; then
             color_print warn "当前用户$(whoami)没有sudo权限, 无法从/root文件夹里面转移文件, ${error_exit_msg}"
             color_print info '即将返回主面板'
@@ -120,8 +122,7 @@ function transfer_panel() {
         fi
         will_need_sudo='yes'
     fi
-    
-    declare -a array=()
+
     declare -r -a script_list=('欲醉无由写的go.sh' 'Ariwori写的dstserver.sh')
     while true; do
         echo ''
@@ -130,10 +131,10 @@ function transfer_panel() {
         color_print info '[退出或中断操作请直接按 Ctrl加C ]'
 
         declare script=''
-        if [[ -e $ARRAY_PATH ]]; then rm $ARRAY_PATH; fi
-        for script in ${script_list[@]}; do echo $script >> $ARRAY_PATH; done
+        if [[ -e $ARRAY_PATH ]]; then rm "$ARRAY_PATH"; fi
+        for script in "${script_list[@]}"; do echo "$script" >> "$ARRAY_PATH"; done
         selector -cq info '请选择你之前使用的脚本'
-        script=$(cat $ANSWER_PATH)
+        script=$(cat "$ANSWER_PATH")
 
         case $script in
         '欲醉无由写的go.sh')

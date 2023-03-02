@@ -19,7 +19,7 @@ while true; do
     declare cmd=''
     declare param=''
     echo ''
-    read -p '快捷指令代号/自己输指令> ' cmd
+    read -r -p '快捷指令代号/自己输指令> ' cmd
 
     case $cmd in
     'c01')
@@ -32,7 +32,7 @@ while true; do
         ;;
     'c03')
         echo '快捷指令: 发送服务器公告'
-        read -p '请输入公告内容> ' param
+        read -r -p '请输入公告内容> ' param
         cmd="c_announce(\"$param\")"
         ;;
     'c04')
@@ -46,21 +46,21 @@ while true; do
     'c06')
         echo '快捷指令: 回档'
         echo '请输入回到多少次以前的存档(最低为1)'
-        read -p '> ' param
+        read -r -p '> ' param
         cmd="c_rollback($param)"
         ;;
     'c07')
         echo '快捷指令: 踢出玩家'
-        tmux send-keys -t $target_pane 'c_listallplayers()' ENTER
+        tmux send-keys -t "$target_pane" 'c_listallplayers()' ENTER
         echo '请从上方玩家列表里面查找需要踢出的玩家(玩家ID是KU开头的)'
-        read -p '然后输入该玩家ID> ' param
+        read -r -p '然后输入该玩家ID> ' param
         cmd="TheNet:Kick($param)"
         ;;
     'c08')
         echo '快捷指令: 封禁玩家'
-        tmux send-keys -t $target_pane 'c_listallplayers()' ENTER
+        tmux send-keys -t "$target_pane" 'c_listallplayers()' ENTER
         echo '请从上方玩家列表里面查找需要封禁的玩家(玩家ID是KU开头的)'
-        read -p '然后输入该玩家ID> ' param
+        read -r -p '然后输入该玩家ID> ' param
         cmd="TheNet:Ban($param)"
         ;;
     *)
@@ -68,6 +68,6 @@ while true; do
         ;;
     esac
 
-    tmux send-keys -t $target_pane "$cmd" ENTER
+    tmux send-keys -t "$target_pane" "$cmd" ENTER
     sleep 1
 done

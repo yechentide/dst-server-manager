@@ -2,14 +2,14 @@
 set -eu
 
 declare source_file_path="$HOME/.bashrc"
-if echo $SHELL | grep -sq zsh; then
+if echo "$SHELL" | grep -sq zsh; then
     source_file_path="$HOME/.zshrc"
 fi
 
-if [[ ! -e $source_file_path ]]; then touch $source_file_path; fi
+if [[ ! -e $source_file_path ]]; then touch "$source_file_path"; fi
 
-if ! cat $source_file_path | grep -sq "^alias dst="; then
-    echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> $source_file_path
-    echo '' >> $source_file_path
+if ! grep -sq "^alias dst=" "$source_file_path"; then
+    echo "alias dst='~/DSTServerManager/DSTManager.sh'" >> "$source_file_path"
+    echo '' >> "$source_file_path"
 fi
 # source ~/.bashrc  --> 好像会导致报错  /etc/bashrc: line 12: PS1: unbound variable
