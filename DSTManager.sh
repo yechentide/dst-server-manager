@@ -11,7 +11,7 @@ set -eu
 
 # 这个脚本里将会读取其他的全部shell脚本, 所以以下全局常量/变量在其他shell脚本里可用
 declare OS='MacOS'
-declare -r SCRIPT_VERSION='v1.6.2'
+declare -r SCRIPT_VERSION='v1.6.3'
 declare -r ARCHITECTURE=$(getconf LONG_BIT)
 declare -r REPO_ROOT_DIR="$HOME/DSTServerManager"
 # DST服务端文件夹
@@ -48,7 +48,9 @@ export PATH="$REPO_ROOT_DIR/bin:$REPO_ROOT_DIR/bin/output:$REPO_ROOT_DIR/bin/int
 function check_os() {
     if [[ ! $(uname) == 'Linux' ]]; then color_print error '本脚本目前仅支持Linux'; exit 1; fi
 
-    if grep -sq '^NAME="Ubuntu' /etc/os-release; then
+    if grep -sq '^NAME="Debian' /etc/os-release; then
+        OS='Debian'
+    elif grep -sq '^NAME="Ubuntu' /etc/os-release; then
         OS='Ubuntu'
     elif grep -sq '^NAME="CentOS' /etc/os-release; then
         OS='CentOS'

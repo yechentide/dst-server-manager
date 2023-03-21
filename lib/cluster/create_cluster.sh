@@ -1,6 +1,6 @@
 function create_cluster() {
     color_print tip '强烈推荐一个在线配置世界的网站'
-    color_print tip 'https://dst.suke.fun'
+    color_print tip 'https://dst.suke.asia'
     color_print tip '如果你要创建新的世界，可以用这个网站创建好了再上传到服务器'
     count_down 3
     color_print info '开始创建新的存档...'

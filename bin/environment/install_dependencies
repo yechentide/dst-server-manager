@@ -11,7 +11,7 @@ declare -r ANSWER_PATH="$BIN_DIR/../.cache/answer"
 
 function check_user_is_sudoer() {
     declare sudoer_group=''
-    if [[ $1 == 'Ubuntu' ]]; then sudoer_group='sudo'; fi
+    if [[ $1 == 'Debian' || $1 == 'Ubuntu' ]]; then sudoer_group='sudo'; fi
     if [[ $1 == 'CentOS' ]]; then sudoer_group='wheel'; fi
     if [[ $(whoami) == 'root' ]]; then return 0; fi
     if groups | grep -sqv $sudoer_group; then
@@ -26,7 +26,7 @@ function check_user_is_sudoer() {
 }
 
 function is_package_installed() {
-    if [[ $1 == 'Ubuntu' ]]; then
+    if [[ $1 == 'Debian' || $1 == 'Ubuntu' ]]; then
         # https://news.mynavi.jp/techplus/article/20190222-775519/
         if dpkg-query -l | awk '{print $2}' | grep -sq $1; then return 0; else return 1; fi
     elif [[ $1 == 'CentOS' ]]; then
@@ -40,7 +40,9 @@ else
     declare -r is_sudoer='no'
 fi
 
-if [[ $1 == 'Ubuntu' ]]; then
+if [[ $1 == 'Debian' ]]; then
+    declare -a requires=(lib32gcc-s1 lua5.3 tmux wget git curl)
+elif [[ $1 == 'Ubuntu' ]]; then
     if grep -sq '^VERSION_ID="18.04"' /etc/os-release; then
         declare -a requires=(lib32gcc1 lua5.3 tmux wget git curl)
     else
@@ -77,7 +79,7 @@ fi
 color_print -n info '即将以管理员权限下载更新软件，可能会要求输入当前用户的密码 '
 count_down 3
 
-if [[ $1 == 'Ubuntu' ]]; then
+if [[ $1 == 'Debian' || $1 == 'Ubuntu' ]]; then
     if [[ $(whoami) == 'root' ]]; then
         apt update && apt upgrade -y
     else
