@@ -1,5 +1,13 @@
 # DSTServerManager
 
+## 本脚本已经停止维护
+
+2023年6月6号，我决定停止维护该脚本。  
+hujinbo23写了一个叫[dst-admin-go](https://github.com/hujinbo23/dst-admin-go)的服务器管理系统，推荐大家使用这个来管理服务器。  
+dst-admin-go是用go写的，方便部署(特别是作者提供了Dockerfile)，占用内存应该也不高。  
+最重要的是，网页比脚本用起来简单hhh  
+在此感谢一直以来使用该脚本的服主们，祝你们的服务器没有鸽子～
+
 ## 目录
 
 - [DSTServerManager](#dstservermanager)
